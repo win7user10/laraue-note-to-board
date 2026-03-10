@@ -83,4 +83,5 @@
 .backlog-view { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 .backlog-view::-webkit-scrollbar { width: 4px; }
 .backlog-view::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
 </style>

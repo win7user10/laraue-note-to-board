@@ -1,31 +1,24 @@
 <script setup lang="ts">
 import { useAppState } from "~/composables/appState";
-import LnbCreateCategoryModal from "~/components/LnbCreateCategoryModal.vue";
 import {ref} from "vue";
 import LnbIconBtn from "~/components/LnbIconBtn.vue";
+import {useCategoriesApi} from "~/composables/categoriesApi";
 
 const { appState } = useAppState()
 const { loadMessages } = useMessagesApi();
+const { loadCategory } = useCategoriesApi();
 
 const categoryId = computed(() => appState.value.categoryId);
-const currentCategory = ref({
-  color: "000000",
-  name: "Test",
-  statuses: [
-    {
-      "id": 1,
-      "name": "Test Status",
-      "color": "#123123",
-    }
-  ]
-})
+const currentCategory = ref<CategoryDto>()
 
-watch(() => categoryId.value, async (newValue) => {
+watch(() => categoryId.value, async _ => {
   messages.value = await loadMessages(categoryId.value)
+  currentCategory.value = await loadCategory(categoryId.value)
 })
 
 onMounted(async () => {
   messages.value = await loadMessages(categoryId.value)
+  currentCategory.value = await loadCategory(categoryId.value)
 })
 
 const messages = ref<MessageListDto[]>([]);
@@ -44,7 +37,7 @@ const closeCreateStatus = () => {
 
 const createStatusInternal = async (value: CreateStatusRequest) => {
   const id = await createStatus(value);
-  currentCategory.value.statuses.push({
+  currentCategory.value?.statuses.push({
     id: id,
     name: value.name,
     color: value.color,
@@ -64,9 +57,6 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
         <div class="board-subtitle">0 cards</div>
       </div>
       <div class="board-actions">
-        <LnbIconBtn @click="openCreateStatus" title="Add Status Column">
-          <path d="M8 3v10M3 8h10"/>
-        </LnbIconBtn>
         <LnbIconBtn title="Add Message to Board">
           <rect x="2" y="2" width="12" height="12" rx="2"/>
           <path d="M8 5v6M5 8h6"/>
@@ -123,7 +113,7 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
         <div class="empty-sub">Add columns to organize your messages</div>
       </div>
 
-      <div class="add-col-btn">
+      <div class="add-col-btn" @click="openCreateStatus">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px">
           <path d="M8 3v10M3 8h10"/>
         </svg>
@@ -279,4 +269,27 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
   align-self: flex-start;
 }
 .add-col-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 20px;
+  color: var(--text3);
+}
+.empty-icon {
+  width: 52px; height: 52px;
+  background: var(--surface3);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 4px;
+}
+.empty-icon svg { width: 24px; height: 24px; color: var(--text3); }
+.empty-title { font-size: 14px; font-weight: 700; color: var(--text2); }
+.empty-sub { font-size: 12px; text-align: center; line-height: 1.5; }
 </style>

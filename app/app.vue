@@ -3,8 +3,10 @@
   import WebApp from "@twa-dev/sdk";
   import {useUserApi} from "~/composables/userApi";
   import {useAppState} from "~/composables/appState";
+  import LnbCreateCategoryModal from "~/components/LnbCreateCategoryModal.vue";
+  import {useStatusesApi} from "~/composables/statusesApi";
   const { validate } = useTelegramUserApi();
-  const { loadCategories } = useCategoriesApi();
+  const { loadCategories, createCategory } = useCategoriesApi();
   const { loadUser } = useUserApi();
   const categories = ref<CategoryCountDto[]>([])
   let initError = ref<any>({})
@@ -40,6 +42,29 @@
 
   const { appState, setCategory } = useAppState()
   const categoryId = computed(() => appState.value.categoryId);
+
+  const modal = reactive({
+    createCategory: false,
+  });
+
+  const openCreateCategory = () => {
+    modal.createCategory = true;
+  }
+
+  const closeCreateCategory = () => {
+    modal.createCategory = false;
+  }
+
+  const createCategoryInternal = async (value: CreateCategoryRequest) => {
+    const id = await createCategory(value);
+    categories.value.push({
+      id: id,
+      name: value.name,
+      color: value.color,
+      count: 0
+    })
+    closeCreateCategory();
+  }
 </script>
 
 <template>
@@ -49,16 +74,12 @@
     <div class="topbar">
       <div class="topbar-logo">NoteBoard<span>{{ userName }}</span></div>
       <div class="topbar-spacer"></div>
-      <div class="icon-btn" title="Search">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-          <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10.5 10.5l3 3"/>
-        </svg>
-      </div>
-      <div class="icon-btn" title="Add Category">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-          <path d="M8 3v10M3 8h10"/>
-        </svg>
-      </div>
+      <LnbIconBtn title="Search">
+        <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10.5 10.5l3 3"/>
+      </LnbIconBtn>
+      <LnbIconBtn title="Add Category" @click="openCreateCategory">
+        <path d="M8 3v10M3 8h10"/>
+      </LnbIconBtn>
     </div>
 
     <!-- NAV TABS -->
@@ -82,6 +103,11 @@
     </div>
 
     <NuxtPage />
+
+    <LnbCreateCategoryModal
+      @create="createCategoryInternal"
+      @close="closeCreateCategory"
+      v-if="modal.createCategory"/>
   </div>
   <div v-else>{{ initError }}</div>
 </template>
@@ -110,19 +136,6 @@
 }
 .topbar-logo span { color: var(--text2); font-weight: 400; margin-left: 10px; }
 .topbar-spacer { flex: 1; }
-.icon-btn {
-  width: 34px; height: 34px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-  background: var(--surface3);
-  color: var(--text2);
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  transition: all 0.15s;
-  flex-shrink: 0;
-}
-.icon-btn:hover, .icon-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
-.icon-btn svg { width: 16px; height: 16px; }
 
 /* ── NAV TABS ── */
 .nav-tabs {

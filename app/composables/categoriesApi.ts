@@ -7,6 +7,11 @@ export interface CategoryCountDto {
     count: number;
 }
 
+export interface CreateCategoryRequest {
+    name: string;
+    color: string;
+}
+
 export const useCategoriesApi = () => {
     const client = useCategoriesClient()
 
@@ -16,7 +21,15 @@ export const useCategoriesApi = () => {
         });
     }
 
+    const createCategory = (request: CreateCategoryRequest) => {
+        return client<number>('/categories', {
+            method: 'POST',
+            body: request
+        });
+    }
+
     return {
         loadCategories,
+        createCategory,
     }
 }

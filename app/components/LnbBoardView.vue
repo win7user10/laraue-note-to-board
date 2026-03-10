@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import { useAppState } from "~/composables/appState";
+import LnbCreateCategoryModal from "~/components/LnbCreateCategoryModal.vue";
+import {ref} from "vue";
+import LnbIconBtn from "~/components/LnbIconBtn.vue";
 
 const { appState } = useAppState()
 const { loadMessages } = useMessagesApi();
 
 const categoryId = computed(() => appState.value.categoryId);
-const currentCategory = {
+const currentCategory = ref({
   color: "000000",
   name: "Test",
   statuses: [
@@ -15,7 +18,7 @@ const currentCategory = {
       "color": "#123123",
     }
   ]
-}
+})
 
 watch(() => categoryId.value, async (newValue) => {
   messages.value = await loadMessages(categoryId.value)
@@ -26,6 +29,28 @@ onMounted(async () => {
 })
 
 const messages = ref<MessageListDto[]>([]);
+const modal = reactive({
+  createStatus: false,
+});
+
+const { createStatus } = useStatusesApi();
+const openCreateStatus = () => {
+  modal.createStatus = true;
+}
+
+const closeCreateStatus = () => {
+  modal.createStatus = false;
+}
+
+const createStatusInternal = async (value: CreateStatusRequest) => {
+  const id = await createStatus(value);
+  currentCategory.value.statuses.push({
+    id: id,
+    name: value.name,
+    color: value.color,
+  })
+  closeCreateStatus();
+}
 </script>
 
 <template>
@@ -39,17 +64,13 @@ const messages = ref<MessageListDto[]>([]);
         <div class="board-subtitle">0 cards</div>
       </div>
       <div class="board-actions">
-        <div class="icon-btn" title="Add Status Column">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M8 3v10M3 8h10"/>
-          </svg>
-        </div>
-        <div class="icon-btn" title="Add Message to Board">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-            <rect x="2" y="2" width="12" height="12" rx="2"/>
-            <path d="M8 5v6M5 8h6"/>
-          </svg>
-        </div>
+        <LnbIconBtn @click="openCreateStatus" title="Add Status Column">
+          <path d="M8 3v10M3 8h10"/>
+        </LnbIconBtn>
+        <LnbIconBtn title="Add Message to Board">
+          <rect x="2" y="2" width="12" height="12" rx="2"/>
+          <path d="M8 5v6M5 8h6"/>
+        </LnbIconBtn>
       </div>
     </div>
 
@@ -110,6 +131,10 @@ const messages = ref<MessageListDto[]>([]);
       </div>
     </div>
   </div>
+  <LnbCreateStatusModal
+      @create="createStatusInternal"
+      @close="closeCreateStatus"
+      v-if="modal.createStatus"/>
 </template>
 
 <style scoped>

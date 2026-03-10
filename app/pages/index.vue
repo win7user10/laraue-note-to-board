@@ -5,6 +5,7 @@ import { useAppState } from "~/composables/appState";
 
 const { appState } = useAppState()
 const categoryId = computed(() => appState.value.categoryId);
+
 </script>
 
 <template>

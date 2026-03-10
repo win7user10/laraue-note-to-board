@@ -1,0 +1,19 @@
+import {useUserClient} from "~/composables/userClient";
+
+export interface UserDto {
+    username?: string;
+}
+
+export const useUserApi = () => {
+    const client = useUserClient();
+
+    const loadUser = () => {
+        return client<UserDto>('/user', {
+            method: 'GET'
+        });
+    }
+
+    return {
+        loadUser,
+    }
+}

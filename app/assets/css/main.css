@@ -1,0 +1,41 @@
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2230;
+    --surface3: #21262d;
+    --border: #30363d;
+    --border2: #3d4451;
+    --accent: #2f81f7;
+    --accent2: #388bfd;
+    --accent-glow: rgba(47,129,247,0.18);
+    --green: #3fb950;
+    --orange: #d29922;
+    --red: #f85149;
+    --purple: #a371f7;
+    --pink: #ff7b72;
+    --text: #e6edf3;
+    --text2: #8b949e;
+    --text3: #6e7681;
+    --card-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    --radius: 10px;
+    --radius-sm: 6px;
+    --card-color: var(--bg);
+}
+
+html, body {
+    height: 100%;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+#__nuxt {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}

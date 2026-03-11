@@ -2,9 +2,9 @@ name: Build Vue App
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "master" ]
 
 jobs:
   build:
@@ -26,7 +26,7 @@ jobs:
       - run: pnpm nuxt build
 
       - name: Upload
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/master'
         uses: marcodallasanta/ssh-scp-deploy@v1.2.0
         with:
           host: ${{ secrets.SSH_HOST }} # "example.com"

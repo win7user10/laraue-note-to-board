@@ -25,12 +25,15 @@ onMounted(async () => {
         initError.value("The app should be run as Mini App");
         return;
       }
-
-      WebApp.ready(); // init telegram mini app
     }
 
     const bearer = await validate(token)
     localStorage.setItem('bearer', bearer)
+
+    if (!testUserToken){
+      WebApp.ready();
+      WebApp.expand();
+    }
 
   } catch (err) {
     initError.value = err;

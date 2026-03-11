@@ -3,7 +3,6 @@ import { useAppState } from "~/composables/appState";
 import {ref} from "vue";
 import LnbIconBtn from "~/components/LnbIconBtn.vue";
 import {useCategoriesApi} from "~/composables/categoriesApi";
-import LnbEmptyState from "~/components/LnbEmptyState.vue";
 
 const { appState, setDragStateCardId, setDragStateOverStatus } = useAppState()
 const { updateStatus } = useMessagesApi();

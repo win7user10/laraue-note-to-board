@@ -19,7 +19,8 @@ export default defineNuxtConfig({
           href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap'
         }
       ]
-    }
+    },
+    baseURL: '/note-board-app/'
   },
   runtimeConfig: {
     public: {

@@ -20,8 +20,7 @@ export default defineNuxtConfig({
         }
       ]
     },
-    baseURL: '/note-board-app/',
-    buildAssetsDir: '/note-board-app/_nuxt/'
+    baseURL: '/note-board-app'
   },
   runtimeConfig: {
     public: {

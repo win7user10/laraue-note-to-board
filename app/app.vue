@@ -4,7 +4,6 @@
   import {useUserApi} from "~/composables/userApi";
   import {useAppState} from "~/composables/appState";
   import LnbCreateCategoryModal from "~/components/LnbCreateCategoryModal.vue";
-  import {useStatusesApi} from "~/composables/statusesApi";
   const { validate } = useTelegramUserApi();
   const { loadCategories, createCategory } = useCategoriesApi();
   const { loadUser } = useUserApi();
@@ -40,7 +39,7 @@
     }
   });
 
-  const { appState, setCategory } = useAppState()
+  const { appState, setCategory, setDragStateCardId, setDragStateOverStatus } = useAppState()
   const categoryId = computed(() => appState.value.categoryId);
 
   const modal = reactive({
@@ -65,6 +64,11 @@
     })
     closeCreateCategory();
   }
+
+  document.addEventListener('dragend', () => {
+    setDragStateCardId(null);
+    setDragStateOverStatus(null);
+  });
 </script>
 
 <template>

@@ -4,6 +4,8 @@ export interface MessageListDto {
     sender?: string;
     senderInitial?: string;
     text: string;
+    categoryId: number;
+    statusId: number;
 }
 
 export const useMessagesApi = () => {

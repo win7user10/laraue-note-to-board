@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {onMounted, ref} from "vue";
   import type {MessageListDto} from "~/composables/messagesApi";
+  import LnbEmptyState from "~/components/LnbEmptyState.vue";
   const { loadBacklogMessages } = useMessagesApi();
 
   const messages = ref<MessageListDto[]>([]);
@@ -16,23 +17,19 @@
       <span class="badge">{{ messages.length }} messages</span>
     </div>
 
-    <div v-if="messages.length === 0" class="empty-state">
-      <div class="empty-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M3 6h18M3 12h18M3 18h18"/>
-        </svg>
-      </div>
-      <div class="empty-title">Backlog is clear</div>
-      <div class="empty-sub">All messages have been assigned to boards</div>
-    </div>
+
+    <LnbEmptyState
+        v-if="messages.length === 0"
+        title="Backlog is clear"
+        subtitle="All messages have been assigned to boards"/>
 
     <div class="section-label" v-else>Unassigned · Drag to a board</div>
 
     <lnb-card
       v-for="msg in messages"
       :key="msg.id"
+      :id="msg.id"
       :sender="msg.sender"
-      drag-card-id="nbv"
       :senderInitial="msg.senderInitial"
       :text="msg.text"
       :time="msg.time"
@@ -83,5 +80,16 @@
 .backlog-view { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 .backlog-view::-webkit-scrollbar { width: 4px; }
 .backlog-view::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.empty-state {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 20px;
+  color: var(--text3);
+}
 
 </style>

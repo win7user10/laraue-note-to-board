@@ -3,8 +3,9 @@ import { useAppState } from "~/composables/appState";
 import {ref} from "vue";
 import LnbIconBtn from "~/components/LnbIconBtn.vue";
 import {useCategoriesApi} from "~/composables/categoriesApi";
+import LnbEmptyState from "~/components/LnbEmptyState.vue";
 
-const { appState } = useAppState()
+const { appState, setDragStateCardId, setDragStateOverStatus } = useAppState()
 const { loadMessages } = useMessagesApi();
 const { loadCategory } = useCategoriesApi();
 
@@ -44,6 +45,26 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
   })
   closeCreateStatus();
 }
+
+const cardsByStatus = computed(() => {
+  return Object.groupBy(messages.value, item => item.statusId);
+})
+
+const onDrop = (statusId: number) => {
+  const card = messages.value.find(m => m.id === appState.value.dragState.cardId);
+  if (!card) return;
+  card.categoryId = appState.value.categoryId;
+  card.statusId = statusId;
+  setDragStateCardId(null);
+  setDragStateOverStatus(null);
+  // TODO - back query + notification
+};
+
+const onDragOver = (e: any, statusId: number) => {
+  setDragStateOverStatus(statusId);
+  e.dataTransfer.dropEffect = 'move';
+};
+
 </script>
 
 <template>
@@ -66,14 +87,15 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
 
     <div class="board-columns">
       <div
-          v-for="status in currentCategory?.statuses || []"
-          :key="status.id"
-          class="board-col"
-      >
+        v-for="status in currentCategory?.statuses || []"
+        :key="status.id"
+        class="board-col"
+        @dragover.prevent="onDragOver($event, status.id)"
+        @drop="onDrop(status.id)">
         <div class="col-header">
           <div class="col-indicator" :style="`background:${status.color}`"></div>
           <div class="col-title">{{ status.name }}</div>
-          <div class="col-count">0</div>
+          <div class="col-count">{{ cardsByStatus[status.id]?.length }}</div>
           <div class="col-menu-btn" title="Delete column">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M3 8h10"/>
@@ -81,14 +103,17 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
           </div>
         </div>
         <div class="col-cards">
-          <div v-if="true">
+          <div
+            v-if="!cardsByStatus[status.id] && appState.dragState.cardId"
+            class="col-drop-zone"
+            :class="{active: appState.dragState.overStatus === status.id}">
             Drop here
           </div>
           <lnb-card
-              v-for="msg in messages"
+              v-for="msg in cardsByStatus[status.id]"
               :key="msg.id"
+              :id="msg.id"
               :sender="msg.sender"
-              drag-card-id="nbv"
               :senderInitial="msg.senderInitial"
               :text="msg.text"
               :time="msg.time"
@@ -102,16 +127,10 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
         </div>
       </div>
 
-      <div v-if="(currentCategory?.statuses||[]).length === 0" class="empty-state" style="min-width:240px">
-        <div class="empty-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="3" y="3" width="7" height="18" rx="1"/>
-            <rect x="14" y="3" width="7" height="18" rx="1"/>
-          </svg>
-        </div>
-        <div class="empty-title">No statuses yet</div>
-        <div class="empty-sub">Add columns to organize your messages</div>
-      </div>
+      <LnbEmptyState
+          v-if="(currentCategory?.statuses||[]).length === 0"
+          title="No statuses yet"
+          subtitle="Add columns to organize your messages"/>
 
       <div class="add-col-btn" @click="openCreateStatus">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px">
@@ -269,27 +288,4 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
   align-self: flex-start;
 }
 .add-col-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
-
-/* ── EMPTY STATE ── */
-.empty-state {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 40px 20px;
-  color: var(--text3);
-}
-.empty-icon {
-  width: 52px; height: 52px;
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 4px;
-}
-.empty-icon svg { width: 24px; height: 24px; color: var(--text3); }
-.empty-title { font-size: 14px; font-weight: 700; color: var(--text2); }
-.empty-sub { font-size: 12px; text-align: center; line-height: 1.5; }
 </style>

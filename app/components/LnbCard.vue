@@ -6,16 +6,23 @@
     time: String,
     text: String,
     chat: String,
-    id: String,
-    dragCardId: String
+    id: { type: Number, required: true },
   })
+
+  const { appState, setDragStateCardId } = useAppState();
+
+  const onDragStart = (e: DragEvent) => {
+    setDragStateCardId(props.id);
+    (e.dataTransfer as any).effectAllowed = 'move';
+  };
 </script>
 
 <template>
   <div class="msg-card"
      :style="`--card-color: ${senderColor}`"
-     :class="{dragging: dragCardId === id}"
-     draggable="true">
+     :class="{dragging: appState.dragState.cardId === id}"
+     draggable="true"
+     @dragstart="onDragStart($event)">
     <div class="card-header">
       <div class="card-avatar" :style="`background:${senderColor}22; color:${senderColor}`">
         {{ senderInitial }}

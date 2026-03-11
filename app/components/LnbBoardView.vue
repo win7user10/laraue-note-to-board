@@ -54,11 +54,13 @@ const cardsByStatus = computed(() => {
 const statuses = computed(() => {
   let result = [{
     id: 0,
-    name: "Unsorted",
-    color: "#000000"
+    name: "NO STATUS",
+    color: "#e3bf0d"
   }]
+
   if (currentCategory.value)
     result.push(...currentCategory.value.statuses)
+
 
   return result;
 })
@@ -136,11 +138,6 @@ const onDragOver = (e: any, statusId: number | null) => {
           Add card
         </div>
       </div>
-
-      <LnbEmptyState
-          v-if="(currentCategory?.statuses||[]).length === 0"
-          title="No statuses yet"
-          subtitle="Add columns to organize your messages"/>
 
       <div class="add-col-btn" @click="openCreateStatus">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px">

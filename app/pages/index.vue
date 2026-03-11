@@ -80,7 +80,7 @@ const assignToCategory = async (categoryId: number) => {
 <template>
   <!-- TOP BAR -->
   <div class="topbar">
-    <div class="topbar-logo">NoteBoard<span>{{ userName }}</span></div>
+    <div class="topbar-logo">{{ userName }}<span></span></div>
     <div class="topbar-spacer"></div>
     <LnbIconBtn title="Search">
       <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10.5 10.5l3 3"/>

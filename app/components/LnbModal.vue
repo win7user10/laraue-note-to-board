@@ -21,9 +21,13 @@
   <transition name="fade">
     <div class="modal-overlay" @click.self="close">
       <div class="modal">
-        <div class="modal-handle"></div>
-        <div class="modal-title">{{ title }}</div>
-        <slot></slot>
+        <div class="modal-head">
+          <div class="modal-handle"></div>
+          <div class="modal-title">{{ title }}</div>
+        </div>
+        <div class="modal-body">
+          <slot></slot>
+        </div>
         <div class="modal-btns">
           <button class="btn btn-ghost" @click="close">Cancel</button>
           <button
@@ -54,22 +58,28 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 16px 16px 0 0;
-  padding: 20px 16px 32px;
-  animation: slide-up 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: slide-up 0.22s cubic-bezier(0.34,1.4,0.64,1);
+  display: flex;
+  flex-direction: column;
+  max-height: 88dvh;
+  padding-bottom: var(--safe-bottom);
 }
 @keyframes slide-up { from { transform: translateY(60px); opacity: 0; } to { transform: none; opacity: 1; } }
+.modal-head { padding: 14px 16px 0; flex-shrink: 0; }
+.modal-body {
+  overflow-y: auto;
+  padding: 0 16px 20px;
+  flex: 1;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent; }
 .modal-handle {
   width: 36px; height: 4px;
   background: var(--border2);
   border-radius: 2px;
   margin: 0 auto 16px;
 }
-.modal-title {
-  font-size: 16px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  color: var(--text);
-}
+.modal-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
 .modal-btns { display: flex; gap: 8px; }
 .btn {
   flex: 1;

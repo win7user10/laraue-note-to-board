@@ -50,6 +50,5 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-
-#app { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+  #app { height: 100dvh; display: flex; flex-direction: column; overflow: hidden; padding-top: var(--safe-top); }
 </style>

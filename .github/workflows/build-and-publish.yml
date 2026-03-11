@@ -23,7 +23,7 @@ jobs:
           node-version: '20.x'
           cache: 'pnpm'
       - run: pnpm i
-      - run: pnpm nuxt build
+      - run: pnpm nuxt generate
 
       - name: Upload
         if: github.ref == 'refs/heads/master'

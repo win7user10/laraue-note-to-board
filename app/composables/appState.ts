@@ -1,7 +1,7 @@
 export const useAppState = () => {
 
     const appState = useState('appState', () => ({
-        categoryId: 0,
+        categoryId: null as null | number,
         palette: [
             '#2f81f7', '#3fb950', '#a371f7', '#d29922',
             '#ff7b72', '#79c0ff', '#56d364', '#ffa657',

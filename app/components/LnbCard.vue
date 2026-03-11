@@ -1,40 +1,46 @@
 <script setup lang="ts">
-  const props = defineProps({
-    senderColor: String,
-    senderInitial: String,
-    sender: String,
-    time: String,
-    text: String,
-    chat: String,
-    id: { type: Number, required: true },
-  })
+  const props = defineProps<{
+    message: MessageListDto,
+    assignButton: Boolean
+  }>()
 
   const { appState, setDragStateCardId } = useAppState();
 
   const onDragStart = (e: DragEvent) => {
-    setDragStateCardId(props.id);
+    setDragStateCardId(props.message.id);
     (e.dataTransfer as any).effectAllowed = 'move';
   };
+
+  const emits = defineEmits<{
+    (e: 'openAssignToCategory', message: MessageListDto): void,
+  }>()
 </script>
 
 <template>
   <div class="msg-card"
-     :style="`--card-color: ${senderColor}`"
-     :class="{dragging: appState.dragState.cardId === id}"
+     :style="`--card-color: ${props.message.color}`"
+     :class="{
+       dragging: appState.dragState.cardId === props.message.id,
+       'drag-over': appState.dragState.overStatus === message.statusId && appState.dragState.cardId !== props.message.id
+     }"
      draggable="true"
      @dragstart="onDragStart($event)">
     <div class="card-header">
-      <div class="card-avatar" :style="`background:${senderColor}22; color:${senderColor}`">
-        {{ senderInitial }}
+      <div class="card-avatar" :style="`background:${props.message.senderColor}22; color:${props.message.senderColor}`">
+        {{ props.message.senderInitial }}
       </div>
-      <div class="card-sender">{{ sender }}</div>
-      <div class="card-time">{{ time }}</div>
+      <div class="card-sender">{{ props.message.sender }}</div>
+      <div class="card-time">{{ props.message.time }}</div>
     </div>
-    <div class="card-text">{{ text }}</div>
+    <div class="card-text">{{ props.message.text }}</div>
     <div class="card-footer">
-      <span class="card-tag">{{ chat }}</span>
+      <span class="card-tag">{{ props.message.text }}</span>
       <div class="card-actions">
-        <div class="card-action-btn" title="Assign to board">
+        <div
+          v-if="assignButton"
+          class="card-action-btn"
+          title="Assign to board"
+          @click="emits('openAssignToCategory', props.message)">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M3 8h10M9 4l4 4-4 4"/>
           </svg>

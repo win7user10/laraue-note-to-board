@@ -6,23 +6,24 @@ import {useCategoriesApi} from "~/composables/categoriesApi";
 import LnbEmptyState from "~/components/LnbEmptyState.vue";
 
 const { appState, setDragStateCardId, setDragStateOverStatus } = useAppState()
-const { loadMessages } = useMessagesApi();
+const { updateStatus } = useMessagesApi();
 const { loadCategory } = useCategoriesApi();
 
 const categoryId = computed(() => appState.value.categoryId);
 const currentCategory = ref<CategoryDto>()
 
+const props = defineProps<{
+  messages: MessageListDto[],
+}>()
+
 watch(() => categoryId.value, async _ => {
-  messages.value = await loadMessages(categoryId.value)
-  currentCategory.value = await loadCategory(categoryId.value)
+  currentCategory.value = await loadCategory(categoryId.value!)
 })
 
 onMounted(async () => {
-  messages.value = await loadMessages(categoryId.value)
-  currentCategory.value = await loadCategory(categoryId.value)
+  currentCategory.value = await loadCategory(categoryId.value!)
 })
 
-const messages = ref<MessageListDto[]>([]);
 const modal = reactive({
   createStatus: false,
 });
@@ -47,20 +48,34 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
 }
 
 const cardsByStatus = computed(() => {
-  return Object.groupBy(messages.value, item => item.statusId);
+  return Object.groupBy(props.messages, item => item.statusId);
 })
 
-const onDrop = (statusId: number) => {
-  const card = messages.value.find(m => m.id === appState.value.dragState.cardId);
+const statuses = computed(() => {
+  let result = [{
+    id: 0,
+    name: "Unsorted",
+    color: "#000000"
+  }]
+  if (currentCategory.value)
+    result.push(...currentCategory.value.statuses)
+
+  return result;
+})
+
+const onDrop = async (statusId: number) => {
+  const card = props.messages.find(m => m.id === appState.value.dragState.cardId);
   if (!card) return;
-  card.categoryId = appState.value.categoryId;
-  card.statusId = statusId;
   setDragStateCardId(null);
   setDragStateOverStatus(null);
-  // TODO - back query + notification
+
+  await updateStatus(card.id, statusId);
+  card.categoryId = appState.value.categoryId!;
+  card.statusId = statusId;
+  // TODO - notification
 };
 
-const onDragOver = (e: any, statusId: number) => {
+const onDragOver = (e: any, statusId: number | null) => {
   setDragStateOverStatus(statusId);
   e.dataTransfer.dropEffect = 'move';
 };
@@ -87,8 +102,7 @@ const onDragOver = (e: any, statusId: number) => {
 
     <div class="board-columns">
       <div
-        v-for="status in currentCategory?.statuses || []"
-        :key="status.id"
+        v-for="status in statuses"
         class="board-col"
         @dragover.prevent="onDragOver($event, status.id)"
         @drop="onDrop(status.id)">
@@ -112,12 +126,8 @@ const onDragOver = (e: any, statusId: number) => {
           <lnb-card
               v-for="msg in cardsByStatus[status.id]"
               :key="msg.id"
-              :id="msg.id"
-              :sender="msg.sender"
-              :senderInitial="msg.senderInitial"
-              :text="msg.text"
-              :time="msg.time"
-              sender-color="#3fb950"/>
+              :assignButton="false"
+              :message="msg"/>
         </div>
         <div class="col-add-btn">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">

@@ -6,28 +6,37 @@ export interface MessageListDto {
     text: string;
     categoryId: number;
     statusId: number;
+    color: string;
+    senderColor: string;
 }
 
 export const useMessagesApi = () => {
     const client = useMessagesClient()
 
-    const loadMessages = (categoryId: number) => {
+    const loadMessages = (categoryId: number | null) => {
         return client<MessageListDto[]>('/messages', {
             method: 'GET',
             query: {
-                categoryId: categoryId
+                categoryId: categoryId ?? undefined
             }
         });
     }
 
-    const loadBacklogMessages = () => {
-        return client<MessageListDto[]>('/messages/backlog', {
-            method: 'GET'
+    const updateStatus = (messageId: number, statusId: number | null) => {
+        return client('/messages/' + messageId + '/status/' + statusId, {
+            method: 'PUT'
+        });
+    }
+
+    const updateCategory = (messageId: number, categoryId: number) => {
+        return client('/messages/' + messageId + '/category/' + categoryId, {
+            method: 'PUT'
         });
     }
 
     return {
         loadMessages,
-        loadBacklogMessages,
+        updateStatus,
+        updateCategory,
     }
 }

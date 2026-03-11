@@ -1,13 +1,14 @@
 <script setup lang="ts">
-  import {onMounted, ref} from "vue";
   import type {MessageListDto} from "~/composables/messagesApi";
   import LnbEmptyState from "~/components/LnbEmptyState.vue";
-  const { loadBacklogMessages } = useMessagesApi();
 
-  const messages = ref<MessageListDto[]>([]);
-  onMounted(async () => {
-    messages.value = await loadBacklogMessages()
-  });
+  const emits = defineEmits<{
+    (e: 'openAssignToCategory', message: MessageListDto): void,
+  }>()
+
+  defineProps<{
+    messages: MessageListDto[],
+  }>()
 </script>
 
 <template>
@@ -16,7 +17,6 @@
       <h2>Backlog</h2>
       <span class="badge">{{ messages.length }} messages</span>
     </div>
-
 
     <LnbEmptyState
         v-if="messages.length === 0"
@@ -27,12 +27,9 @@
 
     <lnb-card
       v-for="msg in messages"
-      :key="msg.id"
-      :id="msg.id"
-      :sender="msg.sender"
-      :senderInitial="msg.senderInitial"
-      :text="msg.text"
-      :time="msg.time"
+      :message="msg"
+      :assignButton="true"
+      @openAssignToCategory="emits('openAssignToCategory', $event)"
       sender-color="#3fb950"/>
   </div>
 </template>

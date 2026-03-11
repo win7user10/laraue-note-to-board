@@ -1,10 +1,11 @@
 import {useCategoriesClient} from "~/composables/categoriesClient";
 
 export interface CategoryCountDto {
-    id: number;
+    id?: number;
     name: string;
     color: string;
     count: number;
+    statusesCount: number;
 }
 
 export interface CreateCategoryRequest {

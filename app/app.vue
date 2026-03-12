@@ -47,6 +47,9 @@ onMounted(async () => {
 
         // On mobile: use the larger of both (Telegram chrome overlaps)
         // On desktop: looks like calculates wrong. The hardcoded value.
+        // Logged values:
+        // [tdesktop][0][56] - too big offset
+        // [ios][54][46] - looks great
         const finalTop = isMobile ? Math.max(safeTop, contentTop) : 30;
 
         // contentSafeAreaInset accounts for Telegram's own header chrome

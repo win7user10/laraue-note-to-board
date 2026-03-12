@@ -10,6 +10,12 @@ export interface MessageListDto {
     senderColor: string;
 }
 
+export interface CreateCardRequest {
+    text: string;
+    sender?: string;
+    categoryId: number;
+}
+
 export const useMessagesApi = () => {
     const client = useMessagesClient()
 
@@ -40,10 +46,18 @@ export const useMessagesApi = () => {
         });
     }
 
+    const createMessage = (request: CreateCardRequest) => {
+        return client<number>('/messages', {
+            method: 'POST',
+            body: request
+        });
+    }
+
     return {
         loadMessages,
         updateStatus,
         updateCategory,
         deleteMessage,
+        createMessage,
     }
 }

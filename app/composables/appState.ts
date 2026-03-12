@@ -10,7 +10,8 @@ export const useAppState = () => {
         dragState: {
             cardId: null as number | null,
             overStatus: null as number | null,
-        }
+        },
+        user: {} as UserDto
     }))
 
     const setCategory = (id: number) => {
@@ -29,11 +30,16 @@ export const useAppState = () => {
         appState.value.dragState.overStatus = statusId;
     }
 
+    const setUser = (user: UserDto) => {
+        appState.value.user = user;
+    }
+
     return {
         appState: readonly(appState),
         setCategory,
         getRandomColor,
         setDragStateCardId,
         setDragStateOverStatus,
+        setUser,
     }
 }

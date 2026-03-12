@@ -3,38 +3,38 @@ import LnbBacklogView from "~/components/LnbBacklogView.vue";
 import LnbBoardView from "~/components/LnbBoardView.vue";
 import { useAppState } from "~/composables/appState";
 import LnbCreateCategoryModal from "~/components/LnbCreateCategoryModal.vue";
+import {onMounted, ref} from "vue";
 
 const { appState, setCategory } = useAppState()
 const categoryId = computed(() => appState.value.categoryId);
 
-import {onMounted, ref} from "vue";
-import {useUserApi} from "~/composables/userApi";
 const { loadCategories, createCategory } = useCategoriesApi();
-const { loadUser } = useUserApi();
-const { loadMessages, updateCategory, deleteMessage } = useMessagesApi();
+const { loadMessages, updateCategory, deleteMessage, createMessage } = useMessagesApi();
 const categories = ref<CategoryCountDto[]>([])
 let initError = ref<any>({})
-const userName = ref<string>()
 
 const messages = ref<MessageListDto[]>([]);
 
 onMounted(async () => {
   try {
     categories.value = await loadCategories()
-    messages.value = await loadMessages(categoryId.value)
-    const user = await loadUser()
-    userName.value = user.username
+    await reloadMessages();
 
   } catch (err) {
     initError.value = err;
   }
 });
 
-watch(() => appState.value.categoryId, async () => {
-  messages.value = await loadMessages(categoryId.value)
+watch(() => appState.value.categoryId, () => {
+  return reloadMessages();
 })
 
+const reloadMessages = async () => {
+  messages.value = await loadMessages(categoryId.value)
+}
+
 const modal = reactive({
+  createCard: false,
   createCategory: false,
   assign: false,
   delete: false,
@@ -58,6 +58,25 @@ const createCategoryInternal = async (value: CreateCategoryRequest) => {
     statusesCount: 0,
   })
   closeCreateCategory();
+}
+
+const openCreateCard = () => {
+  modal.createCard = true;
+}
+
+const closeCreateCard = () => {
+  modal.createCard = false;
+}
+
+const createCardInternal = async (value: CreateCardRequest) => {
+  await createMessage(value);
+
+  const messageCategory = categories.value.find(c => c.id === value.categoryId)
+  if (messageCategory)
+    messageCategory.count++;
+  await reloadMessages(); // TODO - get one message and add to existing??
+
+  closeCreateCard();
 }
 
 const assignMsg = ref<MessageListDto | undefined>(undefined);
@@ -87,6 +106,11 @@ const closeDelete = () => {
 
 const deleteCard = async () => {
   await deleteMessage(assignMsg.value!.id)
+
+  const messageCategory = categories.value.find(c => c.id === assignMsg.value!.categoryId)
+  if (messageCategory)
+    messageCategory.count--;
+
   deleteSelectedCardFromState();
   modal.delete = false;
 }
@@ -100,12 +124,12 @@ const deleteSelectedCardFromState = ()  => {
 <template>
   <!-- TOP BAR -->
   <div class="topbar">
-    <div class="topbar-logo">{{ userName }}<span></span></div>
+    <div class="topbar-logo">{{ appState.user.username }}<span></span></div>
     <div class="topbar-spacer"></div>
     <LnbIconBtn title="Search">
       <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10.5 10.5l3 3"/>
     </LnbIconBtn>
-    <LnbIconBtn title="Add Category" @click="openCreateCategory">
+    <LnbIconBtn title="Add Card" @click="openCreateCard">
       <path d="M8 3v10M3 8h10"/>
     </LnbIconBtn>
   </div>
@@ -122,7 +146,7 @@ const deleteSelectedCardFromState = ()  => {
       {{ cat.name }}
       <span class="nav-tab-count">{{ cat.count }}</span>
     </div>
-    <div class="nav-tab-add" title="Add category">
+    <div class="nav-tab-add" title="Add category" @click="openCreateCategory">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
         <path d="M8 3v10M3 8h10"/>
       </svg>
@@ -142,21 +166,26 @@ const deleteSelectedCardFromState = ()  => {
   </template>
 
   <LnbCreateCategoryModal
-      @create="createCategoryInternal"
-      @close="closeCreateCategory"
-      v-if="modal.createCategory"/>
+    @create="createCategoryInternal"
+    @close="closeCreateCategory"
+    v-if="modal.createCategory"/>
 
   <LnbAssignModal
-      :assign-msg="assignMsg"
-      :categories="categories"
-      @close="closeAssignToCategory"
-      @assignToCategory="assignToCategory"
-      v-if="modal.assign" />
+    :assign-msg="assignMsg"
+    :categories="categories"
+    @close="closeAssignToCategory"
+    @assignToCategory="assignToCategory"
+    v-if="modal.assign" />
 
   <LnbDeleteCardModal
     @close="closeDelete"
     @delete="deleteCard"
     v-if="modal.delete"/>
+
+  <LnbCreateCardModal
+    @close="closeCreateCard"
+    @create="createCardInternal"
+    v-if="modal.createCard"/>
 </template>
 
 <style scoped>

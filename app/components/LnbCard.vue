@@ -15,6 +15,28 @@
     (e: 'openAssignToCategory', message: MessageListDto): void,
     (e: 'openDelete', message: MessageListDto): void,
   }>()
+
+  const dateFormatter = new Intl.DateTimeFormat(undefined, {
+    month: '2-digit',
+    day: '2-digit',
+    year: '2-digit'
+  });
+
+  const timeFormatter = new Intl.DateTimeFormat(undefined, {
+    hour: 'numeric',
+    minute: 'numeric'
+  });
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const today = new Date();
+
+    if (date.getDate() === today.getDate() &&
+        date.getMonth() === today.getMonth() &&
+        date.getFullYear() === today.getFullYear())
+      return timeFormatter.format(date);
+    return dateFormatter.format(date);
+  }
 </script>
 
 <template>
@@ -31,7 +53,7 @@
         {{ props.message.senderInitial }}
       </div>
       <div class="card-sender">{{ props.message.sender }}</div>
-      <div class="card-time">{{ props.message.time }}</div>
+      <div class="card-time">{{ formatDate(props.message.time) }}</div>
     </div>
     <div class="card-text">{{ props.message.text }}</div>
     <div class="card-footer">

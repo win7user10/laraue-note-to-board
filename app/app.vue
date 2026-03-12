@@ -3,6 +3,7 @@
 import {useAppState} from "~/composables/appState";
 import {onMounted, ref} from "vue";
 import WebApp from "@twa-dev/sdk";
+import {useUserApi} from "~/composables/userApi";
 
 const { setDragStateCardId, setDragStateOverStatus } = useAppState()
 
@@ -12,9 +13,12 @@ document.addEventListener('dragend', () => {
 });
 
 let initError = ref<any>(null)
+const initialized = ref<boolean>(false);
 const configuration = useRuntimeConfig();
 const testUserToken = configuration.public.testUserToken;
 const { validate } = useTelegramUserApi();
+const { setUser } = useAppState();
+const { loadUser } = useUserApi();
 
 onMounted(async () => {
   try {
@@ -63,8 +67,13 @@ onMounted(async () => {
       WebApp.onEvent('contentSafeAreaChanged', applyInsets);
     }
 
+    const user = await loadUser();
+    setUser(user);
+
   } catch (err) {
     initError.value = err;
+  } finally {
+    initialized.value = true;
   }
 });
 
@@ -72,7 +81,8 @@ onMounted(async () => {
 
 <template>
   <div id="app">
-    <span v-if="initError">{{initError}}</span>
+    <span v-if="!initialized">App is initializing...</span>
+    <span v-else-if="initError">{{initError}}</span>
     <NuxtPage v-else />
   </div>
 </template>

@@ -35,21 +35,16 @@ onMounted(async () => {
       WebApp.expand();
 
       // Telegram provides its own inset for the header bar
-      const applyInsets = () => {
-        const safeTop = WebApp.safeAreaInset?.top ?? 0;
-        const contentTop = WebApp.contentSafeAreaInset?.top ?? 0;
-        // contentSafeAreaInset accounts for Telegram's own header chrome
-        document.documentElement.style.setProperty(
-            '--safe-top',
-            Math.max(safeTop, contentTop) + 'px');
-        document.documentElement.style.setProperty(
-            '--safe-bottom',
-            (WebApp.safeAreaInset?.bottom ?? 0) + 'px');
+      const setTgInsets = () => {
+        const top = WebApp.safeAreaInset?.top ?? WebApp.headerColor ? 52 : 0;
+        document.documentElement.style.setProperty('--safe-top', top + 'px');
+
+        initError.value = "Area " + WebApp.safeAreaInset?.top + " Header color " + WebApp.headerColor
       };
 
-      applyInsets();
-      WebApp.onEvent('safeAreaChanged', applyInsets);
-      WebApp.onEvent('contentSafeAreaChanged', applyInsets);
+      setTgInsets();
+      WebApp.onEvent('safeAreaChanged', setTgInsets);
+      WebApp.onEvent('viewportChanged', setTgInsets);
     }
 
   } catch (err) {

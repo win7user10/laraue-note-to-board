@@ -38,33 +38,32 @@ onMounted(async () => {
       WebApp.ready();
       WebApp.expand();
 
-      if (!WebApp.isFullscreen)
-        return;
+      if (WebApp.isFullscreen) {
+        const mobilePlatforms = ['android', 'android_x', 'ios'];
+        const isMobile = mobilePlatforms.includes(WebApp.platform);
 
-      const mobilePlatforms = ['android', 'android_x', 'ios'];
-      const isMobile = mobilePlatforms.includes(WebApp.platform);
+        // Telegram provides its own inset for the header bar
+        const applyInsets = () => {
+          const safeTop = WebApp.safeAreaInset?.top ?? 0;
+          const contentTop = WebApp.contentSafeAreaInset?.top ?? 0;
 
-      // Telegram provides its own inset for the header bar
-      const applyInsets = () => {
-        const safeTop = WebApp.safeAreaInset?.top ?? 0;
-        const contentTop = WebApp.contentSafeAreaInset?.top ?? 0;
+          // On mobile: use the larger of both (Telegram chrome overlaps)
+          // On desktop: looks like calculates wrong. The hardcoded value.
+          // Logged values:
+          // [tdesktop][0][56] - too big offset
+          // [ios][54][46] - looks great
+          const finalTop = isMobile ? Math.max(safeTop, contentTop) : 30;
 
-        // On mobile: use the larger of both (Telegram chrome overlaps)
-        // On desktop: looks like calculates wrong. The hardcoded value.
-        // Logged values:
-        // [tdesktop][0][56] - too big offset
-        // [ios][54][46] - looks great
-        const finalTop = isMobile ? Math.max(safeTop, contentTop) : 30;
+          // contentSafeAreaInset accounts for Telegram's own header chrome
+          document.documentElement.style.setProperty('--safe-top', finalTop + 'px');
+          document.documentElement.style.setProperty('--safe-bottom',
+              (WebApp.safeAreaInset?.bottom ?? 0) + 'px');
+        };
 
-        // contentSafeAreaInset accounts for Telegram's own header chrome
-        document.documentElement.style.setProperty('--safe-top', finalTop + 'px');
-        document.documentElement.style.setProperty('--safe-bottom',
-            (WebApp.safeAreaInset?.bottom ?? 0) + 'px');
-      };
-
-      applyInsets();
-      WebApp.onEvent('safeAreaChanged', applyInsets);
-      WebApp.onEvent('contentSafeAreaChanged', applyInsets);
+        applyInsets();
+        WebApp.onEvent('safeAreaChanged', applyInsets);
+        WebApp.onEvent('contentSafeAreaChanged', applyInsets);
+      }
     }
 
     const user = await loadUser();

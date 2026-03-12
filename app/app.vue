@@ -54,7 +54,7 @@ onMounted(async () => {
         document.documentElement.style.setProperty('--safe-bottom',
             (WebApp.safeAreaInset?.bottom ?? 0) + 'px');
 
-        initError.value = `[${WebApp.platform}][${WebApp.safeAreaInset}][${WebApp.contentSafeAreaInset}]`
+        initError.value = `[${WebApp.platform}][${WebApp.safeAreaInset?.top}][${WebApp.contentSafeAreaInset?.top}]`
       };
 
       applyInsets();

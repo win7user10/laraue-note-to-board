@@ -4,13 +4,6 @@
     assignButton: Boolean
   }>()
 
-  const { appState, setDragStateCardId } = useAppState();
-
-  const onDragStart = (e: DragEvent) => {
-    setDragStateCardId(props.message.id);
-    (e.dataTransfer as any).effectAllowed = 'move';
-  };
-
   const emits = defineEmits<{
     (e: 'openAssignToCategory', message: MessageListDto): void,
     (e: 'openDelete', message: MessageListDto): void,
@@ -42,12 +35,7 @@
 <template>
   <div class="msg-card"
      :style="`--card-color: ${props.message.color}`"
-     :class="{
-       dragging: appState.dragState.cardId === props.message.id,
-       'drag-over': appState.dragState.overStatus === message.statusId && appState.dragState.cardId !== props.message.id
-     }"
-     draggable="true"
-     @dragstart="onDragStart($event)">
+     :data-card-id="props.message.id">
     <div class="card-header">
       <div class="card-avatar" :style="`background:${props.message.senderColor}22; color:${props.message.senderColor}`">
         {{ props.message.senderInitial }}
@@ -89,25 +77,31 @@
     border-radius: var(--radius);
     padding: 11px 13px;
     cursor: grab;
-    transition: all 0.15s;
+    transition: border-color 0.15s, box-shadow 0.15s, opacity 0.15s;
     position: relative;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
   }
   .msg-card::before {
     content: '';
     position: absolute;
-    left: 0; top: 0; bottom: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
     width: 3px;
     background: var(--card-color, var(--accent));
     border-radius: 3px 0 0 3px;
   }
-  .msg-card:hover {
-    border-color: var(--border2);
-    transform: translateY(-1px);
-    box-shadow: var(--card-shadow);
+  .msg-card.sortable-ghost {
+    opacity: 0.2;
+    border: 1.5px dashed var(--accent) !important;
+    background: var(--surface2) !important;
   }
-  .msg-card.dragging { opacity: 0.4; transform: scale(0.97); }
-  .msg-card.drag-over { border-color: var(--accent); background: var(--accent-glow); }
+  .msg-card.sortable-chosen {
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    border-color: var(--accent);
+    transform: scale(1.02);
+  }
 
   .card-header {
     display: flex;

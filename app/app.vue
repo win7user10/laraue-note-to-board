@@ -11,7 +11,6 @@ const configuration = useRuntimeConfig();
 const testUserToken = configuration.public.testUserToken;
 const { validate } = useTelegramUserApi();
 const { setUser } = useAppState();
-const { loadUser } = useUserApi();
 
 onMounted(async () => {
   try {
@@ -28,6 +27,7 @@ onMounted(async () => {
     const bearer = await validate(token)
     localStorage.setItem('bearer', bearer)
 
+    const { loadUser } = useUserApi();
     const user = await loadUser();
     setUser(user);
 

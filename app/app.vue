@@ -37,24 +37,13 @@ onMounted(async () => {
       if (!WebApp.isFullscreen)
         return;
 
-      const mobilePlatforms = ['android', 'android_x', 'ios'];
-      const isMobile = mobilePlatforms.includes(WebApp.platform);
-
       // Telegram provides its own inset for the header bar
       const applyInsets = () => {
-        const safeTop = WebApp.safeAreaInset?.top ?? 0;
-        const contentTop = WebApp.contentSafeAreaInset?.top ?? 0;
+        const finalTop = WebApp.contentSafeAreaInset?.top ?? 0;
+        const finalBottom = WebApp.safeAreaInset?.bottom ?? 0;
 
-        // On mobile: use the larger of both (Telegram chrome overlaps)
-        // On desktop: use only safeAreaInset (contentSafeAreaInset is inflated)
-        const finalTop = isMobile ? Math.max(safeTop, contentTop) : safeTop;
-
-        // contentSafeAreaInset accounts for Telegram's own header chrome
         document.documentElement.style.setProperty('--safe-top', finalTop + 'px');
-        document.documentElement.style.setProperty('--safe-bottom',
-            (WebApp.safeAreaInset?.bottom ?? 0) + 'px');
-
-        initError.value = `[${WebApp.platform}][${WebApp.safeAreaInset?.top}][${WebApp.contentSafeAreaInset?.top}]`
+        document.documentElement.style.setProperty('--safe-bottom', finalBottom + 'px');
       };
 
       applyInsets();

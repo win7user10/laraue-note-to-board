@@ -33,6 +33,23 @@ onMounted(async () => {
     if (!testUserToken){
       WebApp.ready();
       WebApp.expand();
+
+      // Telegram provides its own inset for the header bar
+      const applyInsets = () => {
+        const safeTop = WebApp.safeAreaInset?.top ?? 0;
+        const contentTop = WebApp.contentSafeAreaInset?.top ?? 0;
+        // contentSafeAreaInset accounts for Telegram's own header chrome
+        document.documentElement.style.setProperty(
+            '--safe-top',
+            Math.max(safeTop, contentTop) + 'px');
+        document.documentElement.style.setProperty(
+            '--safe-bottom',
+            (WebApp.safeAreaInset?.bottom ?? 0) + 'px');
+      };
+
+      applyInsets();
+      WebApp.onEvent('safeAreaChanged', applyInsets);
+      WebApp.onEvent('contentSafeAreaChanged', applyInsets);
     }
 
   } catch (err) {

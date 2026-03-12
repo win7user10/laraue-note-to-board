@@ -27,15 +27,15 @@
         </div>
         <div class="modal-body">
           <slot></slot>
-        </div>
-        <div class="modal-btns">
-          <button class="btn btn-ghost" @click="close">Cancel</button>
-          <button
-            v-if="applyText"
-            class="btn btn-primary"
-            @click="apply">
-            {{ applyText }}
-          </button>
+          <div class="modal-btns">
+            <button class="btn btn-ghost" @click="close">Cancel</button>
+            <button
+                v-if="applyText"
+                class="btn btn-primary"
+                @click="apply">
+              {{ applyText }}
+            </button>
+          </div>
         </div>
       </div>
     </div>

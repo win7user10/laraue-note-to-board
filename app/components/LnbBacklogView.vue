@@ -4,6 +4,7 @@
 
   const emits = defineEmits<{
     (e: 'openAssignToCategory', message: MessageListDto): void,
+    (e: 'openDelete', message: MessageListDto): void,
   }>()
 
   defineProps<{
@@ -29,6 +30,7 @@
       v-for="msg in messages"
       :message="msg"
       :assignButton="true"
+      @openDelete="emits('openDelete', $event)"
       @openAssignToCategory="emits('openAssignToCategory', $event)"
       sender-color="#3fb950"/>
   </div>

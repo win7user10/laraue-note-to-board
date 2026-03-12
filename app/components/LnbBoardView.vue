@@ -3,6 +3,7 @@ import { useAppState } from "~/composables/appState";
 import {ref} from "vue";
 import LnbIconBtn from "~/components/LnbIconBtn.vue";
 import {useCategoriesApi} from "~/composables/categoriesApi";
+import type {MessageListDto} from "~/composables/messagesApi";
 
 const { appState, setDragStateCardId, setDragStateOverStatus } = useAppState()
 const { updateStatus } = useMessagesApi();
@@ -13,6 +14,10 @@ const currentCategory = ref<CategoryDto>()
 
 const props = defineProps<{
   messages: MessageListDto[],
+}>()
+
+const emits = defineEmits<{
+  (e: 'openDelete', message: MessageListDto): void,
 }>()
 
 watch(() => categoryId.value, async _ => {
@@ -125,10 +130,11 @@ const onDragOver = (e: any, statusId: number | null) => {
             Drop here
           </div>
           <lnb-card
-              v-for="msg in cardsByStatus[status.id]"
-              :key="msg.id"
-              :assignButton="false"
-              :message="msg"/>
+            v-for="msg in cardsByStatus[status.id]"
+            @openDelete="emits('openDelete', msg)"
+            :key="msg.id"
+            :assignButton="false"
+            :message="msg"/>
         </div>
         <div class="col-add-btn">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">

@@ -24,6 +24,7 @@
     --card-color: var(--bg);
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --red-glow: rgba(248,81,73,0.15)
 }
 
 html, body {

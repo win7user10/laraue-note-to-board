@@ -34,9 +34,16 @@ export const useMessagesApi = () => {
         });
     }
 
+    const deleteMessage = (id: number) => {
+        return client('/messages/' + id, {
+            method: 'DELETE'
+        });
+    }
+
     return {
         loadMessages,
         updateStatus,
         updateCategory,
+        deleteMessage,
     }
 }

@@ -13,6 +13,7 @@
 
   const emits = defineEmits<{
     (e: 'openAssignToCategory', message: MessageListDto): void,
+    (e: 'openDelete', message: MessageListDto): void,
   }>()
 </script>
 
@@ -43,6 +44,14 @@
           @click="emits('openAssignToCategory', props.message)">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M3 8h10M9 4l4 4-4 4"/>
+          </svg>
+        </div>
+        <div
+          @click="emits('openDelete', props.message)"
+          class="card-action-btn danger"
+          title="Delete">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9"/>
           </svg>
         </div>
       </div>
@@ -125,8 +134,6 @@
     margin-left: auto;
     display: flex;
     gap: 4px;
-    opacity: 0;
-    transition: opacity 0.15s;
   }
   .msg-card:hover .card-actions { opacity: 1; }
   .card-action-btn {
@@ -140,5 +147,6 @@
     transition: all 0.15s;
   }
   .card-action-btn:hover { background: var(--surface3); color: var(--text); border-color: var(--border2); }
+  .card-action-btn.danger:hover { background: var(--red-glow); color: var(--red); border-color: var(--red); }
   .card-action-btn svg { width: 11px; height: 11px; }
 </style>

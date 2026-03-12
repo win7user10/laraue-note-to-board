@@ -11,7 +11,7 @@ import {onMounted, ref} from "vue";
 import {useUserApi} from "~/composables/userApi";
 const { loadCategories, createCategory } = useCategoriesApi();
 const { loadUser } = useUserApi();
-const { loadMessages, updateCategory } = useMessagesApi();
+const { loadMessages, updateCategory, deleteMessage } = useMessagesApi();
 const categories = ref<CategoryCountDto[]>([])
 let initError = ref<any>({})
 const userName = ref<string>()
@@ -37,6 +37,7 @@ watch(() => appState.value.categoryId, async () => {
 const modal = reactive({
   createCategory: false,
   assign: false,
+  delete: false,
 });
 
 const openCreateCategory = () => {
@@ -72,6 +73,25 @@ const closeAssignToCategory = () => {
 const assignToCategory = async (categoryId: number) => {
   await updateCategory(assignMsg.value!.id, categoryId)
   modal.assign = false;
+  deleteSelectedCardFromState();
+}
+
+const openDelete = (message: MessageListDto) => {
+  assignMsg.value = message;
+  modal.delete = true;
+}
+
+const closeDelete = () => {
+  modal.delete = false;
+}
+
+const deleteCard = async () => {
+  await deleteMessage(assignMsg.value!.id)
+  deleteSelectedCardFromState();
+  modal.delete = false;
+}
+
+const deleteSelectedCardFromState = ()  => {
   messages.value = messages.value.filter(x => x.id != assignMsg.value!.id)
 }
 
@@ -109,14 +129,16 @@ const assignToCategory = async (categoryId: number) => {
     </div>
   </div>
 
-  <template v-if="categoryId === null">
+  <template v-if="categoryId === 0">
     <LnbBacklogView
-        :messages="messages"
-        @openAssignToCategory="openAssignToCategory"/>
+      :messages="messages"
+      @openAssignToCategory="openAssignToCategory"
+      @openDelete="openDelete" />
   </template>
   <template v-else>
     <LnbBoardView
-      :messages="messages"/>
+      :messages="messages"
+      @openDelete="openDelete"/>
   </template>
 
   <LnbCreateCategoryModal
@@ -130,6 +152,11 @@ const assignToCategory = async (categoryId: number) => {
       @close="closeAssignToCategory"
       @assignToCategory="assignToCategory"
       v-if="modal.assign" />
+
+  <LnbDeleteCardModal
+    @close="closeDelete"
+    @delete="deleteCard"
+    v-if="modal.delete"/>
 </template>
 
 <style scoped>

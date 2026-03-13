@@ -6,7 +6,7 @@ import {useCategoriesApi} from "~/composables/categoriesApi";
 import type {MessageListDto} from "~/composables/messagesApi";
 
 const { appState } = useAppState()
-const { updateStatus } = useMessagesApi();
+const { updateStatus, createMessage } = useMessagesApi();
 const { loadCategory, reorderStatuses } = useCategoriesApi();
 
 const categoryId = computed(() => appState.value.categoryId);
@@ -36,6 +36,7 @@ const reloadCategory = async () => {
 const modal = reactive({
   createStatus: false,
   deleteStatus: false,
+  addToBoard: false,
 });
 
 const { createStatus, deleteStatus } = useStatusesApi();
@@ -63,10 +64,10 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
   closeCreateStatus();
 }
 
-const statusToDelete = ref<number | null>()
+const statusToEdit = ref<number | null>()
 const openDeleteStatus = (id: number) => {
   modal.deleteStatus = true;
-  statusToDelete.value = id;
+  statusToEdit.value = id;
 }
 
 const closeDeleteStatus = () => {
@@ -74,10 +75,25 @@ const closeDeleteStatus = () => {
 }
 
 const deleteStatusInternal = async () => {
-  await deleteStatus(statusToDelete.value!);
+  await deleteStatus(statusToEdit.value!);
   await reloadCategory();
   emits('reloadMessages')
   closeDeleteStatus();
+}
+
+const openAddToBoard = (id: number) => {
+  modal.addToBoard = true;
+  statusToEdit.value = id;
+}
+
+const closeAddToBoard = () => {
+  modal.addToBoard = false;
+}
+
+const assignToBoard = async (request: CreateCardRequest) => {
+  await createMessage(request);
+  emits('reloadMessages');
+  closeAddToBoard();
 }
 
 const cardsByStatus = computed(() => {
@@ -172,7 +188,7 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
             :assignButton="false"
             :message="msg"/>
         </div>
-        <div class="col-add-btn">
+        <div class="col-add-btn" @click="openAddToBoard(status.id)">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M8 3v10M3 8h10"/>
           </svg>
@@ -189,13 +205,18 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
     </div>
   </div>
   <LnbCreateStatusModal
-      @create="createStatusInternal"
-      @close="closeCreateStatus"
-      v-if="modal.createStatus"/>
+    @create="createStatusInternal"
+    @close="closeCreateStatus"
+    v-if="modal.createStatus"/>
   <LnbDeleteColumnModal
-      @delete="deleteStatusInternal"
-      @close="closeDeleteStatus"
-      v-if="modal.deleteStatus"/>
+    @delete="deleteStatusInternal"
+    @close="closeDeleteStatus"
+    v-if="modal.deleteStatus"/>
+  <LnbCreateCardModal
+    :statusId="statusToEdit!"
+    @create="assignToBoard"
+    @close="closeAddToBoard"
+    v-if="modal.addToBoard"/>
 </template>
 
 <style scoped>

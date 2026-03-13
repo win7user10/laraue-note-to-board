@@ -14,6 +14,7 @@ export interface CreateCardRequest {
     text: string;
     sender?: string;
     categoryId: number;
+    statusId: number;
 }
 
 export const useMessagesApi = () => {

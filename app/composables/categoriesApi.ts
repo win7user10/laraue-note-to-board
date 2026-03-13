@@ -23,8 +23,8 @@ export interface StatusDto {
     id: number;
     name: string;
     color: string;
+    sortOrder: number;
 }
-
 
 export const useCategoriesApi = () => {
     const client = useCategoriesClient()
@@ -48,9 +48,17 @@ export const useCategoriesApi = () => {
         });
     }
 
+    const reorderStatuses = (id: number, sortOrderByStatus: { [id: number]: number }) => {
+        return client<number>('/categories/' + id + '/reorder-statuses', {
+            method: 'POST',
+            body: sortOrderByStatus
+        });
+    }
+
     return {
         loadCategories,
         createCategory,
         loadCategory,
+        reorderStatuses,
     }
 }

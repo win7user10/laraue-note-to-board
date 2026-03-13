@@ -45,7 +45,7 @@
     </div>
     <div class="card-text">{{ props.message.text }}</div>
     <div class="card-footer">
-      <span class="card-tag">{{ props.message.text }}</span>
+      <span class="card-tag">PM</span>
       <div class="card-actions">
         <div
           v-if="assignButton"

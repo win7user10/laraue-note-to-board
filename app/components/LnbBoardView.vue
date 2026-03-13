@@ -7,7 +7,7 @@ import type {MessageListDto} from "~/composables/messagesApi";
 
 const { appState } = useAppState()
 const { updateStatus } = useMessagesApi();
-const { loadCategory } = useCategoriesApi();
+const { loadCategory, reorderStatuses } = useCategoriesApi();
 
 const categoryId = computed(() => appState.value.categoryId);
 const currentCategory = ref<CategoryDto>()
@@ -43,10 +43,16 @@ const closeCreateStatus = () => {
 
 const createStatusInternal = async (value: CreateStatusRequest) => {
   const id = await createStatus(value);
+  const statuses = currentCategory.value?.statuses;
+  if (!statuses)
+    return;
+
+  const lastOrder = Math.max(...statuses.map(x => x.sortOrder))
   currentCategory.value?.statuses.push({
     id: id,
     name: value.name,
     color: value.color,
+    sortOrder: lastOrder + 1
   })
   closeCreateStatus();
 }
@@ -56,28 +62,37 @@ const cardsByStatus = computed(() => {
 })
 
 const statuses = computed(() => {
-  let result = [{
-    id: 0,
-    name: "NO STATUS",
-    color: "#e3bf0d"
-  }]
-
-  if (currentCategory.value)
-    result.push(...currentCategory.value.statuses)
-
-
-  return result;
+  return currentCategory.value?.statuses.sort((a, b) => a.sortOrder - b.sortOrder) ?? [];
 })
 
 const onCardMoved = async (cardId: string, categoryId: number, statusId: number) => {
-  console.log(cardId, categoryId, statusId);
-
   const card = props.messages.find(m => m.id === Number(cardId));
   if (!card) return;
 
   await updateStatus(card.id, statusId);
   card.categoryId = categoryId!;
   card.statusId = statusId;
+};
+
+const onColMoved = async (statusId: number, newSortOrder: number) => {
+  const cat = currentCategory.value;
+  if (!cat) return;
+
+  const idx = cat.statuses.findIndex(s => s.id === Number(statusId));
+  if (idx < 0) return;
+
+  const newStatuses = [...cat.statuses];
+  const [removed] = newStatuses.splice(idx, 1);
+  newStatuses.splice(newSortOrder, 0, removed!);
+  newStatuses.forEach((status, i) => {
+    status.sortOrder = i;
+  })
+
+  await reorderStatuses(
+      categoryId.value,
+      Object.fromEntries(newStatuses.map(item => [item.id, item.sortOrder])))
+
+  cat.statuses = newStatuses;
 };
 
 </script>
@@ -90,7 +105,7 @@ const onCardMoved = async (cardId: string, categoryId: number, statusId: number)
         <div class="board-title" v-if="currentCategory">
           <span :style="`color:${currentCategory.color}`">●</span> {{ currentCategory.name }}
         </div>
-        <div class="board-subtitle">0 cards</div>
+        <div class="board-subtitle">{{ messages.length }} cards</div>
       </div>
       <div class="board-actions">
         <LnbIconBtn title="Add Message to Board">
@@ -100,11 +115,23 @@ const onCardMoved = async (cardId: string, categoryId: number, statusId: number)
       </div>
     </div>
 
-    <div class="board-columns">
+    <div class="board-columns" v-col-sortable="{ cat: currentCategory, onColMoved }">
       <div
         v-for="status in statuses"
-        class="board-col">
+        class="board-col"
+        :key="status.id"
+        :data-status-id="status.id">
         <div class="col-header">
+          <div class="col-drag-handle">
+            <svg viewBox="0 0 16 16" fill="currentColor">
+              <circle cx="5" cy="4" r="1.2"></circle>
+              <circle cx="11" cy="4" r="1.2"></circle>
+              <circle cx="5" cy="8" r="1.2"></circle>
+              <circle cx="11" cy="8" r="1.2"></circle>
+              <circle cx="5" cy="12" r="1.2"></circle>
+              <circle cx="11" cy="12" r="1.2"></circle>
+            </svg>
+          </div>
           <div class="col-indicator" :style="`background:${status.color}`"></div>
           <div class="col-title">{{ status.name }}</div>
           <div class="col-count">{{ cardsByStatus[status.id]?.length ?? 0 }}</div>
@@ -168,17 +195,9 @@ const onCardMoved = async (cardId: string, categoryId: number, statusId: number)
 .board-columns::-webkit-scrollbar { height: 4px; }
 .board-columns::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-.board-col {
-  width: 228px;
-  min-width: 228px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  display: flex;
-  flex-direction: column;
-  max-height: 100%;
-  flex-shrink: 0;
-}
+.board-col{width:228px;min-width:228px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);display:flex;flex-direction:column;max-height:100%;flex-shrink:0;transition:box-shadow 0.15s}
+.board-col.col-sortable-ghost{opacity:0.3;border:1.5px dashed var(--accent)!important}
+.board-col.col-sortable-chosen{box-shadow:0 8px 32px rgba(0,0,0,0.5);border-color:var(--accent)}
 
 .col-header {
   padding: 10px 12px;
@@ -187,7 +206,10 @@ const onCardMoved = async (cardId: string, categoryId: number, statusId: number)
   align-items: center;
   gap: 7px;
   position: relative;
+  cursor: grab;
 }
+.col-drag-handle{color:var(--text3);display:flex;align-items:center;cursor:grab;flex-shrink:0}
+.col-drag-handle svg{width:12px;height:12px}
 .col-indicator {
   width: 8px; height: 8px;
   border-radius: 50%;

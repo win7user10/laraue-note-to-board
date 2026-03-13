@@ -91,6 +91,15 @@ const closeAssignToCategory = () => {
 
 const assignToCategory = async (categoryId: number) => {
   await updateCategory(assignMsg.value!.id, categoryId)
+
+  const newCategory = categories.value.find(c => c.id === categoryId)
+  if (newCategory)
+    newCategory.count += 1;
+
+  const oldCategory = categories.value.find(c => c.id === assignMsg.value!.id)
+  if (oldCategory)
+    oldCategory.count -= 1;
+
   modal.assign = false;
   deleteSelectedCardFromState();
 }

@@ -29,6 +29,7 @@
     <lnb-card
       v-for="msg in messages"
       :message="msg"
+      :key="msg.id"
       :assignButton="true"
       @openDelete="emits('openDelete', $event)"
       @openAssignToCategory="emits('openAssignToCategory', $event)"

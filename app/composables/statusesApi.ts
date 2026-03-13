@@ -16,7 +16,14 @@ export const useStatusesApi = () => {
         });
     }
 
+    const deleteStatus = (id: number) => {
+        return client('/statuses/' + id, {
+            method: 'DELETE'
+        });
+    }
+
     return {
         createStatus,
+        deleteStatus,
     }
 }

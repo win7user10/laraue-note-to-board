@@ -18,21 +18,27 @@ const props = defineProps<{
 
 const emits = defineEmits<{
   (e: 'openDelete', message: MessageListDto): void,
+  (e: 'reloadMessages'): void,
 }>()
 
 watch(() => categoryId.value, async _ => {
-  currentCategory.value = await loadCategory(categoryId.value!)
+  await reloadCategory();
 })
 
 onMounted(async () => {
-  currentCategory.value = await loadCategory(categoryId.value!)
+  await reloadCategory();
 })
+
+const reloadCategory = async () => {
+  currentCategory.value = await loadCategory(categoryId.value!)
+}
 
 const modal = reactive({
   createStatus: false,
+  deleteStatus: false,
 });
 
-const { createStatus } = useStatusesApi();
+const { createStatus, deleteStatus } = useStatusesApi();
 const openCreateStatus = () => {
   modal.createStatus = true;
 }
@@ -55,6 +61,23 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
     sortOrder: lastOrder + 1
   })
   closeCreateStatus();
+}
+
+const statusToDelete = ref<number | null>()
+const openDeleteStatus = (id: number) => {
+  modal.deleteStatus = true;
+  statusToDelete.value = id;
+}
+
+const closeDeleteStatus = () => {
+  modal.deleteStatus = false;
+}
+
+const deleteStatusInternal = async () => {
+  await deleteStatus(statusToDelete.value!);
+  await reloadCategory();
+  emits('reloadMessages')
+  closeDeleteStatus();
 }
 
 const cardsByStatus = computed(() => {
@@ -135,9 +158,9 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
           <div class="col-indicator" :style="`background:${status.color}`"></div>
           <div class="col-title">{{ status.name }}</div>
           <div class="col-count">{{ cardsByStatus[status.id]?.length ?? 0 }}</div>
-          <div class="col-menu-btn" title="Delete column">
+          <div @click="openDeleteStatus(status.id)" class="col-del-btn" v-if="statuses.length > 1">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-              <path d="M3 8h10"/>
+              <path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9"></path>
             </svg>
           </div>
         </div>
@@ -169,6 +192,10 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
       @create="createStatusInternal"
       @close="closeCreateStatus"
       v-if="modal.createStatus"/>
+  <LnbDeleteColumnModal
+      @delete="deleteStatusInternal"
+      @close="closeDeleteStatus"
+      v-if="modal.deleteStatus"/>
 </template>
 
 <style scoped>
@@ -224,16 +251,9 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
   color: var(--text2);
   font-weight: 600;
 }
-.col-menu-btn {
-  width: 20px; height: 20px;
-  border-radius: 4px;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  color: var(--text3);
-  transition: all 0.15s;
-}
-.col-menu-btn:hover { background: var(--surface3); color: var(--text); }
-.col-menu-btn svg { width: 13px; height: 13px; }
+.col-del-btn{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);transition:all 0.15s;-webkit-tap-highlight-color:transparent}
+.col-del-btn:hover{background:var(--red-glow);color:var(--red)}
+.col-del-btn svg{width:13px;height:13px}
 
 .col-drag-area { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; min-height: 60px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: var(--border) transparent; transition: background 0.15s; }
 .col-drag-area::-webkit-scrollbar { width: 3px; }

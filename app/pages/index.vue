@@ -171,6 +171,7 @@ const deleteSelectedCardFromState = ()  => {
   <template v-else>
     <LnbBoardView
       :messages="messages"
+      @reloadMessages="reloadMessages"
       @openDelete="openDelete"/>
   </template>
 

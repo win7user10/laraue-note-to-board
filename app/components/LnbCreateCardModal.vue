@@ -1,6 +1,7 @@
 <script setup lang="ts">
 
 import type {CreateCardRequest} from "~/composables/messagesApi";
+import LnbModalTextarea from "~/components/LnbModalTextarea.vue";
 
 const emit = defineEmits<{
   (e: 'close'): void,
@@ -39,8 +40,7 @@ const createCard = () => {
     @apply="createCard"
     @close="emit('close')">
     <LnbModalLabel>Text</LnbModalLabel>
-    <LnbModalInput
-        @enter="createCard"
+    <LnbModalTextarea
         v-model="newCard.text"
         placeholder="e.g. Make onboarding for new team members..."/>
   </LnbModal>

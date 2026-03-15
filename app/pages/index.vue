@@ -30,7 +30,6 @@ watch(() => appState.value.categoryId, () => {
 })
 
 const reloadMessages = async () => {
-
   messages.value = await loadMessages(categoryId.value)
 }
 
@@ -177,6 +176,10 @@ const closeSearch = () => {
     <LnbIconBtn title="Add Card" @click="openCreateCard">
       <path d="M8 3v10M3 8h10"/>
     </LnbIconBtn>
+  </div>
+
+  <div class="nav-loader" :class="{active: appState.isLoading}">
+    <div class="nav-loader-fill"></div>
   </div>
 
   <!-- NAV TABS -->
@@ -336,4 +339,9 @@ const closeSearch = () => {
   transition: all 0.15s;
 }
 .nav-tab-add:hover { border-color: var(--accent); color: var(--accent); }
+/* NAV LOADER — slim bar between stats and content */
+.nav-loader{height:3px;flex-shrink:0;pointer-events:none;opacity:0;transition:opacity 0.2s;background:var(--border)}
+.nav-loader.active{opacity:1}
+.nav-loader-fill{height:100%;background:var(--accent);border-radius:0 2px 2px 0;animation:nav-progress 0.5s cubic-bezier(0.4,0,0.2,1) forwards}
+@keyframes nav-progress{0%{width:0%}60%{width:75%}100%{width:100%}}
 </style>

@@ -21,6 +21,11 @@ export interface EditCardRequest {
     content: string;
 }
 
+export interface SearchRequest {
+    searchString: string;
+    categoryId: number | null;
+}
+
 export const useMessagesApi = () => {
     const client = useMessagesClient()
 
@@ -65,6 +70,13 @@ export const useMessagesApi = () => {
         });
     }
 
+    const searchMessages = (request: SearchRequest) => {
+        return client<MessageListDto[]>('/messages/search', {
+            method: 'POST',
+            body: request
+        });
+    }
+
     return {
         loadMessages,
         updateStatus,
@@ -72,5 +84,6 @@ export const useMessagesApi = () => {
         deleteMessage,
         createMessage,
         editMessage,
+        searchMessages,
     }
 }

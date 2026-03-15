@@ -3,7 +3,9 @@
 
   const props = defineProps<{
     message: MessageListDto,
-    assignButton: Boolean
+    assignButton: Boolean,
+    deleteButton: Boolean,
+    highlightText?: String,
   }>()
 
   const emits = defineEmits<{
@@ -11,6 +13,14 @@
     (e: 'openDelete', message: MessageListDto): void,
     (e: 'openEdit', message: MessageListDto): void,
   }>()
+
+  const hl = (text: string) => {
+    const q = props.highlightText?.trim();
+    if (!q)
+      return text;
+    const e = q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+    return String(text).replace(new RegExp(`(${e})`,'gi'),'<span class="search-hl">$1</span>');
+  };
 
   const { formatDate } = useUtils()
 </script>
@@ -27,7 +37,7 @@
       <div class="card-sender">{{ props.message.sender }}</div>
       <div class="card-time">{{ formatDate(props.message.time) }}</div>
     </div>
-    <div class="card-text">{{ props.message.content }}</div>
+    <div class="card-text" v-html="hl(props.message.content)"></div>
     <div class="card-footer">
       <!--<span class="card-tag">PM</span>-->
       <div class="card-actions">
@@ -41,6 +51,7 @@
           </svg>
         </div>
         <div
+          v-if="deleteButton"
           @click.stop="emits('openDelete', props.message)"
           class="card-action-btn danger"
           title="Delete">
@@ -152,4 +163,5 @@
   .card-action-btn:hover { background: var(--surface3); color: var(--text); border-color: var(--border2); }
   .card-action-btn.danger:hover { background: var(--red-glow); color: var(--red); border-color: var(--red); }
   .card-action-btn svg { width: 11px; height: 11px; }
+  :deep(.search-hl){color:var(--accent);background:var(--accent-glow);border-radius:2px;padding:0 2px}
 </style>

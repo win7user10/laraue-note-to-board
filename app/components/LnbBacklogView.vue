@@ -29,6 +29,7 @@
 
     <LnbCard
       v-for="msg in messages"
+      :deleteButton="true"
       :message="msg"
       :key="msg.id"
       :assignButton="true"

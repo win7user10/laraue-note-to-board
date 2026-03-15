@@ -39,6 +39,7 @@ const modal = reactive({
   createCategory: false,
   assign: false,
   delete: false,
+  search: false,
 });
 
 const openCreateCategory = () => {
@@ -154,6 +155,14 @@ const onCategoryUpdated = (request: EditCategoryRequest) => {
   }
 }
 
+const openSearch = () => {
+  modal.search = true;
+}
+
+const closeSearch = () => {
+  modal.search = false;
+}
+
 </script>
 
 <template>
@@ -161,7 +170,7 @@ const onCategoryUpdated = (request: EditCategoryRequest) => {
   <div class="topbar">
     <div class="topbar-logo">{{ appState.user.username }}<span></span></div>
     <div class="topbar-spacer"></div>
-    <LnbIconBtn title="Search">
+    <LnbIconBtn title="Search" @click="openSearch">
       <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10.5 10.5l3 3"/>
     </LnbIconBtn>
     <LnbIconBtn title="Add Card" @click="openCreateCard">
@@ -226,6 +235,12 @@ const onCategoryUpdated = (request: EditCategoryRequest) => {
     @close="closeCreateCard"
     @create="createCardInternal"
     v-if="modal.createCard"/>
+
+  <LnbSearchModal
+      :categories="categories"
+      @openCard="openEditCard($event)"
+      @close="closeSearch"
+      v-if="modal.search"/>
 
   <LnbEditCardModal
     :message="assignMsg!"

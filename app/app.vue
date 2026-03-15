@@ -41,6 +41,7 @@ onMounted(async () => {
 const setupTelegram = () => {
   WebApp.ready();
   WebApp.expand();
+  WebApp.requestFullscreen();
 
   if (WebApp.isFullscreen) {
     const mobilePlatforms = ['android', 'android_x', 'ios'];

@@ -4,6 +4,8 @@ import {ref} from "vue";
 import LnbIconBtn from "~/components/LnbIconBtn.vue";
 import {useCategoriesApi} from "~/composables/categoriesApi";
 import type {MessageListDto} from "~/composables/messagesApi";
+import LnbEditStatusModal from "~/components/LnbEditStatusModal.vue";
+import type {EditStatusRequest} from "~/composables/statusesApi";
 
 const { appState } = useAppState()
 const { updateStatus, createMessage } = useMessagesApi();
@@ -37,10 +39,11 @@ const reloadCategory = async () => {
 const modal = reactive({
   createStatus: false,
   deleteStatus: false,
+  editStatus: false,
   addToBoard: false,
 });
 
-const { createStatus, deleteStatus } = useStatusesApi();
+const { createStatus, deleteStatus, editStatus } = useStatusesApi();
 const openCreateStatus = () => {
   modal.createStatus = true;
 }
@@ -65,10 +68,10 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
   closeCreateStatus();
 }
 
-const statusToEdit = ref<number | null>()
-const openDeleteStatus = (id: number) => {
+const statusToEdit = ref<StatusDto | null>()
+const openDeleteStatus = (status: StatusDto) => {
   modal.deleteStatus = true;
-  statusToEdit.value = id;
+  statusToEdit.value = status;
 }
 
 const closeDeleteStatus = () => {
@@ -76,15 +79,32 @@ const closeDeleteStatus = () => {
 }
 
 const deleteStatusInternal = async () => {
-  await deleteStatus(statusToEdit.value!);
+  await deleteStatus(statusToEdit.value!.id);
   await reloadCategory();
   emits('reloadMessages')
   closeDeleteStatus();
 }
 
-const openAddToBoard = (id: number) => {
+const openEditStatus = (status: StatusDto) => {
+  modal.editStatus = true;
+  statusToEdit.value = status;
+}
+
+const closeEditStatus = () => {
+  modal.editStatus = false;
+}
+
+const editStatusInternal = async (request: EditStatusRequest) => {
+  const status = statusToEdit.value!;
+  await editStatus(status.id, request);
+  status.color = request.color;
+  status.name = request.name;
+  closeEditStatus();
+}
+
+const openAddToBoard = (status: StatusDto) => {
   modal.addToBoard = true;
-  statusToEdit.value = id;
+  statusToEdit.value = status;
 }
 
 const closeAddToBoard = () => {
@@ -175,7 +195,12 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
           <div class="col-indicator" :style="`background:${status.color}`"></div>
           <div class="col-title">{{ status.name }}</div>
           <div class="col-count">{{ cardsByStatus[status.id]?.length ?? 0 }}</div>
-          <div @click="openDeleteStatus(status.id)" class="col-del-btn" v-if="statuses.length > 1">
+          <div class="col-del-btn" @click.stop="openEditStatus(status)" style="color:var(--text3)">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z"/>
+            </svg>
+          </div>
+          <div @click="openDeleteStatus(status)" class="col-del-btn" v-if="statuses.length > 1">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9"></path>
             </svg>
@@ -190,7 +215,7 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
             :assignButton="false"
             :message="msg"/>
         </div>
-        <div class="col-add-btn" @click="openAddToBoard(status.id)">
+        <div class="col-add-btn" @click="openAddToBoard(status)">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M8 3v10M3 8h10"/>
           </svg>
@@ -215,10 +240,15 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
     @close="closeDeleteStatus"
     v-if="modal.deleteStatus"/>
   <LnbCreateCardModal
-    :statusId="statusToEdit!"
+    :statusId="statusToEdit!.id"
     @create="assignToBoard"
     @close="closeAddToBoard"
     v-if="modal.addToBoard"/>
+  <LnbEditStatusModal
+    :status="statusToEdit!"
+    @edit="editStatusInternal"
+    @close="closeEditStatus"
+    v-if="modal.editStatus"/>
 </template>
 
 <style scoped>
@@ -265,7 +295,7 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
   border-radius: 50%;
   flex-shrink: 0;
 }
-.col-title { font-size: 12px; font-weight: 700; flex: 1; color: var(--text); letter-spacing: 0.3px; }
+.col-title{font-size:12px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text)}
 .col-count {
   font-size: 10px;
   background: var(--surface3);

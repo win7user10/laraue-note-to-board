@@ -6,6 +6,11 @@ export interface CreateStatusRequest {
     categoryId: number;
 }
 
+export interface EditStatusRequest {
+    name: string;
+    color: string;
+}
+
 export const useStatusesApi = () => {
     const client = useStatusesClient()
 
@@ -22,8 +27,16 @@ export const useStatusesApi = () => {
         });
     }
 
+    const editStatus = (id: number, request: EditStatusRequest) => {
+        return client('/statuses/' + id, {
+            method: 'PUT',
+            body: request
+        });
+    }
+
     return {
         createStatus,
         deleteStatus,
+        editStatus,
     }
 }

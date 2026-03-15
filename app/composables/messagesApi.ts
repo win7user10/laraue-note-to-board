@@ -3,7 +3,7 @@ export interface MessageListDto {
     time: string;
     sender?: string;
     senderInitial?: string;
-    text: string;
+    content: string;
     categoryId: number;
     statusId: number;
     color: string;
@@ -11,10 +11,14 @@ export interface MessageListDto {
 }
 
 export interface CreateCardRequest {
-    text: string;
+    content: string;
     sender?: string;
     categoryId: number;
     statusId: number;
+}
+
+export interface EditCardRequest {
+    content: string;
 }
 
 export const useMessagesApi = () => {
@@ -54,11 +58,19 @@ export const useMessagesApi = () => {
         });
     }
 
+    const editMessage = (id: number, request: EditCardRequest) => {
+        return client('/messages/' + id, {
+            method: 'PUT',
+            body: request
+        });
+    }
+
     return {
         loadMessages,
         updateStatus,
         updateCategory,
         deleteMessage,
         createMessage,
+        editMessage,
     }
 }

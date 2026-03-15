@@ -20,7 +20,7 @@
         {{ assignMsg.sender }} · {{ assignMsg.sender }}
       </div>
       <div style="font-size:13px;color:var(--text2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
-        {{ assignMsg.text }}
+        {{ assignMsg.content }}
       </div>
     </div>
     <div class="assign-options">

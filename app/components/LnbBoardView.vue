@@ -18,6 +18,7 @@ const props = defineProps<{
 
 const emits = defineEmits<{
   (e: 'openDelete', message: MessageListDto): void,
+  (e: 'openEdit', message: MessageListDto): void,
   (e: 'reloadMessages'): void,
 }>()
 
@@ -184,6 +185,7 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
           <lnb-card
             v-for="msg in cardsByStatus[status.id]"
             @openDelete="emits('openDelete', msg)"
+            @openEdit="emits('openEdit', $event)"
             :key="msg.id"
             :assignButton="false"
             :message="msg"/>

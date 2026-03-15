@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import {useUtils} from "~/composables/utils";
+
   const props = defineProps<{
     message: MessageListDto,
     assignButton: Boolean
@@ -7,35 +9,17 @@
   const emits = defineEmits<{
     (e: 'openAssignToCategory', message: MessageListDto): void,
     (e: 'openDelete', message: MessageListDto): void,
+    (e: 'openEdit', message: MessageListDto): void,
   }>()
 
-  const dateFormatter = new Intl.DateTimeFormat(undefined, {
-    month: '2-digit',
-    day: '2-digit',
-    year: '2-digit'
-  });
-
-  const timeFormatter = new Intl.DateTimeFormat(undefined, {
-    hour: 'numeric',
-    minute: 'numeric'
-  });
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    const today = new Date();
-
-    if (date.getDate() === today.getDate() &&
-        date.getMonth() === today.getMonth() &&
-        date.getFullYear() === today.getFullYear())
-      return timeFormatter.format(date);
-    return dateFormatter.format(date);
-  }
+  const { formatDate } = useUtils()
 </script>
 
 <template>
   <div class="msg-card"
-     :style="`--card-color: ${props.message.color}`"
-     :data-card-id="props.message.id">
+      :style="`--card-color: ${props.message.color}`"
+      :data-card-id="props.message.id"
+      @click="emits('openEdit', props.message)">
     <div class="card-header">
       <div class="card-avatar" :style="`background:${props.message.senderColor}22; color:${props.message.senderColor}`">
         {{ props.message.senderInitial }}
@@ -43,7 +27,7 @@
       <div class="card-sender">{{ props.message.sender }}</div>
       <div class="card-time">{{ formatDate(props.message.time) }}</div>
     </div>
-    <div class="card-text">{{ props.message.text }}</div>
+    <div class="card-text">{{ props.message.content }}</div>
     <div class="card-footer">
       <!--<span class="card-tag">PM</span>-->
       <div class="card-actions">
@@ -51,13 +35,13 @@
           v-if="assignButton"
           class="card-action-btn"
           title="Assign to board"
-          @click="emits('openAssignToCategory', props.message)">
+          @click.stop="emits('openAssignToCategory', props.message)">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M3 8h10M9 4l4 4-4 4"/>
           </svg>
         </div>
         <div
-          @click="emits('openDelete', props.message)"
+          @click.stop="emits('openDelete', props.message)"
           class="card-action-btn danger"
           title="Delete">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -76,11 +60,14 @@
     border: 1px solid var(--border);
     border-radius: var(--radius);
     padding: 11px 13px;
-    cursor: grab;
     transition: border-color 0.15s, box-shadow 0.15s, opacity 0.15s;
     position: relative;
     user-select: none;
     -webkit-tap-highlight-color: transparent;
+    cursor: pointer;
+  }
+  .msg-card:active {
+    cursor: grab;
   }
   .msg-card::before {
     content: '';

@@ -9,7 +9,7 @@ const { appState, setCategory } = useAppState()
 const categoryId = computed(() => appState.value.categoryId);
 
 const { loadCategories, createCategory } = useCategoriesApi();
-const { loadMessages, updateCategory, deleteMessage, createMessage } = useMessagesApi();
+const { loadMessages, updateCategory, deleteMessage, createMessage, editMessage } = useMessagesApi();
 const categories = ref<CategoryCountDto[]>([])
 let initError = ref<any>({})
 
@@ -35,6 +35,7 @@ const reloadMessages = async () => {
 
 const modal = reactive({
   createCard: false,
+  editCard: false,
   createCategory: false,
   assign: false,
   delete: false,
@@ -74,9 +75,26 @@ const createCardInternal = async (value: CreateCardRequest) => {
   const messageCategory = categories.value.find(c => c.id === value.categoryId)
   if (messageCategory)
     messageCategory.count++;
-  await reloadMessages(); // TODO - get one message and add to existing??
+  await reloadMessages();
 
   closeCreateCard();
+}
+
+const openEditCard = (message: MessageListDto) => {
+  assignMsg.value = message;
+  modal.editCard = true;
+}
+
+const closeEditCard = () => {
+  modal.editCard = false;
+}
+
+const editCardInternal = async (value: EditCardRequest) => {
+  const msg = assignMsg.value!;
+  await editMessage(msg.id, value);
+  msg.text = value.content;
+  await reloadMessages();
+  closeEditCard();
 }
 
 const assignMsg = ref<MessageListDto | undefined>(undefined);
@@ -166,12 +184,14 @@ const deleteSelectedCardFromState = ()  => {
     <LnbBacklogView
       :messages="messages"
       @openAssignToCategory="openAssignToCategory"
+      @openEdit="openEditCard"
       @openDelete="openDelete" />
   </template>
   <template v-else>
     <LnbBoardView
       :messages="messages"
       @reloadMessages="reloadMessages"
+      @openEdit="openEditCard"
       @openDelete="openDelete"/>
   </template>
 
@@ -196,6 +216,12 @@ const deleteSelectedCardFromState = ()  => {
     @close="closeCreateCard"
     @create="createCardInternal"
     v-if="modal.createCard"/>
+
+  <LnbEditCardModal
+    :message="assignMsg!"
+    @edit="editCardInternal"
+    @close="closeEditCard"
+    v-if="modal.editCard"/>
 </template>
 
 <style scoped>

@@ -5,6 +5,7 @@
   const emits = defineEmits<{
     (e: 'openAssignToCategory', message: MessageListDto): void,
     (e: 'openDelete', message: MessageListDto): void,
+    (e: 'openEdit', message: MessageListDto): void,
   }>()
 
   defineProps<{
@@ -26,13 +27,14 @@
 
     <div class="section-label" v-else>Unassigned · Drag to a board</div>
 
-    <lnb-card
+    <LnbCard
       v-for="msg in messages"
       :message="msg"
       :key="msg.id"
       :assignButton="true"
       @openDelete="emits('openDelete', $event)"
       @openAssignToCategory="emits('openAssignToCategory', $event)"
+      @openEdit="emits('openEdit', $event)"
       sender-color="#3fb950"/>
   </div>
 </template>

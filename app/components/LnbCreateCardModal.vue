@@ -41,7 +41,7 @@ const createCard = () => {
     @close="emit('close')">
     <LnbModalLabel>Text</LnbModalLabel>
     <LnbModalTextarea
-        v-model="newCard.text"
+        v-model="newCard.content"
         placeholder="e.g. Make onboarding for new team members..."/>
   </LnbModal>
 </template>

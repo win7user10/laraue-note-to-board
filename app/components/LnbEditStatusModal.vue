@@ -2,6 +2,9 @@
 
 import LnbColorPicker from "~/components/LnbColorPicker.vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
+import {useAppState} from "~/composables/appState";
+
+const { getRandomColor } = useAppState();
 
 const emit = defineEmits<{
   (e: 'close'): void,
@@ -18,7 +21,7 @@ const newStatus = ref<EditStatusRequest>({
 })
 
 onMounted(() => {
-  newStatus.value.color = props.status.color;
+  newStatus.value.color = props.status.color ?? getRandomColor();
   newStatus.value.name = props.status.name;
 })
 

@@ -6,10 +6,11 @@ import {useCategoriesApi} from "~/composables/categoriesApi";
 import type {MessageListDto} from "~/composables/messagesApi";
 import LnbEditStatusModal from "~/components/LnbEditStatusModal.vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
+import LnbEditCategoryModal from "~/components/LnbEditCategoryModal.vue";
 
 const { appState } = useAppState()
 const { updateStatus, createMessage } = useMessagesApi();
-const { loadCategory, reorderStatuses } = useCategoriesApi();
+const { loadCategory, reorderStatuses, editCategory } = useCategoriesApi();
 
 const categoryId = computed(() => appState.value.categoryId);
 const currentCategory = ref<CategoryDto>()
@@ -22,6 +23,7 @@ const emits = defineEmits<{
   (e: 'openDelete', message: MessageListDto): void,
   (e: 'openEdit', message: MessageListDto): void,
   (e: 'reloadMessages'): void,
+  (e: 'categoryUpdated', category: CategoryDto): void,
 }>()
 
 watch(() => categoryId.value, async _ => {
@@ -40,6 +42,7 @@ const modal = reactive({
   createStatus: false,
   deleteStatus: false,
   editStatus: false,
+  editCategory: false,
   addToBoard: false,
 });
 
@@ -117,6 +120,23 @@ const assignToBoard = async (request: CreateCardRequest) => {
   closeAddToBoard();
 }
 
+const openEditCategory = () => {
+  modal.editCategory = true;
+}
+
+const closeEditCategory = () => {
+  modal.editCategory = false;
+}
+
+const editCategoryInternal = async (request: EditCategoryRequest) => {
+  const category = currentCategory.value!;
+  await editCategory(appState.value.categoryId, request)
+  category.color = request.color;
+  category.name = request.name;
+  emits('categoryUpdated', category)
+  closeEditCategory();
+}
+
 const cardsByStatus = computed(() => {
   return Object.groupBy(props.messages, item => item.statusId);
 })
@@ -168,9 +188,8 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
         <div class="board-subtitle">{{ messages.length }} cards</div>
       </div>
       <div class="board-actions">
-        <LnbIconBtn title="Add Message to Board">
-          <rect x="2" y="2" width="12" height="12" rx="2"/>
-          <path d="M8 5v6M5 8h6"/>
+        <LnbIconBtn title="Edit board" @click="openEditCategory">
+          <path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z"></path>
         </LnbIconBtn>
       </div>
     </div>
@@ -249,6 +268,11 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
     @edit="editStatusInternal"
     @close="closeEditStatus"
     v-if="modal.editStatus"/>
+  <LnbEditCategoryModal
+    :category="currentCategory!"
+    @close="closeEditCategory"
+    @edit="editCategoryInternal"
+    v-if="modal.editCategory"/>
 </template>
 
 <style scoped>

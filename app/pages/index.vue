@@ -92,7 +92,7 @@ const closeEditCard = () => {
 const editCardInternal = async (value: EditCardRequest) => {
   const msg = assignMsg.value!;
   await editMessage(msg.id, value);
-  msg.text = value.content;
+  msg.content = value.content;
   await reloadMessages();
   closeEditCard();
 }
@@ -146,6 +146,14 @@ const deleteSelectedCardFromState = ()  => {
   messages.value = messages.value.filter(x => x.id != assignMsg.value!.id)
 }
 
+const onCategoryUpdated = (request: EditCategoryRequest) => {
+  const cat = categories.value.find(c => c.id === categoryId.value)
+  if (cat) {
+    cat.color = request.color;
+    cat.name = request.name;
+  }
+}
+
 </script>
 
 <template>
@@ -189,6 +197,7 @@ const deleteSelectedCardFromState = ()  => {
   </template>
   <template v-else>
     <LnbBoardView
+      @categoryUpdated="onCategoryUpdated"
       :messages="messages"
       @reloadMessages="reloadMessages"
       @openEdit="openEditCard"
@@ -213,6 +222,7 @@ const deleteSelectedCardFromState = ()  => {
     v-if="modal.delete"/>
 
   <LnbCreateCardModal
+    :statusId="0"
     @close="closeCreateCard"
     @create="createCardInternal"
     v-if="modal.createCard"/>

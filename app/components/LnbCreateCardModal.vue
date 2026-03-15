@@ -11,7 +11,7 @@ const emit = defineEmits<{
 const { appState } = useAppState()
 
 const newCard = ref<CreateCardRequest>({
-  text: "",
+  content: "",
   categoryId: 0,
   sender: "",
   statusId: 0,

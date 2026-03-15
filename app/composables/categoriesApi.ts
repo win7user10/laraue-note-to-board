@@ -1,4 +1,5 @@
 import {useCategoriesClient} from "~/composables/categoriesClient";
+import type {EditStatusRequest} from "~/composables/statusesApi";
 
 export interface CategoryCountDto {
     id: number;
@@ -24,6 +25,11 @@ export interface StatusDto {
     name: string;
     color: string;
     sortOrder: number;
+}
+
+export interface EditCategoryRequest {
+    name: string;
+    color: string;
 }
 
 export const useCategoriesApi = () => {
@@ -55,10 +61,18 @@ export const useCategoriesApi = () => {
         });
     }
 
+    const editCategory = (id: number, request: EditCategoryRequest) => {
+        return client('/categories/' + id, {
+            method: 'PUT',
+            body: request
+        });
+    }
+
     return {
         loadCategories,
         createCategory,
         loadCategory,
         reorderStatuses,
+        editCategory,
     }
 }

@@ -49,6 +49,7 @@ watch(request, async (newValue) => {
           style="margin-bottom: 6px;"
           :deleteButton="false"
           :assignButton="false"
+          :key="searchResult.id"
           :highlightText="request.searchString"
           :message="searchResult"/>
       </div>

@@ -30,6 +30,7 @@ watch(() => appState.value.categoryId, () => {
 })
 
 const reloadMessages = async () => {
+
   messages.value = await loadMessages(categoryId.value)
 }
 

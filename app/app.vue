@@ -10,7 +10,7 @@ const initialized = ref<boolean>(false);
 const configuration = useRuntimeConfig();
 const testUserToken = configuration.public.testUserToken;
 const { validate } = useTelegramUserApi();
-const { setUser } = useAppState();
+const { setUser, appState } = useAppState();
 
 onMounted(async () => {
   try {
@@ -74,6 +74,9 @@ const setupTelegram = () => {
 
 <template>
   <div id="app">
+    <div class="nav-loader" :class="{active: appState.isLoading}">
+      <div class="nav-loader-fill"></div>
+    </div>
     <span v-if="!initialized">App is initializing...</span>
     <span v-else-if="initError">{{initError}}</span>
     <NuxtPage v-else />
@@ -81,4 +84,9 @@ const setupTelegram = () => {
 </template>
 
 <style scoped>
+/* NAV LOADER — slim progress bar at top, doesn't cover UI */
+.nav-loader{position:fixed;top:0;left:0;right:0;height:2px;z-index:998;pointer-events:none;opacity:0;transition:opacity 0.15s}
+.nav-loader.active{opacity:1}
+.nav-loader-fill{height:100%;background:var(--accent);border-radius:0 2px 2px 0;animation:nav-progress 0.5s cubic-bezier(0.4,0,0.2,1) forwards}
+@keyframes nav-progress{0%{width:0%}60%{width:75%}100%{width:100%}}
 </style>

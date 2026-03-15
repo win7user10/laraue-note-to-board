@@ -75,7 +75,7 @@ const setupTelegram = () => {
 <template>
   <div id="app">
     <div class="loader-overlay" :class="{hidden: initialized}">
-      <div class="loader-logo">Notes<span>board</span></div>
+      <div class="loader-logo">Message<span>board</span></div>
       <div class="loader-bar"><div class="loader-bar-fill"></div></div>
       <div class="loader-text">Loading messages…</div>
     </div>

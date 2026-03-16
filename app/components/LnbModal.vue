@@ -2,6 +2,7 @@
   defineProps({
     title: { type: String, required: true },
     applyText: { type: String, required: false },
+    fullHeight: { type: Boolean, required: false },
   })
   const emit = defineEmits<{
     (e: 'close'): void,
@@ -20,7 +21,7 @@
 <template>
   <transition name="fade">
     <div class="modal-overlay" @click.self="close">
-      <div class="modal">
+      <div class="modal" :class="{ 'modal-full': fullHeight }">
         <div class="modal-head">
           <div class="modal-handle"></div>
           <div class="modal-title">{{ title }}</div>
@@ -63,6 +64,9 @@
   flex-direction: column;
   max-height: 88dvh;
   padding-bottom: var(--safe-bottom);
+}
+.modal.modal-full{
+  height:92vh
 }
 @keyframes slide-up { from { transform: translateY(60px); opacity: 0; } to { transform: none; opacity: 1; } }
 .modal-head {

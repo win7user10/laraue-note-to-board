@@ -17,13 +17,14 @@ const request = ref({
 const searchResults = ref<MessageListDto[]>([])
 watch(request, async (newValue) => {
   searchResults.value = await searchMessages(newValue);
-}, { deep: true })
+}, { deep: true, immediate: true })
 
 </script>
 
 <template>
   <LnbModal
-      title="Search">
+      title="Search"
+      :fullHeight="true">
     <LnbModalInput
       v-model="request.searchString"
       placeholder="Search messages…"/>

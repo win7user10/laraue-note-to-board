@@ -35,6 +35,7 @@ onMounted(async () => {
 })
 
 const reloadCategory = async () => {
+  currentCategory.value = undefined;
   currentCategory.value = await loadCategory(categoryId.value!)
 }
 

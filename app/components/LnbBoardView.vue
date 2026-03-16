@@ -70,7 +70,7 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
     sortOrder: lastOrder + 1
   })
   closeCreateStatus();
-  showToast("Status created", 'success', value.name);
+  showToast("Column created", 'success', value.name);
 }
 
 const statusToEdit = ref<StatusDto | null>()

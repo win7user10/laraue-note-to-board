@@ -24,6 +24,8 @@
     --card-color: var(--bg);
     --safe-top: env(safe-area-inset-top, 0px);
     --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --safe-left: env(safe-area-inset-left, 0px);
+    --safe-right: env(safe-area-inset-right, 0px);
     --red-glow: rgba(248,81,73,0.15)
 }
 
@@ -41,5 +43,4 @@ html, body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    padding-top: var(--safe-top);
 }

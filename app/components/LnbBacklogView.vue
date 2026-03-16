@@ -45,7 +45,7 @@
 .backlog-view {
   flex: 1;
   overflow-y: auto;
-  padding: 12px;
+  padding: 12px calc(max(12px, var(--safe-right))) 12px calc(max(12px, var(--safe-left)));
   display: flex;
   flex-direction: column;
   gap: 8px;

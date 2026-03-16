@@ -65,10 +65,13 @@
   padding-bottom: var(--safe-bottom);
 }
 @keyframes slide-up { from { transform: translateY(60px); opacity: 0; } to { transform: none; opacity: 1; } }
-.modal-head { padding: 14px 16px 0; flex-shrink: 0; }
+.modal-head {
+  padding: 14px calc(max(16px, var(--safe-right))) 0 calc(max(16px, var(--safe-left)));
+  flex-shrink: 0;
+}
 .modal-body {
   overflow-y: auto;
-  padding: 0 16px 20px;
+  padding: 20px calc(max(16px, var(--safe-right))) 0 calc(max(16px, var(--safe-left)));
   flex: 1;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;

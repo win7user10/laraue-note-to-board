@@ -4,6 +4,7 @@ import LnbBoardView from "~/components/LnbBoardView.vue";
 import { useAppState } from "~/composables/appState";
 import LnbCreateCategoryModal from "~/components/LnbCreateCategoryModal.vue";
 import {onMounted, ref} from "vue";
+import LnbFabItem from "~/components/LnbFabItem.vue";
 
 const { appState, setCategory } = useAppState()
 const categoryId = computed(() => appState.value.categoryId);
@@ -30,6 +31,7 @@ watch(() => appState.value.categoryId, () => {
 })
 
 const reloadMessages = async () => {
+  messages.value = [];
   messages.value = await loadMessages(categoryId.value)
 }
 
@@ -163,19 +165,14 @@ const closeSearch = () => {
   modal.search = false;
 }
 
+const fabOpen = ref(false);
+
 </script>
 
 <template>
   <!-- TOP BAR -->
   <div class="topbar">
-    <div class="topbar-logo">{{ appState.user.username }}<span></span></div>
-    <div class="topbar-spacer"></div>
-    <LnbIconBtn title="Search" @click="openSearch">
-      <circle cx="6.5" cy="6.5" r="4.5"/><path d="M10.5 10.5l3 3"/>
-    </LnbIconBtn>
-    <LnbIconBtn title="Add Card" @click="openCreateCard">
-      <path d="M8 3v10M3 8h10"/>
-    </LnbIconBtn>
+    <div class="topbar-logo">Message<span>Board</span></div>
   </div>
 
   <div class="nav-loader" :class="{active: appState.isLoading}">
@@ -251,6 +248,26 @@ const closeSearch = () => {
     @edit="editCardInternal"
     @close="closeEditCard"
     v-if="modal.editCard"/>
+
+  <!-- FAB backdrop -->
+  <div class="fab-backdrop" v-if="fabOpen" @click="fabOpen=false"></div>
+
+  <!-- FAB speed-dial -->
+  <div class="fab-wrap">
+    <div class="fab-main" :class="{open: fabOpen}" @click="fabOpen=!fabOpen">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
+    </div>
+    <div class="fab-items">
+      <LnbFabItem title="New Board" :isOpened="fabOpen" @click="openCreateCategory">
+        <rect x="2" y="2" width="12" height="12" rx="2"/>
+        <path d="M8 5v6M5 8h6"/>
+      </LnbFabItem>
+      <LnbFabItem title="Search" :isOpened="fabOpen" @click="openSearch">
+        <circle cx="6.5" cy="6.5" r="4.5"/>
+        <path d="M10.5 10.5l3 3"/>
+      </LnbFabItem>
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -258,8 +275,9 @@ const closeSearch = () => {
 .topbar {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  padding: 12px 14px 10px;
+  padding: calc(12px + var(--safe-top)) var(--safe-right) 14px var(--safe-left);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
@@ -274,13 +292,12 @@ const closeSearch = () => {
   white-space: nowrap;
 }
 .topbar-logo span { color: var(--text2); font-weight: 400; margin-left: 10px; }
-.topbar-spacer { flex: 1; }
 
 /* ── NAV TABS ── */
 .nav-tabs {
   display: flex;
   gap: 4px;
-  padding: 8px 12px;
+  padding: 8px calc(max(8px, var(--safe-right))) 8px calc(max(8px, var(--safe-left)));
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
@@ -344,4 +361,14 @@ const closeSearch = () => {
 .nav-loader.active{opacity:1}
 .nav-loader-fill{height:100%;background:var(--accent);border-radius:0 2px 2px 0;animation:nav-progress 0.5s cubic-bezier(0.4,0,0.2,1) forwards}
 @keyframes nav-progress{0%{width:0%}60%{width:75%}100%{width:100%}}
+
+
+/* FAB */
+.fab-wrap{position:fixed;bottom:calc(20px + var(--safe-bottom));right:calc(16px + var(--safe-right));z-index:90;display:flex;flex-direction:column-reverse;align-items:flex-end;gap:10px}
+.fab-main{width:52px;height:52px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 4px 20px rgba(47,129,247,0.45);transition:transform 0.2s,background 0.2s;-webkit-tap-highlight-color:transparent;flex-shrink:0;border:none}
+.fab-main:hover{background:var(--accent2)}
+.fab-main.open{transform:rotate(45deg)}
+.fab-main svg{width:22px;height:22px}
+.fab-items{display:flex;flex-direction:column-reverse;gap:8px;align-items:flex-end}
+.fab-backdrop{position:fixed;inset:0;z-index:89;background:rgba(0,0,0,0);cursor:default}
 </style>

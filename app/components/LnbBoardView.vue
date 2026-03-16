@@ -283,6 +283,8 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
 }
 .board-header {
   padding: 10px 14px 8px;

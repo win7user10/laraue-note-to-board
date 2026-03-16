@@ -230,7 +230,7 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
             v-for="msg in cardsByStatus[status.id]"
             @openDelete="emits('openDelete', msg)"
             @openEdit="emits('openEdit', $event)"
-            :deleteButton="false"
+            :deleteButton="true"
             :key="msg.id"
             :assignButton="false"
             :message="msg"/>

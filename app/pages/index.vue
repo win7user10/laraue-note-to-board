@@ -6,7 +6,7 @@ import LnbCreateCategoryModal from "~/components/LnbCreateCategoryModal.vue";
 import {onMounted, ref} from "vue";
 import LnbFabItem from "~/components/LnbFabItem.vue";
 
-const { appState, setCategory } = useAppState()
+const { appState, setCategory, showToast } = useAppState()
 const categoryId = computed(() => appState.value.categoryId);
 
 const { loadCategories, createCategory } = useCategoriesApi();
@@ -62,6 +62,8 @@ const createCategoryInternal = async (value: CreateCategoryRequest) => {
     statusesCount: 0,
   })
   closeCreateCategory();
+  showToast("Category created", 'success', value.name);
+  closeFab();
 }
 
 const openCreateCard = () => {
@@ -81,6 +83,8 @@ const createCardInternal = async (value: CreateCardRequest) => {
   await reloadMessages();
 
   closeCreateCard();
+  showToast("Card created", 'success');
+  closeFab();
 }
 
 const openEditCard = (message: MessageListDto) => {
@@ -98,6 +102,7 @@ const editCardInternal = async (value: EditCardRequest) => {
   msg.content = value.content;
   await reloadMessages();
   closeEditCard();
+  showToast("Card edited", 'success');
 }
 
 const assignMsg = ref<MessageListDto | undefined>(undefined);
@@ -123,6 +128,7 @@ const assignToCategory = async (categoryId: number) => {
 
   modal.assign = false;
   deleteSelectedCardFromState();
+  showToast("Message assigned", 'success');
 }
 
 const openDelete = (message: MessageListDto) => {
@@ -142,7 +148,8 @@ const deleteCard = async () => {
     messageCategory.count--;
 
   deleteSelectedCardFromState();
-  modal.delete = false;
+  closeDelete();
+  showToast("Message deleted", 'danger');
 }
 
 const deleteSelectedCardFromState = ()  => {
@@ -163,6 +170,10 @@ const openSearch = () => {
 
 const closeSearch = () => {
   modal.search = false;
+}
+
+const closeFab = () => {
+  fabOpen.value = false;
 }
 
 const fabOpen = ref(false);
@@ -266,8 +277,13 @@ const fabOpen = ref(false);
         <circle cx="6.5" cy="6.5" r="4.5"/>
         <path d="M10.5 10.5l3 3"/>
       </LnbFabItem>
+      <LnbFabItem title="New Card" :isOpened="fabOpen" @click="openCreateCard">
+        <path d="M8 5v6M5 8h6"/>
+      </LnbFabItem>
     </div>
   </div>
+
+  <LnbToastStack />
 </template>
 
 <style scoped>

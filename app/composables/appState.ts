@@ -1,3 +1,10 @@
+export interface Toast {
+    id: number;
+    title: string;
+    subTitle: string;
+    type: string;
+}
+
 export const useAppState = () => {
 
     const appState = useState('appState', () => ({
@@ -10,6 +17,7 @@ export const useAppState = () => {
         user: {} as UserDto,
         isLoading: false,
         loadingKeys: [] as string[],
+        toasts: [] as Toast[],
     }))
 
     const setCategory = (id: number) => {
@@ -37,6 +45,17 @@ export const useAppState = () => {
             appState.value.isLoading = false;
     }
 
+    const showToast = (
+        title: string,
+        type: 'danger' | 'success' | 'default',
+        subtitle?: string) => {
+        const id = Date.now() + Math.random();
+        appState.value.toasts.push({ id, title, subTitle: subtitle ||'', type });
+        setTimeout(() => {
+            appState.value.toasts = appState.value.toasts.filter(t => t.id !== id);
+        }, 1200);
+    }
+
     return {
         appState: readonly(appState),
         setCategory,
@@ -44,5 +63,6 @@ export const useAppState = () => {
         setUser,
         addLoadingKey,
         removeLoadingKey,
+        showToast,
     }
 }

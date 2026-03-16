@@ -8,7 +8,7 @@ import LnbEditStatusModal from "~/components/LnbEditStatusModal.vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
 import LnbEditCategoryModal from "~/components/LnbEditCategoryModal.vue";
 
-const { appState } = useAppState()
+const { appState, showToast } = useAppState()
 const { updateStatus, createMessage } = useMessagesApi();
 const { loadCategory, reorderStatuses, editCategory } = useCategoriesApi();
 
@@ -70,6 +70,7 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
     sortOrder: lastOrder + 1
   })
   closeCreateStatus();
+  showToast("Status deleted", 'success', value.name);
 }
 
 const statusToEdit = ref<StatusDto | null>()
@@ -87,6 +88,7 @@ const deleteStatusInternal = async () => {
   await reloadCategory();
   emits('reloadMessages')
   closeDeleteStatus();
+  showToast("Status deleted", 'danger');
 }
 
 const openEditStatus = (status: StatusDto) => {
@@ -104,6 +106,7 @@ const editStatusInternal = async (request: EditStatusRequest) => {
   status.color = request.color;
   status.name = request.name;
   closeEditStatus();
+  showToast("Status edited", 'success', request.name);
 }
 
 const openAddToBoard = (status: StatusDto) => {
@@ -119,6 +122,7 @@ const assignToBoard = async (request: CreateCardRequest) => {
   await createMessage(request);
   emits('reloadMessages');
   closeAddToBoard();
+  showToast("Message created", 'success');
 }
 
 const openEditCategory = () => {
@@ -136,6 +140,7 @@ const editCategoryInternal = async (request: EditCategoryRequest) => {
   category.name = request.name;
   emits('categoryUpdated', category)
   closeEditCategory();
+  showToast("Category updated", 'success', request.name);
 }
 
 const cardsByStatus = computed(() => {
@@ -153,6 +158,7 @@ const onCardMoved = async (cardId: string, categoryId: number, statusId: number)
   await updateStatus(card.id, statusId);
   card.categoryId = categoryId!;
   card.statusId = statusId;
+  showToast("Status changed", 'default')
 };
 
 const onColMoved = async (statusId: number, newSortOrder: number) => {
@@ -174,6 +180,7 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
       Object.fromEntries(newStatuses.map(item => [item.id, item.sortOrder])))
 
   cat.statuses = newStatuses;
+  showToast("Column reordered", 'default')
 };
 
 </script>

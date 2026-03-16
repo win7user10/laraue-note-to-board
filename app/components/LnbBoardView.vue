@@ -70,7 +70,7 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
     sortOrder: lastOrder + 1
   })
   closeCreateStatus();
-  showToast("Status deleted", 'success', value.name);
+  showToast("Status created", 'success', value.name);
 }
 
 const statusToEdit = ref<StatusDto | null>()
@@ -85,10 +85,11 @@ const closeDeleteStatus = () => {
 
 const deleteStatusInternal = async () => {
   await deleteStatus(statusToEdit.value!.id);
+  const statusName = statusToEdit.value!.name;
   await reloadCategory();
   emits('reloadMessages')
   closeDeleteStatus();
-  showToast("Status deleted", 'danger');
+  showToast("Column deleted", 'danger', statusName);
 }
 
 const openEditStatus = (status: StatusDto) => {
@@ -122,7 +123,9 @@ const assignToBoard = async (request: CreateCardRequest) => {
   await createMessage(request);
   emits('reloadMessages');
   closeAddToBoard();
-  showToast("Message created", 'success');
+  const status = statuses.value.find(x => x.id === request.statusId);
+  const subTitle = `${currentCategory.value?.name} · ${status?.name}`
+  showToast("Card added", 'success', subTitle);
 }
 
 const openEditCategory = () => {
@@ -158,7 +161,9 @@ const onCardMoved = async (cardId: string, categoryId: number, statusId: number)
   await updateStatus(card.id, statusId);
   card.categoryId = categoryId!;
   card.statusId = statusId;
-  showToast("Status changed", 'default')
+  const status = statuses.value.find(x => x.id === statusId);
+
+  showToast("Card moved", 'default', status?.name)
 };
 
 const onColMoved = async (statusId: number, newSortOrder: number) => {

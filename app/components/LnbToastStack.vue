@@ -31,7 +31,7 @@
 </template>
 
 <style scoped>
-.toast-stack{position:fixed;top:calc(8px + var(--safe-top));left:calc(12px + var(--safe-left));right:calc(12px + var(--safe-right));z-index:500;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast-stack{position:fixed;bottom:calc(24px + var(--safe-bottom));left:calc(12px + var(--safe-left));right:calc(12px + var(--safe-right));z-index:500;display:flex;flex-direction:column-reverse;gap:6px;pointer-events:none}
 .toast{background:var(--text);border-radius:12px;padding:12px 14px;box-shadow:0 8px 32px rgba(0,0,0,0.6),0 2px 8px rgba(0,0,0,0.4);display:flex;align-items:center;gap:12px;pointer-events:none}
 .toast-icon{width:30px;height:30px;border-radius:7px;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .toast-icon.danger{background:var(--red)}
@@ -42,7 +42,7 @@
 .toast-sub{font-size:11px;color:rgba(13,17,23,0.6);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .toast-enter-active{transition:all 0.28s cubic-bezier(0.34,1.3,0.64,1)}
 .toast-leave-active{transition:all 0.2s ease-in}
-.toast-enter-from{opacity:0;transform:translateY(-14px) scale(0.95)}
-.toast-leave-to{opacity:0;transform:translateY(-8px) scale(0.95)}
+.toast-enter-from{opacity:0;transform:translateY(14px) scale(0.95)}
+.toast-leave-to{opacity:0;transform:translateY(8px) scale(0.95)}
 .toast-move{transition:transform 0.25s ease}
 </style>

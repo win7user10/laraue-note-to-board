@@ -62,7 +62,7 @@ const createCategoryInternal = async (value: CreateCategoryRequest) => {
     statusesCount: 0,
   })
   closeCreateCategory();
-  showToast("Category created", 'success', value.name);
+  showToast("Board created", 'success', value.name);
   closeFab();
 }
 

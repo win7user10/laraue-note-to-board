@@ -1,4 +1,3 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
@@ -36,7 +35,6 @@ export default defineNuxtConfig({
     defaultLocale: 'en',
     detectBrowserLanguage: false
   },
-
   runtimeConfig: {
     public: {
       messagesBaseAddress: process.env.NUXT_PUBLIC_MESSAGES_BASE_ADDRESS || 'https://laraue.com/api/notes-board',

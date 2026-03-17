@@ -9,6 +9,8 @@
     (e: 'apply'): void
   }>()
 
+  const { t } = useI18n();
+
   const close = () => {
     emit('close')
   }

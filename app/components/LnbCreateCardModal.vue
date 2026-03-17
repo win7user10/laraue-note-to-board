@@ -9,6 +9,7 @@ const emit = defineEmits<{
 }>()
 
 const { appState } = useAppState()
+const { t } = useI18n();
 
 const newCard = ref<CreateCardRequest>({
   content: "",
@@ -33,14 +34,14 @@ const createCard = () => {
 
 <template>
   <LnbModal
-    applyText="Create"
-    title="Create Card"
+    :applyText="t('create')"
+    :title="t('createCard')"
     @apply="createCard"
     @close="emit('close')">
-    <LnbModalLabel>Text</LnbModalLabel>
+    <LnbModalLabel>{{ t('text') }}</LnbModalLabel>
     <LnbModalTextarea
         v-model="newCard.content"
-        placeholder="e.g. Make onboarding for new team members..."/>
+        :placeholder="t('contentExample')"/>
   </LnbModal>
 </template>
 

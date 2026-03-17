@@ -10,7 +10,7 @@ const { t } = useI18n();
   <LnbModal
     @close="emit('close')"
     @apply="emit('delete')"
-    applyText="Delete"
+    :applyText="t('delete')"
     :title="t('deleteCardTitle')">
       <LnbConfirmBody>
         {{ t('deleteCardConfirm') }}

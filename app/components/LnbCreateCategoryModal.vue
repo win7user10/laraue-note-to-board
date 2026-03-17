@@ -7,6 +7,8 @@ const emit = defineEmits<{
   (e: 'create', value: CreateCategoryRequest): void
 }>()
 
+const { t } = useI18n();
+
 const { getRandomColor } = useAppState();
 
 const newCategory = ref<CreateCategoryRequest>({
@@ -22,16 +24,16 @@ const createCategory = () => {
 
 <template>
   <LnbModal
-      apply-text="Create Board"
-      title="New Category Board"
+      :applyText="t('createBoard')"
+      :title="t('newCategoryBoard')"
       @close="emit('close')"
       @apply="createCategory">
-    <LnbModalLabel>Name</LnbModalLabel>
+    <LnbModalLabel>{{ t('categoryName') }}</LnbModalLabel>
     <LnbModalInput
       @enter="createCategory"
       v-model="newCategory.name"
-      placeholder="e.g. Work, Personal, Design..."/>
-    <LnbModalLabel>Color</LnbModalLabel>
+      :placeholder="t('categoryNameExample')"/>
+    <LnbModalLabel>{{ t('color') }}</LnbModalLabel>
     <LnbColorPicker
       v-model="newCategory.color"/>
   </LnbModal>

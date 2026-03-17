@@ -12,23 +12,31 @@ const categoryId = computed(() => appState.value.categoryId);
 const { loadCategories, createCategory } = useCategoriesApi();
 const { loadMessages, updateCategory, deleteMessage, createMessage, editMessage } = useMessagesApi();
 const categories = ref<CategoryCountDto[]>([])
-let initError = ref<any>({})
+const { t } = useI18n();
 
 const messages = ref<MessageListDto[]>([]);
 
 onMounted(async () => {
-  try {
-    categories.value = await loadCategories()
-    await reloadMessages();
-
-  } catch (err) {
-    initError.value = err;
-  }
+  await reloadCategories();
+  await reloadMessages();
 });
 
 watch(() => appState.value.categoryId, () => {
   return reloadMessages();
 })
+
+const reloadCategories = async () => {
+  const data = await loadCategories()
+  const result = [{
+    id: 0,
+    name: t('backlog'),
+    color: '#ff0000',
+    count: data.backlogCount,
+    statusesCount: 0,
+  }]
+  result.push(...data.categories)
+  categories.value = result;
+}
 
 const reloadMessages = async () => {
   messages.value = [];
@@ -62,7 +70,7 @@ const createCategoryInternal = async (value: CreateCategoryRequest) => {
     statusesCount: 0,
   })
   closeCreateCategory();
-  showToast("Board created", 'success', value.name);
+  showToast(t('boardCreated'), 'success', value.name);
   closeFab();
 }
 
@@ -83,7 +91,7 @@ const createCardInternal = async (value: CreateCardRequest) => {
   await reloadMessages();
 
   closeCreateCard();
-  showToast("Card created", 'success');
+  showToast(t('cardCreated'), 'success');
   closeFab();
 }
 
@@ -102,7 +110,7 @@ const editCardInternal = async (value: EditCardRequest) => {
   msg.content = value.content;
   await reloadMessages();
   closeEditCard();
-  showToast("Card edited", 'success');
+  showToast(t('cardEdited'), 'success');
 }
 
 const assignMsg = ref<MessageListDto | undefined>(undefined);
@@ -128,7 +136,7 @@ const assignToCategory = async (categoryId: number) => {
 
   modal.assign = false;
   deleteSelectedCardFromState();
-  showToast("Message assigned", 'success');
+  showToast(t('cardAssigned'), 'success', newCategory.name);
 }
 
 const openDelete = (message: MessageListDto) => {
@@ -149,7 +157,7 @@ const deleteCard = async () => {
 
   deleteSelectedCardFromState();
   closeDelete();
-  showToast("Message deleted", 'danger');
+  showToast(t('cardDeleted'), 'danger');
 }
 
 const deleteSelectedCardFromState = ()  => {
@@ -269,15 +277,15 @@ const fabOpen = ref(false);
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
     </div>
     <div class="fab-items">
-      <LnbFabItem title="New Board" :isOpened="fabOpen" @click="openCreateCategory">
+      <LnbFabItem :title="t('newBoard')" :isOpened="fabOpen" @click="openCreateCategory">
         <rect x="2" y="2" width="12" height="12" rx="2"/>
         <path d="M8 5v6M5 8h6"/>
       </LnbFabItem>
-      <LnbFabItem title="Search" :isOpened="fabOpen" @click="openSearch">
+      <LnbFabItem :title="t('search')" :isOpened="fabOpen" @click="openSearch">
         <circle cx="6.5" cy="6.5" r="4.5"/>
         <path d="M10.5 10.5l3 3"/>
       </LnbFabItem>
-      <LnbFabItem title="New Card" :isOpened="fabOpen" @click="openCreateCard">
+      <LnbFabItem :title="t('createCard')" :isOpened="fabOpen" @click="openCreateCard">
         <path d="M8 5v6M5 8h6"/>
       </LnbFabItem>
     </div>

@@ -18,8 +18,8 @@
 <template>
   <div class="backlog-view">
     <div class="backlog-header">
-      <h2>Backlog</h2>
-      <span class="badge">{{ messages.length }} {{ t('messages') }}</span>
+      <h2>{{ t('backlog') }}</h2>
+      <span class="badge">{{ messages.length }} {{ t('messages', { count: messages.length }) }}</span>
     </div>
 
     <LnbEmptyState

@@ -3,7 +3,6 @@
 
   defineProps<{
     assignMsg?: MessageListDto,
-    categories: CategoryCountDto[]
   }>()
   const emits = defineEmits<{
     (e: 'close'): void,
@@ -11,6 +10,13 @@
   }>()
 
   const { t } = useI18n();
+  const { loadCategories } = useCategoriesApi();
+
+  const categories = ref<CategoryCountDto[]>([])
+  onMounted(async () => {
+    const result = await loadCategories();
+    categories.value = result.categories;
+  })
 </script>
 
 <template>
@@ -36,7 +42,9 @@
         </LnbCardAvatar>
         <div class="assign-opt-info">
           <div class="assign-opt-name">{{ cat.name }}</div>
-          <div class="assign-opt-count">{{ cat.statusesCount }} {{ t('columns') }} · {{ cat.count }} {{ t('cards') }}</div>
+          <div class="assign-opt-count">
+            {{ cat.statusesCount }} {{ t('columns', cat.statusesCount) }} · {{ cat.count }} {{ t('cards', cat.count) }}
+          </div>
         </div>
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;color:var(--text3)">
           <path d="M3 8h10M9 4l4 4-4 4"/>

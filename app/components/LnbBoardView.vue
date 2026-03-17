@@ -199,7 +199,7 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
         <div class="board-title" v-if="currentCategory">
           <span :style="`color:${currentCategory.color}`">●</span> {{ currentCategory.name }}
         </div>
-        <div class="board-subtitle">{{ messages.length }} cards</div>
+        <div class="board-subtitle">{{ messages.length }} {{ t('cards', messages.length) }}</div>
       </div>
       <div class="board-actions">
         <LnbIconBtn :title="t('editBoard')" @click="openEditCategory">

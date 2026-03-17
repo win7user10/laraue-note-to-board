@@ -1,5 +1,9 @@
 import {useCategoriesClient} from "~/composables/categoriesClient";
-import type {EditStatusRequest} from "~/composables/statusesApi";
+
+export interface CategoryCountResult {
+    categories: CategoryCountDto[];
+    backlogCount: number;
+}
 
 export interface CategoryCountDto {
     id: number;
@@ -36,7 +40,7 @@ export const useCategoriesApi = () => {
     const client = useCategoriesClient()
 
     const loadCategories = () => {
-        return client<CategoryCountDto[]>('/categories/categories-with-count', {
+        return client<CategoryCountResult>('/categories/categories-with-count', {
             method: 'GET'
         });
     }

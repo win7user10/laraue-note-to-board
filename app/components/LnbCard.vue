@@ -14,6 +14,8 @@
     (e: 'openEdit', message: MessageListDto): void,
   }>()
 
+  const { t } = useI18n();
+
   const hl = (text: string) => {
     const q = props.highlightText?.trim();
     if (!q)
@@ -44,7 +46,7 @@
         <div
           v-if="assignButton"
           class="card-action-btn"
-          title="Assign to board"
+          :title="t('assignToBoard')"
           @click.stop="emits('openAssignToCategory', props.message)">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M3 8h10M9 4l4 4-4 4"/>
@@ -54,7 +56,7 @@
           v-if="deleteButton"
           @click.stop="emits('openDelete', props.message)"
           class="card-action-btn danger"
-          title="Delete">
+          :title="t('delete')">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9"/>
           </svg>

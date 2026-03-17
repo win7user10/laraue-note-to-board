@@ -3,6 +3,7 @@ const emit = defineEmits<{
   (e: 'close'): void,
   (e: 'delete'): void
 }>()
+const { t } = useI18n();
 </script>
 
 <template>
@@ -10,9 +11,9 @@ const emit = defineEmits<{
     @close="emit('close')"
     @apply="emit('delete')"
     applyText="Delete"
-    title="Delete Card?">
+    :title="t('deleteCardTitle')">
       <LnbConfirmBody>
-        Message will be permanently removed.
+        {{ t('deleteCardConfirm') }}
       </LnbConfirmBody>
   </LnbModal>
 </template>

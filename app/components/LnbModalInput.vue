@@ -17,6 +17,7 @@
     :value="modelValue"
     @input="emits('update:modelValue', ($event.target as any).value)"
     :placeholder="placeholder"
+    :disabled="disabled"
     @keyup.enter="emits('enter')" />
 </template>
 

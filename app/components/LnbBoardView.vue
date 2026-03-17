@@ -11,6 +11,7 @@ import LnbEditCategoryModal from "~/components/LnbEditCategoryModal.vue";
 const { appState, showToast } = useAppState()
 const { updateStatus, createMessage } = useMessagesApi();
 const { loadCategory, reorderStatuses, editCategory } = useCategoriesApi();
+const { t } = useI18n();
 
 const categoryId = computed(() => appState.value.categoryId);
 const currentCategory = ref<CategoryDto>()
@@ -70,7 +71,7 @@ const createStatusInternal = async (value: CreateStatusRequest) => {
     sortOrder: lastOrder + 1
   })
   closeCreateStatus();
-  showToast("Column created", 'success', value.name);
+  showToast(t('columnCreated'), 'success', value.name);
 }
 
 const statusToEdit = ref<StatusDto | null>()
@@ -89,7 +90,7 @@ const deleteStatusInternal = async () => {
   await reloadCategory();
   emits('reloadMessages')
   closeDeleteStatus();
-  showToast("Column deleted", 'danger', statusName);
+  showToast(t('columnDeleted'), 'danger', statusName);
 }
 
 const openEditStatus = (status: StatusDto) => {
@@ -107,7 +108,7 @@ const editStatusInternal = async (request: EditStatusRequest) => {
   status.color = request.color;
   status.name = request.name;
   closeEditStatus();
-  showToast("Status edited", 'success', request.name);
+  showToast(t('columnEdited'), 'success', request.name);
 }
 
 const openAddToBoard = (status: StatusDto) => {
@@ -125,7 +126,7 @@ const assignToBoard = async (request: CreateCardRequest) => {
   closeAddToBoard();
   const status = statuses.value.find(x => x.id === request.statusId);
   const subTitle = `${currentCategory.value?.name} · ${status?.name}`
-  showToast("Card added", 'success', subTitle);
+  showToast(t('cardCreated'), 'success', subTitle);
 }
 
 const openEditCategory = () => {
@@ -143,7 +144,7 @@ const editCategoryInternal = async (request: EditCategoryRequest) => {
   category.name = request.name;
   emits('categoryUpdated', category)
   closeEditCategory();
-  showToast("Category updated", 'success', request.name);
+  showToast(t('boardUpdated'), 'success', request.name);
 }
 
 const cardsByStatus = computed(() => {
@@ -163,7 +164,7 @@ const onCardMoved = async (cardId: string, categoryId: number, statusId: number)
   card.statusId = statusId;
   const status = statuses.value.find(x => x.id === statusId);
 
-  showToast("Card moved", 'default', status?.name)
+  showToast(t('cardMoved'), 'default', status?.name)
 };
 
 const onColMoved = async (statusId: number, newSortOrder: number) => {
@@ -185,7 +186,7 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
       Object.fromEntries(newStatuses.map(item => [item.id, item.sortOrder])))
 
   cat.statuses = newStatuses;
-  showToast("Column reordered", 'default')
+  showToast(t('columnReordered'), 'default')
 };
 
 </script>
@@ -201,7 +202,7 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
         <div class="board-subtitle">{{ messages.length }} cards</div>
       </div>
       <div class="board-actions">
-        <LnbIconBtn title="Edit board" @click="openEditCategory">
+        <LnbIconBtn :title="t('editBoard')" @click="openEditCategory">
           <path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z"></path>
         </LnbIconBtn>
       </div>
@@ -252,7 +253,7 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M8 3v10M3 8h10"/>
           </svg>
-          Add card
+          {{ t('addCard') }}
         </div>
       </div>
 
@@ -260,7 +261,7 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px">
           <path d="M8 3v10M3 8h10"/>
         </svg>
-        Add column
+        {{ t('addColumn') }}
       </div>
     </div>
   </div>

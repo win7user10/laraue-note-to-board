@@ -9,12 +9,14 @@
     (e: 'close'): void,
     (e: 'assignToCategory', categoryId: number): void,
   }>()
+
+  const { t } = useI18n();
 </script>
 
 <template>
   <LnbModal
     @close="$emit('close')"
-    title="Assign to Board">
+    :title="t('assignToBoard')">
     <div v-if="assignMsg" style="margin-bottom:12px">
       <div style="font-size:11px;color:var(--text3);margin-bottom:4px">
         {{ assignMsg.sender }} · {{ assignMsg.sender }}
@@ -34,14 +36,14 @@
         </LnbCardAvatar>
         <div class="assign-opt-info">
           <div class="assign-opt-name">{{ cat.name }}</div>
-          <div class="assign-opt-count">{{ cat.statusesCount }} columns · {{ cat.count }} cards</div>
+          <div class="assign-opt-count">{{ cat.statusesCount }} {{ t('columns') }} · {{ cat.count }} {{ t('cards') }}</div>
         </div>
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px;color:var(--text3)">
           <path d="M3 8h10M9 4l4 4-4 4"/>
         </svg>
       </div>
       <div v-if="categories.length === 0" style="text-align:center;padding:20px;font-size:12px;color:var(--text3)">
-        No boards yet. Create a category first.
+        {{ t('noBoards') }}
       </div>
     </div>
   </LnbModal>

@@ -29,7 +29,7 @@
         <div class="modal-body">
           <slot></slot>
           <div class="modal-btns">
-            <button class="btn btn-ghost" @click="close">Cancel</button>
+            <button class="btn btn-ghost" @click="close">{{ t('cancel') }}</button>
             <button
                 v-if="applyText"
                 class="btn btn-primary"

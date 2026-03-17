@@ -3,6 +3,8 @@ const emit = defineEmits<{
   (e: 'close'): void,
   (e: 'delete'): void
 }>()
+
+const { t } = useI18n();
 </script>
 
 <template>
@@ -10,9 +12,9 @@ const emit = defineEmits<{
       @close="emit('close')"
       @apply="emit('delete')"
       applyText="Delete"
-      title="Delete Column?">
+      :title="t('deleteColumnTitle')">
     <LnbConfirmBody>
-      The column will be permanently removed. Messages will me moved to the first available status.
+      {{ t('deleteColumnConfirm') }}
     </LnbConfirmBody>
   </LnbModal>
 </template>

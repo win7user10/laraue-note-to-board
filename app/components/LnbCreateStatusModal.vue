@@ -11,6 +11,8 @@ const emit = defineEmits<{
   (e: 'create', value: CreateStatusRequest): void
 }>()
 
+const { t } = useI18n();
+
 const newStatus = ref<CreateStatusRequest>({
   name: "",
   color: getRandomColor(),
@@ -25,16 +27,16 @@ const createStatus = () => {
 
 <template>
   <LnbModal
-      apply-text="Add Column"
-      title="Add Status Column"
+      :apply-text="t('addColumn')"
+      :title="t('addStatusColumn')"
       @close="emit('close')"
       @apply="createStatus">
-    <LnbModalLabel>Status name</LnbModalLabel>
+    <LnbModalLabel>{{ t('statusName') }}</LnbModalLabel>
     <LnbModalInput
         @enter="createStatus"
         v-model="newStatus.name"
-        placeholder="e.g. To Do, In Progress, Done..."/>
-    <LnbModalLabel>Color</LnbModalLabel>
+        :placeholder="t('statusNameExample')"/>
+    <LnbModalLabel>{{ t('color') }}</LnbModalLabel>
     <LnbColorPicker
         v-model="newStatus.color"/>
   </LnbModal>

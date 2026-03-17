@@ -1,12 +1,14 @@
 <script setup lang="ts">
-
+const { t } = useI18n();
 </script>
 
 <template>
   <div class="confirm-body">
     <slot></slot>
   </div>
-  <div class="confirm-warn">⚠ This action cannot be undone.</div>
+  <div class="confirm-warn">
+    ⚠ {{ t('unrevertibleAction')}}
+  </div>
 </template>
 
 <style scoped>

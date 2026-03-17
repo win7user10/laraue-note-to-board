@@ -19,15 +19,17 @@ watch(request, async (newValue) => {
   searchResults.value = await searchMessages(newValue);
 }, { deep: true, immediate: true })
 
+const { t } = useI18n();
+
 </script>
 
 <template>
   <LnbModal
-      title="Search"
+      :title="t('search')"
       :fullHeight="true">
     <LnbModalInput
       v-model="request.searchString"
-      placeholder="Search messages…"/>
+      :placeholder="t('searchPlaceholder')"/>
     <div class="search-filters">
       <div class="filter-chip"
         :class="{active:request.categoryId === null}"
@@ -56,10 +58,10 @@ watch(request, async (newValue) => {
       </div>
     </div>
     <div class="search-empty" v-else-if="request.searchString.trim()">
-      No messages found
+      {{ t('noSearchResults') }}
     </div>
     <div class="search-empty" v-else>
-      Type to search…
+      {{ t('emptySearch') }}
     </div>
   </LnbModal>
 

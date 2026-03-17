@@ -25,19 +25,21 @@ onMounted(() => {
   newStatus.value.name = props.status.name;
 })
 
+const { t } = useI18n();
+
 </script>
 
 <template>
   <LnbModal
-      apply-text="Edit Column"
+      :applyText="t('editColumn')"
       title="Edit Status Column"
       @close="emit('close')"
       @apply="emit('edit', newStatus)">
-    <LnbModalLabel>Status name</LnbModalLabel>
+    <LnbModalLabel>{{ t('statusName') }}</LnbModalLabel>
     <LnbModalInput
         v-model="newStatus.name"
-        placeholder="e.g. To Do, In Progress, Done..."/>
-    <LnbModalLabel>Color</LnbModalLabel>
+        :placeholder="t('statusNameExample')"/>
+    <LnbModalLabel>{{ t('color') }}</LnbModalLabel>
     <LnbColorPicker
         v-model="newStatus.color"/>
   </LnbModal>

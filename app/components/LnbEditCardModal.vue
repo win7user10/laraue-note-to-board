@@ -28,25 +28,25 @@ onMounted(() => {
 
 <template>
   <LnbModal
-      applyText="Save"
+      :applyText="t('save')"
       :title="t('editCard')"
       @apply="emit('edit', request)"
       @close="emit('close')">
 
-    <LnbModalLabel>Sender Name</LnbModalLabel>
+    <LnbModalLabel>{{ t('sender') }}</LnbModalLabel>
     <LnbModalInput
       :modelValue="message.sender ?? ''"
       disabled />
 
-    <LnbModalLabel>Created</LnbModalLabel>
+    <LnbModalLabel>{{ t('created') }}</LnbModalLabel>
     <LnbModalInput
         :modelValue="formatDate(message.time)"
         disabled />
 
-    <LnbModalLabel>Text</LnbModalLabel>
+    <LnbModalLabel>{{ t('text') }}</LnbModalLabel>
     <LnbModalTextarea
       v-model="request.content"
-      placeholder="e.g. Make onboarding for new team members..."/>
+      :placeholder="t('contentExample')"/>
   </LnbModal>
 </template>
 

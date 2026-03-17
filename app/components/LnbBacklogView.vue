@@ -11,21 +11,23 @@
   defineProps<{
     messages: MessageListDto[],
   }>()
+
+  const { t } = useI18n();
 </script>
 
 <template>
   <div class="backlog-view">
     <div class="backlog-header">
       <h2>Backlog</h2>
-      <span class="badge">{{ messages.length }} messages</span>
+      <span class="badge">{{ messages.length }} {{ t('messages') }}</span>
     </div>
 
     <LnbEmptyState
-        v-if="messages.length === 0"
-        title="Backlog is clear"
-        subtitle="All messages have been assigned to boards"/>
+      v-if="messages.length === 0"
+      :title="t('backlogEmpty')"
+      :subtitle="t('backlogEmptySubtitle')"/>
 
-    <div class="section-label" v-else>Unassigned · Drag to a board</div>
+    <div class="section-label" v-else>{{ t('unassignedTitle') }}</div>
 
     <LnbCard
       v-for="msg in messages"

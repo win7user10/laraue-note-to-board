@@ -25,19 +25,21 @@ onMounted(() => {
   request.value.name = props.category.name;
 })
 
+const { t } = useI18n();
+
 </script>
 
 <template>
   <LnbModal
-      apply-text="Edit Category"
-      title="Edit Category Board"
+      :applyText="t('editCategory')"
+      :title="t('editBoardTitle')"
       @close="emit('close')"
       @apply="emit('edit', request)">
-    <LnbModalLabel>Category name</LnbModalLabel>
+    <LnbModalLabel>{{ t('categoryName') }}</LnbModalLabel>
     <LnbModalInput
         v-model="request.name"
-        placeholder="e.g. Work, Personal, Design..."/>
-    <LnbModalLabel>Color</LnbModalLabel>
+        :placeholder="t('categoryNameExample')"/>
+    <LnbModalLabel>{{ t('color') }}</LnbModalLabel>
     <LnbColorPicker
         v-model="request.color"/>
   </LnbModal>

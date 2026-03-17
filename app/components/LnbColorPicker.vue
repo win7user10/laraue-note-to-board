@@ -1,16 +1,15 @@
 <script setup lang="ts">
 
 import {useAppState} from "~/composables/appState";
+const { appState } = useAppState();
 
-  const { appState } = useAppState();
+defineProps({
+  modelValue: { type: String, required: true },
+})
 
-  defineProps({
-    modelValue: { type: String, required: true },
-  })
-
-  const emits = defineEmits<{
-    (e: 'update:modelValue', value: string): void,
-  }>()
+const emits = defineEmits<{
+  (e: 'update:modelValue', value: string): void,
+}>()
 </script>
 
 <template>

@@ -191,7 +191,7 @@ const fabOpen = ref(false);
 <template>
   <!-- TOP BAR -->
   <div class="topbar">
-    <div class="topbar-logo">Message<span>Board</span></div>
+    <div class="topbar-logo">Msg<span>Board</span></div>
   </div>
 
   <div class="nav-loader" :class="{active: appState.isLoading}">

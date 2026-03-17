@@ -13,7 +13,6 @@ const { appState } = useAppState()
 const newCard = ref<CreateCardRequest>({
   content: "",
   categoryId: 0,
-  sender: "",
   statusId: 0,
 })
 
@@ -23,7 +22,6 @@ const props = defineProps<{
 
 onMounted(async () => {
   newCard.value.categoryId = appState.value.categoryId;
-  newCard.value.sender = appState.value.user.username;
   newCard.value.statusId = props.statusId;
 })
 

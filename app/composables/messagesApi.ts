@@ -12,7 +12,6 @@ export interface MessageListDto {
 
 export interface CreateCardRequest {
     content: string;
-    sender?: string;
     categoryId: number;
     statusId: number;
 }

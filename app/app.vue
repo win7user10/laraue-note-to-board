@@ -11,13 +11,22 @@ const configuration = useRuntimeConfig();
 const testUserToken = configuration.public.testUserToken;
 const { validate } = useTelegramUserApi();
 const { setUser } = useAppState();
-const { t, setLocale } = useI18n();
+const { t, setLocale, locales } = useI18n();
 
 onMounted(async () => {
   try {
     let token = testUserToken;
     if (!testUserToken) {
+      // set launch language based on TG settings
+      const language = WebApp.initDataUnsafe.user?.language_code;
+      if (locales.value.find(l => l.code == language))
+        // @ts-ignore
+        setLocale(language);
+
+      // Resize windows
       setupTelegram()
+
+      // Get token to validate from the passed by TG
       token = WebApp.initData;
       if (!token) {
         initError.value("The app should be run as Mini App");
@@ -88,7 +97,7 @@ const setupTelegram = () => {
 <template>
   <div id="app">
     <div class="loader-overlay" :class="{hidden: initialized}">
-      <div class="loader-logo">Message<span>board</span></div>
+      <div class="loader-logo">Msg<span>board</span></div>
       <div class="loader-bar"><div class="loader-bar-fill"></div></div>
       <div class="loader-text">{{ t('appInitializing') }}</div>
     </div>

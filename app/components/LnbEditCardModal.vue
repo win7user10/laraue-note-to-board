@@ -8,6 +8,8 @@ const props = defineProps<{
   message: MessageListDto
 }>()
 
+const { t } = useI18n();
+
 const emit = defineEmits<{
   (e: 'close'): void,
   (e: 'edit', value: EditCardRequest): void
@@ -27,7 +29,7 @@ onMounted(() => {
 <template>
   <LnbModal
       applyText="Save"
-      title="Edit Card"
+      :title="t('editCard')"
       @apply="emit('edit', request)"
       @close="emit('close')">
 

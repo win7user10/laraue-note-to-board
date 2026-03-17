@@ -11,6 +11,7 @@ const configuration = useRuntimeConfig();
 const testUserToken = configuration.public.testUserToken;
 const { validate } = useTelegramUserApi();
 const { setUser } = useAppState();
+const { t, setLocale } = useI18n();
 
 onMounted(async () => {
   try {
@@ -30,6 +31,9 @@ onMounted(async () => {
     const { loadUser } = useUserApi();
     const user = await loadUser();
     setUser(user);
+
+    // @ts-ignore
+    setLocale(user.languageCode);
 
   } catch (err) {
     initError.value = err;
@@ -86,7 +90,7 @@ const setupTelegram = () => {
     <div class="loader-overlay" :class="{hidden: initialized}">
       <div class="loader-logo">Message<span>board</span></div>
       <div class="loader-bar"><div class="loader-bar-fill"></div></div>
-      <div class="loader-text">Loading messages…</div>
+      <div class="loader-text">{{ t('appInitializing') }}</div>
     </div>
     <span v-if="!initialized">App is initializing...</span>
     <span v-else-if="initError">{{initError}}</span>

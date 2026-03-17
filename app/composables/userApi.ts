@@ -2,6 +2,7 @@ import {useUserClient} from "~/composables/userClient";
 
 export interface UserDto {
     username?: string;
+    languageCode: string;
 }
 
 export const useUserApi = () => {

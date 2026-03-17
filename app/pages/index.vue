@@ -369,7 +369,8 @@ const fabOpen = ref(false);
 }
 .nav-tab.active .nav-tab-count { background: var(--accent); color: #fff; }
 .nav-tab-add {
-  width: 28px; height: 28px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   border: 1px dashed var(--border2);
   display: flex; align-items: center; justify-content: center;
@@ -380,6 +381,7 @@ const fabOpen = ref(false);
   transition: all 0.15s;
 }
 .nav-tab-add:hover { border-color: var(--accent); color: var(--accent); }
+.nav-tab-add svg { width: 16px; height: 16px; }
 /* NAV LOADER — slim bar between stats and content */
 .nav-loader{height:3px;flex-shrink:0;pointer-events:none;opacity:0;transition:opacity 0.2s;background:var(--border)}
 .nav-loader.active{opacity:1}

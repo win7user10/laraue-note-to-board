@@ -25,9 +25,6 @@ useInfiniteScroll(scrollableEl, async () => {
   <div class="col-drag-area" ref="scrollableEl">
     <slot></slot>
   </div>
-  <LnbLoadMore
-    v-if="hasMore"
-    :isLoading="isLoading"/>
 </template>
 
 <style scoped>

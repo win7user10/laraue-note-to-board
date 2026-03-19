@@ -1,12 +1,14 @@
 <script setup lang="ts">
-  defineProps({
+  const props = defineProps({
     title: { type: String, required: true },
     applyText: { type: String, required: false },
     fullHeight: { type: Boolean, required: false },
+    determineScroll: { type: Boolean, required: false },
   })
   const emit = defineEmits<{
     (e: 'close'): void,
-    (e: 'apply'): void
+    (e: 'apply'): void,
+    (e: 'scroll'): void,
   }>()
 
   const { t } = useI18n();
@@ -18,6 +20,18 @@
   const apply = () => {
     emit('apply')
   }
+
+  const scrollableEl = ref<HTMLElement | null>(null);
+  onMounted(() => {
+    if (props.determineScroll)
+      useInfiniteScroll(scrollableEl, async () => {
+        emit('scroll')
+      }, {
+        distance: 80,
+        canLoadMore: () => true
+      });
+  })
+
 </script>
 
 <template>
@@ -28,7 +42,7 @@
           <div class="modal-handle"></div>
           <div class="modal-title">{{ title }}</div>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" ref="scrollableEl">
           <slot></slot>
           <div class="modal-btns">
             <button class="btn btn-ghost" @click="close">{{ t('cancel') }}</button>

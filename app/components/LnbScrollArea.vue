@@ -2,26 +2,32 @@
 
 import LnbLoadMore from "~/components/LnbLoadMore.vue";
 
-defineProps<{
+const props = defineProps<{
   hasMore: boolean,
-  isLoading: boolean
+  isLoading: boolean,
 }>()
 
 const emits = defineEmits<{
   (e: 'loadMore'): void,
 }>()
+
+const isLoading = ref(false)
+const scrollableEl = ref(null);
+
+useInfiniteScroll(scrollableEl, async () => {
+  if (isLoading.value)
+    return
+  emits('loadMore')
+}, { distance: 80, canLoadMore: () => props.hasMore });
 </script>
 
 <template>
-  <div class="col-drag-area" v-col-scroll="{
-      statusId: 0,
-      onLoad: () => emits('loadMore'),
-      hasMore: (sid: number) => hasMore }">
+  <div class="col-drag-area" ref="scrollableEl">
     <slot></slot>
   </div>
   <LnbLoadMore
-      v-if="hasMore"
-      :isLoading="isLoading"/>
+    v-if="hasMore"
+    :isLoading="isLoading"/>
 </template>
 
 <style scoped>

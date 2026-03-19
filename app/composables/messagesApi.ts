@@ -22,6 +22,8 @@ export interface EditCardRequest {
 
 export interface SearchRequest {
     searchString: string;
+    page: number;
+    perPage: number;
     categoryId: number | null;
 }
 
@@ -92,9 +94,9 @@ export const useMessagesApi = () => {
     }
 
     const searchMessages = (request: SearchRequest) => {
-        return client<MessageListDto[]>('/messages/search', {
-            method: 'POST',
-            body: request
+        return client<FullPaginatedResult<MessageListDto>>('/messages/search', {
+            method: 'GET',
+            query: request
         });
     }
 

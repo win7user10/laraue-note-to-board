@@ -1,5 +1,7 @@
 <script setup lang="ts">
 
+import type {MessageListDto} from "~/composables/messagesApi";
+
 defineProps<{
   categories: CategoryCountDto[]
 }>()
@@ -14,10 +16,37 @@ const request = ref({
   categoryId: null as null | number
 })
 
-const searchResults = ref<MessageListDto[]>([])
+const pagination = ref(DefaultPagination);
+const searchResults = ref<FullPaginatedResult<MessageListDto> | null>()
+
 watch(request, async (newValue) => {
-  searchResults.value = await searchMessages(newValue);
+  searchResults.value = await searchMessages({
+    categoryId: newValue.categoryId,
+    searchString: newValue.searchString,
+    page: pagination.value.page,
+    perPage: pagination.value.perPage
+  });
 }, { deep: true, immediate: true })
+
+
+const isLoading = ref(false)
+const loadMore = async () => {
+  try {
+    isLoading.value = true;
+    const item = searchResults.value!;
+    const newMessages = await searchMessages({
+      searchString: request.value.searchString,
+      categoryId: request.value.categoryId,
+      perPage: searchResults.value!.perPage,
+      page: searchResults.value!.page + 1
+    })
+    item.data.push(...newMessages.data);
+    item.page = newMessages.page;
+    item.hasNextPage = newMessages.hasNextPage
+  } finally {
+    isLoading.value = false;
+  }
+}
 
 const { t } = useI18n();
 
@@ -45,17 +74,22 @@ const { t } = useI18n();
         <span :style="`color:${cat.color}`">● </span>{{cat.name}}
       </div>
     </div>
-    <div v-if="searchResults.length">
-      <div v-for="searchResult in searchResults">
-        <LnbCard
-          @click.stop="emits('openCard', searchResult)"
-          style="margin-bottom: 6px;"
-          :deleteButton="false"
-          :assignButton="false"
-          :key="searchResult.id"
-          :highlightText="request.searchString"
-          :message="searchResult"/>
-      </div>
+    <div v-if="searchResults?.total != 0">
+      <LnbScrollArea
+        :hasMore="!!searchResults?.hasNextPage"
+        :isLoading="isLoading"
+        @loadMore="loadMore">
+        <div v-for="searchResult in searchResults?.data">
+          <LnbCard
+              @click.stop="emits('openCard', searchResult)"
+              style="margin-bottom: 6px;"
+              :deleteButton="false"
+              :assignButton="false"
+              :key="searchResult.id"
+              :highlightText="request.searchString"
+              :message="searchResult"/>
+        </div>
+      </LnbScrollArea>
     </div>
     <div class="search-empty" v-else-if="request.searchString.trim()">
       {{ t('noSearchResults') }}

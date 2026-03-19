@@ -17,3 +17,8 @@ export interface ShortPaginatedResult<T> {
     lastPage: number;
     total: number;
 }
+
+export const DefaultPagination: PaginationData = {
+    page: 0,
+    perPage: 10,
+}

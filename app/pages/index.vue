@@ -5,6 +5,7 @@ import { useAppState } from "~/composables/appState";
 import LnbCreateCategoryModal from "~/components/LnbCreateCategoryModal.vue";
 import {onMounted, ref} from "vue";
 import LnbFabItem from "~/components/LnbFabItem.vue";
+import {DefaultPagination} from "~/composables/pagination";
 
 const { appState, setCategory, showToast } = useAppState()
 const categoryId = computed(() => appState.value.categoryId);
@@ -36,11 +37,6 @@ const reloadCategories = async () => {
   }]
   result.push(...data.categories)
   categories.value = result;
-}
-
-const DefaultPagination: PaginationData = {
-  page: 0,
-  perPage: 10,
 }
 
 const reloadMessages = async () => {

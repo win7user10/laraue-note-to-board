@@ -25,14 +25,36 @@ export interface SearchRequest {
     categoryId: number | null;
 }
 
+export interface ColumnMessages {
+    statusId: number;
+    items: FullPaginatedResult<MessageListDto>
+}
+
 export const useMessagesApi = () => {
     const client = useMessagesClient()
 
-    const loadMessages = (categoryId: number | null) => {
-        return client<MessageListDto[]>('/messages', {
+    const loadMessages = (
+        statusId: number | null,
+        pagination: PaginationData) => {
+        return client<ShortPaginatedResult<MessageListDto>>('/messages', {
             method: 'GET',
             query: {
-                categoryId: categoryId ?? undefined
+                statusId: statusId ?? undefined,
+                page: pagination.page,
+                perPage: pagination.perPage,
+            }
+        });
+    }
+
+    const loadBoard = (
+        categoryId: number | null,
+        pagination: PaginationData) => {
+        return client<ColumnMessages[]>('/messages/board', {
+            method: 'GET',
+            query: {
+                categoryId: categoryId ?? undefined,
+                page: pagination.page,
+                perPage: pagination.perPage,
             }
         });
     }
@@ -84,5 +106,6 @@ export const useMessagesApi = () => {
         createMessage,
         editMessage,
         searchMessages,
+        loadBoard,
     }
 }

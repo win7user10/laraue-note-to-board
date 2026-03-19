@@ -10,11 +10,11 @@ const { appState, setCategory, showToast } = useAppState()
 const categoryId = computed(() => appState.value.categoryId);
 
 const { loadCategories, createCategory } = useCategoriesApi();
-const { loadMessages, updateCategory, deleteMessage, createMessage, editMessage } = useMessagesApi();
+const { updateCategory, deleteMessage, createMessage, editMessage, loadBoard, loadMessages } = useMessagesApi();
 const categories = ref<CategoryCountDto[]>([])
 const { t } = useI18n();
 
-const messages = ref<MessageListDto[]>([]);
+const messages = ref<ColumnMessages[]>([]);
 
 onMounted(async () => {
   await reloadCategories();
@@ -38,9 +38,14 @@ const reloadCategories = async () => {
   categories.value = result;
 }
 
+const DefaultPagination: PaginationData = {
+  page: 0,
+  perPage: 10,
+}
+
 const reloadMessages = async () => {
   messages.value = [];
-  messages.value = await loadMessages(categoryId.value)
+  messages.value = await loadBoard(categoryId.value, DefaultPagination)
 }
 
 const modal = reactive({
@@ -135,8 +140,8 @@ const assignToCategory = async (categoryId: number) => {
     oldCategory.count -= 1;
 
   modal.assign = false;
-  deleteSelectedCardFromState();
-  showToast(t('cardAssigned'), 'success', newCategory.name);
+  await reloadMessages();
+  showToast(t('cardAssigned'), 'success', newCategory?.name);
 }
 
 const openDelete = (message: MessageListDto) => {
@@ -155,13 +160,9 @@ const deleteCard = async () => {
   if (messageCategory)
     messageCategory.count--;
 
-  deleteSelectedCardFromState();
+  await reloadMessages();
   closeDelete();
   showToast(t('cardDeleted'), 'danger');
-}
-
-const deleteSelectedCardFromState = ()  => {
-  messages.value = messages.value.filter(x => x.id != assignMsg.value!.id)
 }
 
 const onCategoryUpdated = (request: EditCategoryRequest) => {
@@ -185,6 +186,25 @@ const closeFab = () => {
 }
 
 const fabOpen = ref(false);
+
+const loadingCols = ref<number[]>([]);
+const loadMore = async (statusId: number) => {
+  if (loadingCols.value.includes(statusId))
+    return;
+
+  try {
+    loadingCols.value.push(statusId);
+    const item = messages.value.find(s => s.statusId === statusId)!.items;
+    const pagination = { page: item.page + 1, perPage: item.perPage };
+    const newMessages = await loadMessages(statusId, pagination)
+    item.data.push(...newMessages.data);
+    item.page = newMessages.page;
+    item.hasNextPage = newMessages.hasNextPage
+  } finally {
+    const index = loadingCols.value.indexOf(statusId);
+    loadingCols.value = loadingCols.value.slice(index, 1);
+  }
+}
 
 </script>
 
@@ -220,6 +240,8 @@ const fabOpen = ref(false);
   <template v-if="categoryId === 0">
     <LnbBacklogView
       :messages="messages"
+      :isLoading="loadingCols.includes(0)"
+      @loadMoreMessages="loadMore"
       @openAssignToCategory="openAssignToCategory"
       @openEdit="openEditCard"
       @openDelete="openDelete" />
@@ -227,7 +249,9 @@ const fabOpen = ref(false);
   <template v-else>
     <LnbBoardView
       @categoryUpdated="onCategoryUpdated"
+      @loadMoreMessages="loadMore"
       :messages="messages"
+      :loadingStatuses="loadingCols"
       @reloadMessages="reloadMessages"
       @openEdit="openEditCard"
       @openDelete="openDelete"/>

@@ -3,10 +3,12 @@ import { useAppState } from "~/composables/appState";
 import {ref} from "vue";
 import LnbIconBtn from "~/components/LnbIconBtn.vue";
 import {useCategoriesApi} from "~/composables/categoriesApi";
-import type {MessageListDto} from "~/composables/messagesApi";
+import type {ColumnMessages, MessageListDto} from "~/composables/messagesApi";
 import LnbEditStatusModal from "~/components/LnbEditStatusModal.vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
 import LnbEditCategoryModal from "~/components/LnbEditCategoryModal.vue";
+import LnbLoadMore from "~/components/LnbLoadMore.vue";
+import LnbScrollArea from "~/components/LnbScrollArea.vue";
 
 const { appState, showToast } = useAppState()
 const { updateStatus, createMessage } = useMessagesApi();
@@ -17,7 +19,8 @@ const categoryId = computed(() => appState.value.categoryId);
 const currentCategory = ref<CategoryDto>()
 
 const props = defineProps<{
-  messages: MessageListDto[],
+  messages: ColumnMessages[],
+  loadingStatuses: number[]
 }>()
 
 const emits = defineEmits<{
@@ -25,10 +28,15 @@ const emits = defineEmits<{
   (e: 'openEdit', message: MessageListDto): void,
   (e: 'reloadMessages'): void,
   (e: 'categoryUpdated', category: CategoryDto): void,
+  (e: 'loadMoreMessages', statusId: number): void,
 }>()
 
 watch(() => categoryId.value, async _ => {
   await reloadCategory();
+})
+
+const allCards = computed(() => {
+  return props.messages.flatMap(x => x.items.data)
 })
 
 onMounted(async () => {
@@ -148,7 +156,7 @@ const editCategoryInternal = async (request: EditCategoryRequest) => {
 }
 
 const cardsByStatus = computed(() => {
-  return Object.groupBy(props.messages, item => item.statusId);
+  return Object.fromEntries(props.messages.map(x => [x.statusId, x.items]));
 })
 
 const statuses = computed(() => {
@@ -156,7 +164,7 @@ const statuses = computed(() => {
 })
 
 const onCardMoved = async (cardId: string, categoryId: number, statusId: number) => {
-  const card = props.messages.find(m => m.id === Number(cardId));
+  const card = allCards.value.find(m => m.id === Number(cardId));
   if (!card) return;
 
   await updateStatus(card.id, statusId);
@@ -189,6 +197,9 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
   showToast(t('columnReordered'), 'default')
 };
 
+const loadMoreCards = async (statusId: number) => {
+  emits('loadMoreMessages', statusId);
+}
 </script>
 
 <template>
@@ -227,7 +238,7 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
           </div>
           <div class="col-indicator" :style="`background:${status.color}`"></div>
           <div class="col-title">{{ status.name }}</div>
-          <div class="col-count">{{ cardsByStatus[status.id]?.length ?? 0 }}</div>
+          <div class="col-count">{{ cardsByStatus[status.id]?.total ?? 0 }}</div>
           <div class="col-del-btn" @click.stop="openEditStatus(status)" style="color:var(--text3)">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z"/>
@@ -239,16 +250,21 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
             </svg>
           </div>
         </div>
-        <div class="col-drag-area" v-sortable="{ catId: appState.categoryId, statusId: status?.id, onCardMoved }">
-          <lnb-card
-            v-for="msg in cardsByStatus[status.id]"
-            @openDelete="emits('openDelete', msg)"
-            @openEdit="emits('openEdit', $event)"
-            :deleteButton="true"
-            :key="msg.id"
-            :assignButton="false"
-            :message="msg"/>
-        </div>
+        <LnbScrollArea
+            @loadMore="loadMoreCards(status?.id)"
+            :hasMore="!!cardsByStatus[status?.id]?.hasNextPage"
+            :isLoading="loadingStatuses.includes(status?.id)">
+          <div v-sortable="{ catId: appState.categoryId, statusId: status?.id, onCardMoved }">
+            <lnb-card
+                v-for="msg in cardsByStatus[status.id]?.data"
+                @openDelete="emits('openDelete', msg)"
+                @openEdit="emits('openEdit', $event)"
+                :deleteButton="true"
+                :key="msg.id"
+                :assignButton="false"
+                :message="msg"/>
+          </div>
+        </LnbScrollArea>
         <div class="col-add-btn" @click="openAddToBoard(status)">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M8 3v10M3 8h10"/>
@@ -348,11 +364,6 @@ const onColMoved = async (statusId: number, newSortOrder: number) => {
 .col-del-btn{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);transition:all 0.15s;-webkit-tap-highlight-color:transparent}
 .col-del-btn:hover{background:var(--red-glow);color:var(--red)}
 .col-del-btn svg{width:13px;height:13px}
-
-.col-drag-area { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; min-height: 60px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: var(--border) transparent; transition: background 0.15s; }
-.col-drag-area::-webkit-scrollbar { width: 3px; }
-.col-drag-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-.col-drag-area.drag-over { background: var(--accent-glow); }
 
 .col-add-btn {
   margin: 6px 8px 8px;

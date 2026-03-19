@@ -16,13 +16,55 @@
 
   const { t } = useI18n();
 
-  const hl = (text: string) => {
-    const q = props.highlightText?.trim();
-    if (!q)
-      return text;
-    const e = q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-    return String(text).replace(new RegExp(`(${e})`,'gi'),'<span class="search-hl">$1</span>');
-  };
+  const hlTextChunks = computed<TextChunk[]>(() => {
+    const content = props.message.content;
+    const highlightText = props.highlightText?.trim();
+    if (!highlightText)
+      return [{ content, isHighlighted: false }];
+
+    const result: TextChunk[] = [];
+    const searchStr = highlightText.toLowerCase();
+    const contentLower = content.toLowerCase();
+
+    let currentIndex = 0;
+    let searchIndex = contentLower.indexOf(searchStr, currentIndex);
+
+    while (searchIndex !== -1) {
+      // Add non-highlighted text before the match
+      if (searchIndex > currentIndex) {
+        result.push({
+          content: content.substring(currentIndex, searchIndex),
+          isHighlighted: false
+        });
+      }
+
+      // Add the highlighted match
+      result.push({
+        content: content.substring(searchIndex, searchIndex + highlightText.length),
+        isHighlighted: true
+      });
+
+      // Move current index past this match
+      currentIndex = searchIndex + highlightText.length;
+
+      // Search for next occurrence
+      searchIndex = contentLower.indexOf(searchStr, currentIndex);
+    }
+    // Add remaining text after last match
+    if (currentIndex < content.length) {
+      result.push({
+        content: content.substring(currentIndex),
+        isHighlighted: false
+      });
+    }
+
+    return result;
+  })
+
+  interface TextChunk {
+    content: string;
+    isHighlighted: boolean;
+  }
 
   const { formatDate } = useUtils()
 </script>
@@ -39,7 +81,12 @@
       <div class="card-sender">{{ props.message.sender }}</div>
       <div class="card-time">{{ formatDate(props.message.time) }}</div>
     </div>
-    <div class="card-text" v-html="hl(props.message.content)"></div>
+    <div class="card-text">
+      <template v-for="chunk in hlTextChunks">
+        <span class="search-hl" v-if="chunk.isHighlighted">{{ chunk.content }}</span>
+        <template v-else>{{ chunk.content }}</template>
+      </template>
+    </div>
     <div class="card-footer">
       <!--<span class="card-tag">PM</span>-->
       <div class="card-actions">

@@ -109,7 +109,6 @@ const editCardInternal = async (value: EditCardRequest) => {
   const msg = assignMsg.value!;
   await editMessage(msg.id, value);
   msg.content = value.content;
-  await reloadMessages();
   closeEditCard();
   showToast(t('cardEdited'), 'success');
 }
@@ -167,6 +166,11 @@ const onCategoryUpdated = (request: EditCategoryRequest) => {
     cat.color = request.color;
     cat.name = request.name;
   }
+}
+
+const onBoardCardCreated = () => {
+  const cat = categories.value.find(c => c.id === appState.value.categoryId)
+  if (cat) cat.count += 1;
 }
 
 const openSearch = () => {
@@ -244,13 +248,15 @@ const loadMore = async (statusId: number) => {
   </template>
   <template v-else>
     <LnbBoardView
+      @cardCreated="onBoardCardCreated"
       @categoryUpdated="onCategoryUpdated"
       @loadMoreMessages="loadMore"
       :messages="messages"
       :loadingStatuses="loadingCols"
       @reloadMessages="reloadMessages"
       @openEdit="openEditCard"
-      @openDelete="openDelete"/>
+      @openDelete="openDelete"
+      @createCard="createCardInternal"/>
   </template>
 
   <LnbCreateCategoryModal
@@ -283,7 +289,7 @@ const loadMore = async (statusId: number) => {
       v-if="modal.search"/>
 
   <LnbEditCardModal
-    :message="assignMsg!"
+    :id="assignMsg!.id"
     @edit="editCardInternal"
     @close="closeEditCard"
     v-if="modal.editCard"/>
@@ -296,16 +302,16 @@ const loadMore = async (statusId: number) => {
     <div class="fab-main" :class="{open: fabOpen}" @click="fabOpen=!fabOpen">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
     </div>
-    <div class="fab-items">
-      <LnbFabItem :title="t('newBoard')" :isOpened="fabOpen" @click="openCreateCategory">
+    <div class="fab-items" v-if="fabOpen">
+      <LnbFabItem :title="t('newBoard')" @click="openCreateCategory">
         <rect x="2" y="2" width="12" height="12" rx="2"/>
         <path d="M8 5v6M5 8h6"/>
       </LnbFabItem>
-      <LnbFabItem :title="t('search')" :isOpened="fabOpen" @click="openSearch">
+      <LnbFabItem :title="t('search')" @click="openSearch">
         <circle cx="6.5" cy="6.5" r="4.5"/>
         <path d="M10.5 10.5l3 3"/>
       </LnbFabItem>
-      <LnbFabItem :title="t('createCard')" :isOpened="fabOpen" @click="openCreateCard">
+      <LnbFabItem :title="t('createCard')" @click="openCreateCard">
         <path d="M8 5v6M5 8h6"/>
       </LnbFabItem>
     </div>

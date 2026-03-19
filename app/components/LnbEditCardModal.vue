@@ -5,24 +5,28 @@ import {ref} from "vue";
 import {useUtils} from "~/composables/utils";
 
 const props = defineProps<{
-  message: MessageListDto
+  id: number
 }>()
 
 const { t } = useI18n();
 
 const emit = defineEmits<{
   (e: 'close'): void,
-  (e: 'edit', value: EditCardRequest): void
+  (e: 'edit', request: EditCardRequest): void
 }>()
 
 const { formatDate } = useUtils()
+const { getMessage } = useMessagesApi()
 
 const request = ref<EditCardRequest>({
   content: ''
 })
 
-onMounted(() => {
-  request.value.content = props.message.content;
+const data = ref<MessageDetailDto>()
+
+onMounted(async () => {
+  data.value = await getMessage(props.id);
+  request.value.content = data.value.content;
 })
 </script>
 
@@ -35,13 +39,13 @@ onMounted(() => {
 
     <LnbModalLabel>{{ t('sender') }}</LnbModalLabel>
     <LnbModalInput
-      :modelValue="message.sender ?? ''"
+      :modelValue="data?.sender ?? ''"
       disabled />
 
     <LnbModalLabel>{{ t('created') }}</LnbModalLabel>
     <LnbModalInput
-        :modelValue="formatDate(message.time)"
-        disabled />
+      :modelValue="formatDate(data?.time)"
+      disabled />
 
     <LnbModalLabel>{{ t('text') }}</LnbModalLabel>
     <LnbModalTextarea

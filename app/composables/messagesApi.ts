@@ -10,6 +10,18 @@ export interface MessageListDto {
     senderColor: string;
 }
 
+export interface MessageDetailDto {
+    id: number;
+    time: string;
+    sender?: string;
+    senderInitial?: string;
+    content: string;
+    categoryName?: string;
+    statusName?: string;
+    color: string;
+    senderColor: string;
+}
+
 export interface CreateCardRequest {
     content: string;
     categoryId: number;
@@ -100,6 +112,12 @@ export const useMessagesApi = () => {
         });
     }
 
+    const getMessage = (id: number) => {
+        return client<MessageDetailDto>('/messages/' + id, {
+            method: 'GET'
+        });
+    }
+
     return {
         loadMessages,
         updateStatus,
@@ -109,5 +127,6 @@ export const useMessagesApi = () => {
         editMessage,
         searchMessages,
         loadBoard,
+        getMessage
     }
 }

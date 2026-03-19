@@ -7,7 +7,6 @@ import type {ColumnMessages, MessageListDto} from "~/composables/messagesApi";
 import LnbEditStatusModal from "~/components/LnbEditStatusModal.vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
 import LnbEditCategoryModal from "~/components/LnbEditCategoryModal.vue";
-import LnbLoadMore from "~/components/LnbLoadMore.vue";
 import LnbScrollArea from "~/components/LnbScrollArea.vue";
 
 const { appState, showToast } = useAppState()
@@ -29,6 +28,7 @@ const emits = defineEmits<{
   (e: 'reloadMessages'): void,
   (e: 'categoryUpdated', category: CategoryDto): void,
   (e: 'loadMoreMessages', statusId: number): void,
+  (e: 'cardCreated', statusId: number): void,
 }>()
 
 watch(() => categoryId.value, async _ => {
@@ -37,6 +37,12 @@ watch(() => categoryId.value, async _ => {
 
 const allCards = computed(() => {
   return props.messages.flatMap(x => x.items.data)
+})
+
+const totalCount = computed(() => {
+  return props.messages
+      .flatMap(x => x.items.total)
+      .reduce((acc, x) => acc + x, 0)
 })
 
 onMounted(async () => {
@@ -131,6 +137,7 @@ const closeAddToBoard = () => {
 const assignToBoard = async (request: CreateCardRequest) => {
   await createMessage(request);
   emits('reloadMessages');
+  emits('cardCreated', request.statusId)
   closeAddToBoard();
   const status = statuses.value.find(x => x.id === request.statusId);
   const subTitle = `${currentCategory.value?.name} · ${status?.name}`
@@ -210,7 +217,9 @@ const loadMoreCards = async (statusId: number) => {
         <div class="board-title" v-if="currentCategory">
           <span :style="`color:${currentCategory.color}`">●</span> {{ currentCategory.name }}
         </div>
-        <div class="board-subtitle">{{ messages.length }} {{ t('cards', messages.length) }}</div>
+        <div class="board-subtitle">
+          {{ totalCount }} {{ t('cards', totalCount) }}
+        </div>
       </div>
       <div class="board-actions">
         <LnbIconBtn :title="t('editBoard')" @click="openEditCategory">
@@ -254,7 +263,7 @@ const loadMoreCards = async (statusId: number) => {
             @loadMore="loadMoreCards(status?.id)"
             :hasMore="!!cardsByStatus[status?.id]?.hasNextPage"
             :isLoading="loadingStatuses.includes(status?.id)">
-          <div v-sortable="{ catId: appState.categoryId, statusId: status?.id, onCardMoved }">
+          <div class="col-drag-inner" v-sortable="{ catId: appState.categoryId, statusId: status?.id, onCardMoved }">
             <lnb-card
                 v-for="msg in cardsByStatus[status.id]?.data"
                 @openDelete="emits('openDelete', msg)"
@@ -361,6 +370,7 @@ const loadMoreCards = async (statusId: number) => {
   color: var(--text2);
   font-weight: 600;
 }
+.col-drag-inner{display:flex;flex-direction:column;gap:6px;}
 .col-del-btn{width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);transition:all 0.15s;-webkit-tap-highlight-color:transparent}
 .col-del-btn:hover{background:var(--red-glow);color:var(--red)}
 .col-del-btn svg{width:13px;height:13px}

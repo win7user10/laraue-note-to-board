@@ -79,7 +79,6 @@
   display: flex;
   flex-direction: column;
   max-height: 88dvh;
-  padding-bottom: var(--safe-bottom);
 }
 .modal.modal-full{
   height:92vh
@@ -91,11 +90,13 @@
 }
 .modal-body {
   overflow-y: auto;
-  padding: 20px calc(max(16px, var(--safe-right))) 0 calc(max(16px, var(--safe-left)));
+  padding: 0 calc(max(16px, var(--safe-right))) calc(max(20px, var(--safe-bottom))) calc(max(16px, var(--safe-left)));
   flex: 1;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent; }
+  scrollbar-color: var(--border) transparent;
+}
+
 .modal-handle {
   width: 36px; height: 4px;
   background: var(--border2);

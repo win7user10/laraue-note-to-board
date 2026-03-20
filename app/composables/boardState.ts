@@ -293,6 +293,9 @@ export const useBoard = () => {
         const idx = cat.statuses.findIndex(s => s.id === statusId);
         if (idx < 0) return;
 
+        if (idx == newSortOrder)
+            return;
+
         const newStatuses = [...cat.statuses];
         const [removed] = newStatuses.splice(idx, 1);
         newStatuses.splice(newSortOrder, 0, removed!);

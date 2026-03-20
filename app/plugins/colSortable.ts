@@ -10,7 +10,6 @@ export default defineNuxtPlugin((nuxtApp) => {
                 delay: 150,
                 delayOnTouchOnly: true,
                 touchStartThreshold: 4,
-                forceFallback: true,
                 handle: '.col-header',           // drag only from header
                 filter: '.add-col-btn',          // don't drag the add button
                 draggable: '.board-col',

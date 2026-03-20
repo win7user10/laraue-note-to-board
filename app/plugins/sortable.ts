@@ -6,20 +6,18 @@ export default defineNuxtPlugin((nuxtApp) => {
         mounted(el, binding) {
             const { catId, statusId, onCardMoved } = binding.value;
             el._sortableInstance = Sortable.create(el, {
-                group: 'cards',           // same group = drag between columns
+                group: 'cards',
+                sort: false,                  // no reordering within column
                 animation: 150,
-                delay: 150,               // long-press duration before drag starts
-                delayOnTouchOnly: true,   // delay only on touch; mouse starts immediately
-                touchStartThreshold: 4,   // px finger must move to cancel tap & start drag
+                delay: 150,
+                delayOnTouchOnly: true,
+                touchStartThreshold: 4,
                 ghostClass: 'sortable-ghost',
                 chosenClass: 'sortable-chosen',
-                forceFallback: true,
                 onAdd(evt) {
-                    // Card was dragged FROM another column INTO this one
                     const cardId = evt.item.dataset.cardId;
                     onCardMoved(cardId, catId, statusId);
-                    // Remove the DOM node SortableJS physically moved — Vue re-renders from state
-                    evt.item.remove();
+                    evt.item.remove();          // Vue re-renders from state
                 }
             });
             el._sortableMeta = { catId, statusId, onCardMoved };

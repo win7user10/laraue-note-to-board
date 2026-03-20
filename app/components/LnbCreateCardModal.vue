@@ -8,7 +8,7 @@ const emit = defineEmits<{
   (e: 'create', value: CreateCardRequest): void
 }>()
 
-const { appState } = useAppState()
+const { state } = useBoard()
 const { t } = useI18n();
 
 const newCard = ref<CreateCardRequest>({
@@ -22,7 +22,7 @@ const props = defineProps<{
 }>()
 
 onMounted(async () => {
-  newCard.value.categoryId = appState.value.categoryId;
+  newCard.value.categoryId = state.value.categoryId;
   newCard.value.statusId = props.statusId;
 })
 

@@ -1,8 +1,6 @@
 <script setup lang="ts">
 
-defineProps<{
-  categories: CategoryCountDto[]
-}>()
+import type {MessageListDto} from "~/composables/messagesApi";
 
 const emits = defineEmits<{
   (e: 'openCard', card: MessageListDto): void,
@@ -14,10 +12,43 @@ const request = ref({
   categoryId: null as null | number
 })
 
-const searchResults = ref<MessageListDto[]>([])
+const { state } = useBoard()
+const categories = computed(() => state.value.categories)
+
+const pagination = ref(DefaultPagination);
+const searchResults = ref<FullPaginatedResult<MessageListDto> | null>()
+
+const isLoading = ref(true)
 watch(request, async (newValue) => {
-  searchResults.value = await searchMessages(newValue);
+  isLoading.value = true;
+  searchResults.value = await searchMessages({
+    categoryId: newValue.categoryId,
+    searchString: newValue.searchString,
+    page: pagination.value.page,
+    perPage: pagination.value.perPage
+  });
+  isLoading.value = false;
 }, { deep: true, immediate: true })
+
+const loadMore = async () => {
+  if (!searchResults?.value?.hasNextPage || isLoading.value)
+    return;
+  try {
+    isLoading.value = true;
+    const item = searchResults.value!;
+    const newMessages = await searchMessages({
+      searchString: request.value.searchString,
+      categoryId: request.value.categoryId,
+      perPage: searchResults.value!.perPage,
+      page: searchResults.value!.page + 1
+    })
+    item.data.push(...newMessages.data);
+    item.page = newMessages.page;
+    item.hasNextPage = newMessages.hasNextPage
+  } finally {
+    isLoading.value = false;
+  }
+}
 
 const { t } = useI18n();
 
@@ -25,8 +56,10 @@ const { t } = useI18n();
 
 <template>
   <LnbModal
+      @scroll="loadMore"
       :title="t('search')"
-      :fullHeight="true">
+      :fullHeight="true"
+      :determineScroll="true">
     <LnbModalInput
       v-model="request.searchString"
       :placeholder="t('searchPlaceholder')"/>
@@ -45,16 +78,15 @@ const { t } = useI18n();
         <span :style="`color:${cat.color}`">● </span>{{cat.name}}
       </div>
     </div>
-    <div v-if="searchResults.length">
-      <div v-for="searchResult in searchResults">
+    <div v-if="searchResults?.total != 0" ref="scrollableEl">
+      <div v-for="searchResult in searchResults?.data" :key="searchResult.id">
         <LnbCard
-          @click.stop="emits('openCard', searchResult)"
-          style="margin-bottom: 6px;"
-          :deleteButton="false"
-          :assignButton="false"
-          :key="searchResult.id"
-          :highlightText="request.searchString"
-          :message="searchResult"/>
+            @click.stop="emits('openCard', searchResult)"
+            style="margin-bottom: 6px;"
+            :deleteButton="false"
+            :assignButton="false"
+            :highlightText="request.searchString"
+            :message="searchResult"/>
       </div>
     </div>
     <div class="search-empty" v-else-if="request.searchString.trim()">

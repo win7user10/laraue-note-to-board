@@ -1,12 +1,14 @@
 <script setup lang="ts">
-  defineProps({
+  const props = defineProps({
     title: { type: String, required: true },
     applyText: { type: String, required: false },
     fullHeight: { type: Boolean, required: false },
+    determineScroll: { type: Boolean, required: false },
   })
   const emit = defineEmits<{
     (e: 'close'): void,
-    (e: 'apply'): void
+    (e: 'apply'): void,
+    (e: 'scroll'): void,
   }>()
 
   const { t } = useI18n();
@@ -18,6 +20,18 @@
   const apply = () => {
     emit('apply')
   }
+
+  const scrollableEl = ref<HTMLElement | null>(null);
+  onMounted(() => {
+    if (props.determineScroll)
+      useInfiniteScroll(scrollableEl, async () => {
+        emit('scroll')
+      }, {
+        distance: 150,
+        canLoadMore: () => true,
+      });
+  })
+
 </script>
 
 <template>
@@ -28,7 +42,7 @@
           <div class="modal-handle"></div>
           <div class="modal-title">{{ title }}</div>
         </div>
-        <div class="modal-body">
+        <div class="modal-body" ref="scrollableEl">
           <slot></slot>
           <div class="modal-btns">
             <button class="btn btn-ghost" @click="close">{{ t('cancel') }}</button>
@@ -65,7 +79,6 @@
   display: flex;
   flex-direction: column;
   max-height: 88dvh;
-  padding-bottom: var(--safe-bottom);
 }
 .modal.modal-full{
   height:92vh
@@ -77,11 +90,13 @@
 }
 .modal-body {
   overflow-y: auto;
-  padding: 20px calc(max(16px, var(--safe-right))) 0 calc(max(16px, var(--safe-left)));
+  padding: 0 calc(max(16px, var(--safe-right))) calc(max(20px, var(--safe-bottom))) calc(max(16px, var(--safe-left)));
   flex: 1;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
-  scrollbar-color: var(--border) transparent; }
+  scrollbar-color: var(--border) transparent;
+}
+
 .modal-handle {
   width: 36px; height: 4px;
   background: var(--border2);

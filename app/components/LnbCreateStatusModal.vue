@@ -4,7 +4,8 @@ import LnbColorPicker from "~/components/LnbColorPicker.vue";
 import type {CreateStatusRequest} from "~/composables/statusesApi";
 import {useAppState} from "~/composables/appState";
 
-const { appState, getRandomColor } = useAppState()
+const { getRandomColor } = useAppState()
+const { state } = useBoard()
 
 const emit = defineEmits<{
   (e: 'close'): void,
@@ -16,7 +17,7 @@ const { t } = useI18n();
 const newStatus = ref<CreateStatusRequest>({
   name: "",
   color: getRandomColor(),
-  categoryId: appState.value.categoryId,
+  categoryId: state.value.categoryId,
 })
 
 const createStatus = () => {

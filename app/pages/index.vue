@@ -5,43 +5,24 @@ import { useAppState } from "~/composables/appState";
 import LnbCreateCategoryModal from "~/components/LnbCreateCategoryModal.vue";
 import {onMounted, ref} from "vue";
 import LnbFabItem from "~/components/LnbFabItem.vue";
+import {DefaultPagination} from "~/composables/pagination";
+import {useBoard} from "~/composables/boardState";
 
-const { appState, setCategory, showToast } = useAppState()
-const categoryId = computed(() => appState.value.categoryId);
+const { appState } = useAppState()
+const { setCategory, state } = useBoard()
+const categoryId = computed(() => state.value.categoryId);
 
-const { loadCategories, createCategory } = useCategoriesApi();
-const { loadMessages, updateCategory, deleteMessage, createMessage, editMessage } = useMessagesApi();
-const categories = ref<CategoryCountDto[]>([])
 const { t } = useI18n();
+const board = useBoard();
 
-const messages = ref<MessageListDto[]>([]);
-
-onMounted(async () => {
-  await reloadCategories();
-  await reloadMessages();
+onMounted( async () => {
+  await board.reloadBoard()
+  await board.reloadCategories()
 });
 
-watch(() => appState.value.categoryId, () => {
-  return reloadMessages();
+watch(() => state.value.categoryId, () => {
+  return board.reloadBoard();
 })
-
-const reloadCategories = async () => {
-  const data = await loadCategories()
-  const result = [{
-    id: 0,
-    name: t('backlog'),
-    color: '#ff0000',
-    count: data.backlogCount,
-    statusesCount: 0,
-  }]
-  result.push(...data.categories)
-  categories.value = result;
-}
-
-const reloadMessages = async () => {
-  messages.value = [];
-  messages.value = await loadMessages(categoryId.value)
-}
 
 const modal = reactive({
   createCard: false,
@@ -61,18 +42,12 @@ const closeCreateCategory = () => {
 }
 
 const createCategoryInternal = async (value: CreateCategoryRequest) => {
-  const id = await createCategory(value);
-  categories.value.push({
-    id: id,
-    name: value.name,
-    color: value.color,
-    count: 0,
-    statusesCount: 0,
-  })
+  await board.createCategory(value);
   closeCreateCategory();
-  showToast(t('boardCreated'), 'success', value.name);
   closeFab();
 }
+
+const categories = computed(() => board.state.value.categories);
 
 const openCreateCard = () => {
   modal.createCard = true;
@@ -83,15 +58,8 @@ const closeCreateCard = () => {
 }
 
 const createCardInternal = async (value: CreateCardRequest) => {
-  await createMessage(value);
-
-  const messageCategory = categories.value.find(c => c.id === value.categoryId)
-  if (messageCategory)
-    messageCategory.count++;
-  await reloadMessages();
-
+  await board.createCard(value);
   closeCreateCard();
-  showToast(t('cardCreated'), 'success');
   closeFab();
 }
 
@@ -105,12 +73,8 @@ const closeEditCard = () => {
 }
 
 const editCardInternal = async (value: EditCardRequest) => {
-  const msg = assignMsg.value!;
-  await editMessage(msg.id, value);
-  msg.content = value.content;
-  await reloadMessages();
+  await board.editCard(assignMsg.value!.id, value);
   closeEditCard();
-  showToast(t('cardEdited'), 'success');
 }
 
 const assignMsg = ref<MessageListDto | undefined>(undefined);
@@ -124,19 +88,8 @@ const closeAssignToCategory = () => {
 }
 
 const assignToCategory = async (categoryId: number) => {
-  await updateCategory(assignMsg.value!.id, categoryId)
-
-  const newCategory = categories.value.find(c => c.id === categoryId)
-  if (newCategory)
-    newCategory.count += 1;
-
-  const oldCategory = categories.value.find(c => c.id === assignMsg.value!.id)
-  if (oldCategory)
-    oldCategory.count -= 1;
-
+  await board.updateCardCategory(assignMsg.value!.id, categoryId)
   modal.assign = false;
-  deleteSelectedCardFromState();
-  showToast(t('cardAssigned'), 'success', newCategory.name);
 }
 
 const openDelete = (message: MessageListDto) => {
@@ -149,27 +102,8 @@ const closeDelete = () => {
 }
 
 const deleteCard = async () => {
-  await deleteMessage(assignMsg.value!.id)
-
-  const messageCategory = categories.value.find(c => c.id === assignMsg.value!.categoryId)
-  if (messageCategory)
-    messageCategory.count--;
-
-  deleteSelectedCardFromState();
+  await board.deleteCard(assignMsg.value!.id)
   closeDelete();
-  showToast(t('cardDeleted'), 'danger');
-}
-
-const deleteSelectedCardFromState = ()  => {
-  messages.value = messages.value.filter(x => x.id != assignMsg.value!.id)
-}
-
-const onCategoryUpdated = (request: EditCategoryRequest) => {
-  const cat = categories.value.find(c => c.id === categoryId.value)
-  if (cat) {
-    cat.color = request.color;
-    cat.name = request.name;
-  }
 }
 
 const openSearch = () => {
@@ -219,16 +153,12 @@ const fabOpen = ref(false);
 
   <template v-if="categoryId === 0">
     <LnbBacklogView
-      :messages="messages"
       @openAssignToCategory="openAssignToCategory"
       @openEdit="openEditCard"
       @openDelete="openDelete" />
   </template>
   <template v-else>
     <LnbBoardView
-      @categoryUpdated="onCategoryUpdated"
-      :messages="messages"
-      @reloadMessages="reloadMessages"
       @openEdit="openEditCard"
       @openDelete="openDelete"/>
   </template>
@@ -257,13 +187,12 @@ const fabOpen = ref(false);
     v-if="modal.createCard"/>
 
   <LnbSearchModal
-      :categories="categories"
-      @openCard="openEditCard($event)"
-      @close="closeSearch"
-      v-if="modal.search"/>
+    @openCard="openEditCard($event)"
+    @close="closeSearch"
+    v-if="modal.search"/>
 
   <LnbEditCardModal
-    :message="assignMsg!"
+    :id="assignMsg!.id"
     @edit="editCardInternal"
     @close="closeEditCard"
     v-if="modal.editCard"/>
@@ -276,16 +205,16 @@ const fabOpen = ref(false);
     <div class="fab-main" :class="{open: fabOpen}" @click="fabOpen=!fabOpen">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
     </div>
-    <div class="fab-items">
-      <LnbFabItem :title="t('newBoard')" :isOpened="fabOpen" @click="openCreateCategory">
+    <div class="fab-items" v-if="fabOpen">
+      <LnbFabItem :title="t('newBoard')" @click="openCreateCategory">
         <rect x="2" y="2" width="12" height="12" rx="2"/>
         <path d="M8 5v6M5 8h6"/>
       </LnbFabItem>
-      <LnbFabItem :title="t('search')" :isOpened="fabOpen" @click="openSearch">
+      <LnbFabItem :title="t('search')" @click="openSearch">
         <circle cx="6.5" cy="6.5" r="4.5"/>
         <path d="M10.5 10.5l3 3"/>
       </LnbFabItem>
-      <LnbFabItem :title="t('createCard')" :isOpened="fabOpen" @click="openCreateCard">
+      <LnbFabItem :title="t('createCard')" @click="openCreateCard">
         <path d="M8 5v6M5 8h6"/>
       </LnbFabItem>
     </div>

@@ -11,7 +11,9 @@ export const useUtils = () => {
         minute: 'numeric'
     });
 
-    const formatDate = (dateString: string) => {
+    const formatDate = (dateString?: string) => {
+        if (!dateString)
+            return '';
         const date = new Date(dateString);
         const today = new Date();
 

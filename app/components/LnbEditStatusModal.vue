@@ -32,7 +32,7 @@ const { t } = useI18n();
 <template>
   <LnbModal
       :applyText="t('editColumn')"
-      title="Edit Status Column"
+      :title="t('editStatusColumn')"
       @close="emit('close')"
       @apply="emit('edit', newStatus)">
     <LnbModalLabel>{{ t('statusName') }}</LnbModalLabel>

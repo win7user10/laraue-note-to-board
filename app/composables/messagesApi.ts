@@ -10,6 +10,18 @@ export interface MessageListDto {
     senderColor: string;
 }
 
+export interface MessageDetailDto {
+    id: number;
+    time: string;
+    sender?: string;
+    senderInitial?: string;
+    content: string;
+    categoryName?: string;
+    statusName?: string;
+    color: string;
+    senderColor: string;
+}
+
 export interface CreateCardRequest {
     content: string;
     categoryId: number;
@@ -22,17 +34,41 @@ export interface EditCardRequest {
 
 export interface SearchRequest {
     searchString: string;
+    page: number;
+    perPage: number;
     categoryId: number | null;
+}
+
+export interface ColumnMessages {
+    statusId: number;
+    items: InitialBatchResult<MessageListDto>
 }
 
 export const useMessagesApi = () => {
     const client = useMessagesClient()
 
-    const loadMessages = (categoryId: number | null) => {
-        return client<MessageListDto[]>('/messages', {
+    const loadMessages = (
+        statusId: number | null,
+        skip: number,
+        take: number) => {
+        return client<BatchResult<MessageListDto>>('/messages', {
             method: 'GET',
             query: {
-                categoryId: categoryId ?? undefined
+                statusId: statusId ?? undefined,
+                skip: skip,
+                take: take,
+            }
+        });
+    }
+
+    const loadBoard = (
+        categoryId: number | null,
+        take: number) => {
+        return client<ColumnMessages[]>('/messages/board', {
+            method: 'GET',
+            query: {
+                categoryId: categoryId ?? undefined,
+                take: take,
             }
         });
     }
@@ -70,9 +106,15 @@ export const useMessagesApi = () => {
     }
 
     const searchMessages = (request: SearchRequest) => {
-        return client<MessageListDto[]>('/messages/search', {
-            method: 'POST',
-            body: request
+        return client<FullPaginatedResult<MessageListDto>>('/messages/search', {
+            method: 'GET',
+            query: request
+        });
+    }
+
+    const getMessage = (id: number) => {
+        return client<MessageDetailDto>('/messages/' + id, {
+            method: 'GET'
         });
     }
 
@@ -84,5 +126,7 @@ export const useMessagesApi = () => {
         createMessage,
         editMessage,
         searchMessages,
+        loadBoard,
+        getMessage
     }
 }

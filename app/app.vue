@@ -21,7 +21,7 @@ onMounted(async () => {
       const language = WebApp.initDataUnsafe.user?.language_code;
       if (locales.value.find(l => l.code == language))
         // @ts-ignore
-        setLocale(language);
+        await setLocale(language);
 
       // Resize windows
       setupTelegram()
@@ -42,7 +42,7 @@ onMounted(async () => {
     setUser(user);
 
     // @ts-ignore
-    setLocale(user.languageCode);
+    await setLocale(user.languageCode);
 
   } catch (err) {
     initError.value = err;

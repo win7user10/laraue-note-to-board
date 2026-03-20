@@ -8,7 +8,6 @@ export interface Toast {
 export const useAppState = () => {
 
     const appState = useState('appState', () => ({
-        categoryId: 0,
         palette: [
             '#2f81f7', '#3fb950', '#a371f7', '#d29922',
             '#ff7b72', '#79c0ff', '#56d364', '#ffa657',
@@ -19,10 +18,6 @@ export const useAppState = () => {
         loadingKeys: [] as string[],
         toasts: [] as Toast[],
     }))
-
-    const setCategory = (id: number) => {
-        appState.value.categoryId = id
-    }
 
     const getRandomColor = () => {
         return appState.value.palette[Math.floor(Math.random() * appState.value.palette.length)]!;
@@ -58,7 +53,6 @@ export const useAppState = () => {
 
     return {
         appState: readonly(appState),
-        setCategory,
         getRandomColor,
         setUser,
         addLoadingKey,

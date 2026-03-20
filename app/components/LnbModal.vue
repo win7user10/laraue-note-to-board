@@ -27,8 +27,8 @@
       useInfiniteScroll(scrollableEl, async () => {
         emit('scroll')
       }, {
-        distance: 80,
-        canLoadMore: () => true
+        distance: 150,
+        canLoadMore: () => true,
       });
   })
 

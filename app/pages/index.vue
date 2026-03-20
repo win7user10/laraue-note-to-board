@@ -6,43 +6,23 @@ import LnbCreateCategoryModal from "~/components/LnbCreateCategoryModal.vue";
 import {onMounted, ref} from "vue";
 import LnbFabItem from "~/components/LnbFabItem.vue";
 import {DefaultPagination} from "~/composables/pagination";
+import {useBoard} from "~/composables/boardState";
 
-const { appState, setCategory, showToast } = useAppState()
-const categoryId = computed(() => appState.value.categoryId);
+const { appState } = useAppState()
+const { setCategory, state } = useBoard()
+const categoryId = computed(() => state.value.categoryId);
 
-const { loadCategories, createCategory } = useCategoriesApi();
-const { updateCategory, deleteMessage, createMessage, editMessage, loadBoard, loadMessages } = useMessagesApi();
-const categories = ref<CategoryCountDto[]>([])
 const { t } = useI18n();
+const board = useBoard();
 
-const messages = ref<ColumnMessages[]>([]);
-
-onMounted(async () => {
-  await reloadCategories();
-  await reloadMessages();
+onMounted( async () => {
+  await board.reloadBoard()
+  await board.reloadCategories()
 });
 
-watch(() => appState.value.categoryId, () => {
-  return reloadMessages();
+watch(() => state.value.categoryId, () => {
+  return board.reloadBoard();
 })
-
-const reloadCategories = async () => {
-  const data = await loadCategories()
-  const result = [{
-    id: 0,
-    name: t('backlog'),
-    color: '#ff0000',
-    count: data.backlogCount,
-    statusesCount: 0,
-  }]
-  result.push(...data.categories)
-  categories.value = result;
-}
-
-const reloadMessages = async () => {
-  messages.value = [];
-  messages.value = await loadBoard(categoryId.value, DefaultPagination)
-}
 
 const modal = reactive({
   createCard: false,
@@ -62,18 +42,12 @@ const closeCreateCategory = () => {
 }
 
 const createCategoryInternal = async (value: CreateCategoryRequest) => {
-  const id = await createCategory(value);
-  categories.value.push({
-    id: id,
-    name: value.name,
-    color: value.color,
-    count: 0,
-    statusesCount: 0,
-  })
+  await board.createCategory(value);
   closeCreateCategory();
-  showToast(t('boardCreated'), 'success', value.name);
   closeFab();
 }
+
+const categories = computed(() => board.state.value.categories);
 
 const openCreateCard = () => {
   modal.createCard = true;
@@ -84,15 +58,8 @@ const closeCreateCard = () => {
 }
 
 const createCardInternal = async (value: CreateCardRequest) => {
-  await createMessage(value);
-
-  const messageCategory = categories.value.find(c => c.id === value.categoryId)
-  if (messageCategory)
-    messageCategory.count++;
-  await reloadMessages();
-
+  await board.createCard(value);
   closeCreateCard();
-  showToast(t('cardCreated'), 'success');
   closeFab();
 }
 
@@ -106,11 +73,8 @@ const closeEditCard = () => {
 }
 
 const editCardInternal = async (value: EditCardRequest) => {
-  const msg = assignMsg.value!;
-  await editMessage(msg.id, value);
-  msg.content = value.content;
+  await board.editCard(assignMsg.value!.id, value);
   closeEditCard();
-  showToast(t('cardEdited'), 'success');
 }
 
 const assignMsg = ref<MessageListDto | undefined>(undefined);
@@ -124,19 +88,8 @@ const closeAssignToCategory = () => {
 }
 
 const assignToCategory = async (categoryId: number) => {
-  await updateCategory(assignMsg.value!.id, categoryId)
-
-  const newCategory = categories.value.find(c => c.id === categoryId)
-  if (newCategory)
-    newCategory.count += 1;
-
-  const oldCategory = categories.value.find(c => c.id === assignMsg.value!.id)
-  if (oldCategory)
-    oldCategory.count -= 1;
-
+  await board.updateCardCategory(assignMsg.value!.id, categoryId)
   modal.assign = false;
-  await reloadMessages();
-  showToast(t('cardAssigned'), 'success', newCategory?.name);
 }
 
 const openDelete = (message: MessageListDto) => {
@@ -149,28 +102,8 @@ const closeDelete = () => {
 }
 
 const deleteCard = async () => {
-  await deleteMessage(assignMsg.value!.id)
-
-  const messageCategory = categories.value.find(c => c.id === assignMsg.value!.categoryId)
-  if (messageCategory)
-    messageCategory.count--;
-
-  await reloadMessages();
+  await board.deleteCard(assignMsg.value!.id)
   closeDelete();
-  showToast(t('cardDeleted'), 'danger');
-}
-
-const onCategoryUpdated = (request: EditCategoryRequest) => {
-  const cat = categories.value.find(c => c.id === categoryId.value)
-  if (cat) {
-    cat.color = request.color;
-    cat.name = request.name;
-  }
-}
-
-const onBoardCardCreated = () => {
-  const cat = categories.value.find(c => c.id === appState.value.categoryId)
-  if (cat) cat.count += 1;
 }
 
 const openSearch = () => {
@@ -186,25 +119,6 @@ const closeFab = () => {
 }
 
 const fabOpen = ref(false);
-
-const loadingCols = ref<number[]>([]);
-const loadMore = async (statusId: number) => {
-  if (loadingCols.value.includes(statusId))
-    return;
-
-  try {
-    loadingCols.value.push(statusId);
-    const item = messages.value.find(s => s.statusId === statusId)!.items;
-    const pagination = { page: item.page + 1, perPage: item.perPage };
-    const newMessages = await loadMessages(statusId, pagination)
-    item.data.push(...newMessages.data);
-    item.page = newMessages.page;
-    item.hasNextPage = newMessages.hasNextPage
-  } finally {
-    const index = loadingCols.value.indexOf(statusId);
-    loadingCols.value = loadingCols.value.slice(index, 1);
-  }
-}
 
 </script>
 
@@ -239,24 +153,14 @@ const loadMore = async (statusId: number) => {
 
   <template v-if="categoryId === 0">
     <LnbBacklogView
-      :messages="messages"
-      :isLoading="loadingCols.includes(0)"
-      @loadMoreMessages="loadMore"
       @openAssignToCategory="openAssignToCategory"
       @openEdit="openEditCard"
       @openDelete="openDelete" />
   </template>
   <template v-else>
     <LnbBoardView
-      @cardCreated="onBoardCardCreated"
-      @categoryUpdated="onCategoryUpdated"
-      @loadMoreMessages="loadMore"
-      :messages="messages"
-      :loadingStatuses="loadingCols"
-      @reloadMessages="reloadMessages"
       @openEdit="openEditCard"
-      @openDelete="openDelete"
-      @createCard="createCardInternal"/>
+      @openDelete="openDelete"/>
   </template>
 
   <LnbCreateCategoryModal
@@ -283,10 +187,9 @@ const loadMore = async (statusId: number) => {
     v-if="modal.createCard"/>
 
   <LnbSearchModal
-      :categories="categories"
-      @openCard="openEditCard($event)"
-      @close="closeSearch"
-      v-if="modal.search"/>
+    @openCard="openEditCard($event)"
+    @close="closeSearch"
+    v-if="modal.search"/>
 
   <LnbEditCardModal
     :id="assignMsg!.id"

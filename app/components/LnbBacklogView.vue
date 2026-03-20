@@ -1,32 +1,25 @@
 <script setup lang="ts">
-import type {ColumnMessages, MessageListDto} from "~/composables/messagesApi";
+import type {MessageListDto} from "~/composables/messagesApi";
 import LnbEmptyState from "~/components/LnbEmptyState.vue";
-import LnbLoadMore from "~/components/LnbLoadMore.vue";
 import LnbScrollArea from "~/components/LnbScrollArea.vue";
+import {useBoard} from "~/composables/boardState";
 
 const emits = defineEmits<{
   (e: 'openAssignToCategory', message: MessageListDto): void,
   (e: 'openDelete', message: MessageListDto): void,
   (e: 'openEdit', message: MessageListDto): void,
-  (e: 'loadMoreMessages', statusId: number): void,
 }>()
 
-const props = defineProps<{
-  messages: ColumnMessages[],
-  isLoading: boolean,
-}>()
+const { state } = useBoard()
 
-const backlogMessagesResult = computed<FullPaginatedResult<MessageListDto> | undefined>(() => {
-  return props.messages.length > 0
-    ? props.messages[0]!.items
+const backlogMessagesResult = computed<InitialBatchResult<MessageListDto> | undefined>(() => {
+  return state.value.messages.length > 0
+    ? state.value.messages[0]!.items
     : undefined
 })
 
+const statusId = 0;
 const { t } = useI18n();
-
-const loadMoreCards = () => {
-  emits("loadMoreMessages", 0)
-}
 </script>
 
 <template>
@@ -34,7 +27,7 @@ const loadMoreCards = () => {
     <div class="backlog-header">
       <h2>{{ t('backlog') }}</h2>
       <span class="badge">
-        {{ backlogMessagesResult?.total }} {{ t('messages', { count: backlogMessagesResult?.total }) }}
+        {{ backlogMessagesResult?.totalCount }} {{ t('messages', { count: backlogMessagesResult?.totalCount }) }}
       </span>
     </div>
 
@@ -44,10 +37,7 @@ const loadMoreCards = () => {
       :subtitle="t('backlogEmptySubtitle')"/>
 
     <div class="section-label" v-else>{{ t('unassignedTitle') }}</div>
-    <LnbScrollArea
-        @loadMore="loadMoreCards"
-        :hasMore="!!backlogMessagesResult?.hasNextPage"
-        :isLoading="isLoading">
+    <LnbScrollArea :statusId="statusId">
       <LnbCard
           v-for="msg in backlogMessagesResult?.data"
           :deleteButton="true"
@@ -105,22 +95,5 @@ const loadMoreCards = () => {
 .backlog-view { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 .backlog-view::-webkit-scrollbar { width: 4px; }
 .backlog-view::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-
-.empty-state {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  padding: 40px 20px;
-  color: var(--text3);
-}
-
-
-.col-drag-area { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; min-height: 60px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: var(--border) transparent; transition: background 0.15s; }
-.col-drag-area::-webkit-scrollbar { width: 3px; }
-.col-drag-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-.col-drag-area.drag-over { background: var(--accent-glow); }
 
 </style>

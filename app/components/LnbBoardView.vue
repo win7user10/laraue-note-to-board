@@ -2,57 +2,29 @@
 import { useAppState } from "~/composables/appState";
 import {ref} from "vue";
 import LnbIconBtn from "~/components/LnbIconBtn.vue";
-import {useCategoriesApi} from "~/composables/categoriesApi";
-import type {ColumnMessages, MessageListDto} from "~/composables/messagesApi";
+import type {MessageListDto} from "~/composables/messagesApi";
 import LnbEditStatusModal from "~/components/LnbEditStatusModal.vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
 import LnbEditCategoryModal from "~/components/LnbEditCategoryModal.vue";
 import LnbScrollArea from "~/components/LnbScrollArea.vue";
 
-const { appState, showToast } = useAppState()
-const { updateStatus, createMessage } = useMessagesApi();
-const { loadCategory, reorderStatuses, editCategory } = useCategoriesApi();
+const board = useBoard();
 const { t } = useI18n();
 
-const categoryId = computed(() => appState.value.categoryId);
-const currentCategory = ref<CategoryDto>()
-
-const props = defineProps<{
-  messages: ColumnMessages[],
-  loadingStatuses: number[]
-}>()
+const categoryId = computed(() => board.state.value.categoryId);
 
 const emits = defineEmits<{
   (e: 'openDelete', message: MessageListDto): void,
   (e: 'openEdit', message: MessageListDto): void,
-  (e: 'reloadMessages'): void,
-  (e: 'categoryUpdated', category: CategoryDto): void,
-  (e: 'loadMoreMessages', statusId: number): void,
-  (e: 'cardCreated', statusId: number): void,
 }>()
 
 watch(() => categoryId.value, async _ => {
-  await reloadCategory();
-})
-
-const allCards = computed(() => {
-  return props.messages.flatMap(x => x.items.data)
-})
-
-const totalCount = computed(() => {
-  return props.messages
-      .flatMap(x => x.items.total)
-      .reduce((acc, x) => acc + x, 0)
+  await board.reloadCategory();
 })
 
 onMounted(async () => {
-  await reloadCategory();
+  await board.reloadCategory();
 })
-
-const reloadCategory = async () => {
-  currentCategory.value = undefined;
-  currentCategory.value = await loadCategory(categoryId.value!)
-}
 
 const modal = reactive({
   createStatus: false,
@@ -62,30 +34,9 @@ const modal = reactive({
   addToBoard: false,
 });
 
-const { createStatus, deleteStatus, editStatus } = useStatusesApi();
-const openCreateStatus = () => {
-  modal.createStatus = true;
-}
-
-const closeCreateStatus = () => {
-  modal.createStatus = false;
-}
-
 const createStatusInternal = async (value: CreateStatusRequest) => {
-  const id = await createStatus(value);
-  const statuses = currentCategory.value?.statuses;
-  if (!statuses)
-    return;
-
-  const lastOrder = Math.max(...statuses.map(x => x.sortOrder))
-  currentCategory.value?.statuses.push({
-    id: id,
-    name: value.name,
-    color: value.color,
-    sortOrder: lastOrder + 1
-  })
-  closeCreateStatus();
-  showToast(t('columnCreated'), 'success', value.name);
+  await board.createStatus(value);
+  modal.createStatus = false;
 }
 
 const statusToEdit = ref<StatusDto | null>()
@@ -94,17 +45,9 @@ const openDeleteStatus = (status: StatusDto) => {
   statusToEdit.value = status;
 }
 
-const closeDeleteStatus = () => {
-  modal.deleteStatus = false;
-}
-
 const deleteStatusInternal = async () => {
-  await deleteStatus(statusToEdit.value!.id);
-  const statusName = statusToEdit.value!.name;
-  await reloadCategory();
-  emits('reloadMessages')
-  closeDeleteStatus();
-  showToast(t('columnDeleted'), 'danger', statusName);
+  await board.deleteStatus(statusToEdit.value!.id)
+  modal.deleteStatus = false;
 }
 
 const openEditStatus = (status: StatusDto) => {
@@ -112,17 +55,9 @@ const openEditStatus = (status: StatusDto) => {
   statusToEdit.value = status;
 }
 
-const closeEditStatus = () => {
-  modal.editStatus = false;
-}
-
 const editStatusInternal = async (request: EditStatusRequest) => {
-  const status = statusToEdit.value!;
-  await editStatus(status.id, request);
-  status.color = request.color;
-  status.name = request.name;
-  closeEditStatus();
-  showToast(t('columnEdited'), 'success', request.name);
+  await board.editStatus(statusToEdit.value!.id, request)
+  modal.editStatus = false;
 }
 
 const openAddToBoard = (status: StatusDto) => {
@@ -130,18 +65,9 @@ const openAddToBoard = (status: StatusDto) => {
   statusToEdit.value = status;
 }
 
-const closeAddToBoard = () => {
-  modal.addToBoard = false;
-}
-
 const assignToBoard = async (request: CreateCardRequest) => {
-  await createMessage(request);
-  emits('reloadMessages');
-  emits('cardCreated', request.statusId)
-  closeAddToBoard();
-  const status = statuses.value.find(x => x.id === request.statusId);
-  const subTitle = `${currentCategory.value?.name} · ${status?.name}`
-  showToast(t('cardCreated'), 'success', subTitle);
+  await board.createCard(request)
+  modal.addToBoard = false;
 }
 
 const openEditCategory = () => {
@@ -153,60 +79,25 @@ const closeEditCategory = () => {
 }
 
 const editCategoryInternal = async (request: EditCategoryRequest) => {
-  const category = currentCategory.value!;
-  await editCategory(appState.value.categoryId, request)
-  category.color = request.color;
-  category.name = request.name;
-  emits('categoryUpdated', category)
+  await board.createCategory(request);
   closeEditCategory();
-  showToast(t('boardUpdated'), 'success', request.name);
 }
 
 const cardsByStatus = computed(() => {
-  return Object.fromEntries(props.messages.map(x => [x.statusId, x.items]));
-})
-
-const statuses = computed(() => {
-  return currentCategory.value?.statuses.sort((a, b) => a.sortOrder - b.sortOrder) ?? [];
+  return Object.fromEntries(board.state.value.messages.map(x => [x.statusId, x.items]));
 })
 
 const onCardMoved = async (cardId: string, categoryId: number, statusId: number) => {
-  const card = allCards.value.find(m => m.id === Number(cardId));
-  if (!card) return;
-
-  await updateStatus(card.id, statusId);
-  card.categoryId = categoryId!;
-  card.statusId = statusId;
-  const status = statuses.value.find(x => x.id === statusId);
-
-  showToast(t('cardMoved'), 'default', status?.name)
+  await board.moveCard(Number(cardId), categoryId, statusId);
 };
 
-const onColMoved = async (statusId: number, newSortOrder: number) => {
-  const cat = currentCategory.value;
-  if (!cat) return;
-
-  const idx = cat.statuses.findIndex(s => s.id === Number(statusId));
-  if (idx < 0) return;
-
-  const newStatuses = [...cat.statuses];
-  const [removed] = newStatuses.splice(idx, 1);
-  newStatuses.splice(newSortOrder, 0, removed!);
-  newStatuses.forEach((status, i) => {
-    status.sortOrder = i;
-  })
-
-  await reorderStatuses(
-      categoryId.value,
-      Object.fromEntries(newStatuses.map(item => [item.id, item.sortOrder])))
-
-  cat.statuses = newStatuses;
-  showToast(t('columnReordered'), 'default')
+const onColMoved = async (statusId: string, newSortOrder: number) => {
+  await board.changeColumnOrder(Number(statusId), newSortOrder);
 };
 
-const loadMoreCards = async (statusId: number) => {
-  emits('loadMoreMessages', statusId);
-}
+const currentCategory = computed(() => {
+  return board.state.value.currentCategory;
+})
 </script>
 
 <template>
@@ -218,7 +109,7 @@ const loadMoreCards = async (statusId: number) => {
           <span :style="`color:${currentCategory.color}`">●</span> {{ currentCategory.name }}
         </div>
         <div class="board-subtitle">
-          {{ totalCount }} {{ t('cards', totalCount) }}
+          {{ board.dbMessagesCount }} {{ t('cards', board.dbMessagesCount.value) }}
         </div>
       </div>
       <div class="board-actions">
@@ -230,7 +121,7 @@ const loadMoreCards = async (statusId: number) => {
 
     <div class="board-columns" v-col-sortable="{ cat: currentCategory, onColMoved }">
       <div
-        v-for="status in statuses"
+        v-for="status in board.statuses.value"
         class="board-col"
         :key="status.id"
         :data-status-id="status.id">
@@ -247,23 +138,20 @@ const loadMoreCards = async (statusId: number) => {
           </div>
           <div class="col-indicator" :style="`background:${status.color}`"></div>
           <div class="col-title">{{ status.name }}</div>
-          <div class="col-count">{{ cardsByStatus[status.id]?.total ?? 0 }}</div>
+          <div class="col-count">{{ cardsByStatus[status.id]?.totalCount ?? 0 }}</div>
           <div class="col-del-btn" @click.stop="openEditStatus(status)" style="color:var(--text3)">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z"/>
             </svg>
           </div>
-          <div @click="openDeleteStatus(status)" class="col-del-btn" v-if="statuses.length > 1">
+          <div @click="openDeleteStatus(status)" class="col-del-btn" v-if="currentCategory?.statuses.length ?? 0 > 1">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9"></path>
             </svg>
           </div>
         </div>
-        <LnbScrollArea
-            @loadMore="loadMoreCards(status?.id)"
-            :hasMore="!!cardsByStatus[status?.id]?.hasNextPage"
-            :isLoading="loadingStatuses.includes(status?.id)">
-          <div class="col-drag-inner" v-sortable="{ catId: appState.categoryId, statusId: status?.id, onCardMoved }">
+        <LnbScrollArea :statusId="status.id">
+          <div class="col-drag-inner" v-sortable="{ catId: board.state.value.categoryId, statusId: status?.id, onCardMoved }">
             <lnb-card
                 v-for="msg in cardsByStatus[status.id]?.data"
                 @openDelete="emits('openDelete', msg)"
@@ -282,7 +170,7 @@ const loadMoreCards = async (statusId: number) => {
         </div>
       </div>
 
-      <div class="add-col-btn" @click="openCreateStatus">
+      <div class="add-col-btn" @click="modal.createStatus = true">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px">
           <path d="M8 3v10M3 8h10"/>
         </svg>
@@ -292,24 +180,23 @@ const loadMoreCards = async (statusId: number) => {
   </div>
   <LnbCreateStatusModal
     @create="createStatusInternal"
-    @close="closeCreateStatus"
+    @close="modal.createStatus = false"
     v-if="modal.createStatus"/>
   <LnbDeleteColumnModal
     @delete="deleteStatusInternal"
-    @close="closeDeleteStatus"
+    @close="modal.deleteStatus = false"
     v-if="modal.deleteStatus"/>
   <LnbCreateCardModal
     :statusId="statusToEdit!.id"
     @create="assignToBoard"
-    @close="closeAddToBoard"
+    @close="modal.addToBoard = false"
     v-if="modal.addToBoard"/>
   <LnbEditStatusModal
     :status="statusToEdit!"
     @edit="editStatusInternal"
-    @close="closeEditStatus"
+    @close="modal.editStatus = false"
     v-if="modal.editStatus"/>
   <LnbEditCategoryModal
-    :category="currentCategory!"
     @close="closeEditCategory"
     @edit="editCategoryInternal"
     v-if="modal.editCategory"/>

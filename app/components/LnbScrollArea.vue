@@ -1,24 +1,23 @@
 <script setup lang="ts">
 
-import LnbLoadMore from "~/components/LnbLoadMore.vue";
+import {useBoard} from "~/composables/boardState";
 
 const props = defineProps<{
-  hasMore: boolean,
-  isLoading: boolean,
+  statusId: number;
 }>()
 
-const emits = defineEmits<{
-  (e: 'loadMore'): void,
-}>()
-
-const isLoading = ref(false)
+const board = useBoard();
 const scrollableEl = ref(null);
 
 useInfiniteScroll(scrollableEl, async () => {
-  if (isLoading.value)
-    return
-  emits('loadMore')
-}, { distance: 80, canLoadMore: () => props.hasMore });
+  await board.loadNextCards(props.statusId);
+}, {
+  distance: 80,
+  canLoadMore: () => board.state.value.messages
+      .find(s => s.statusId === props.statusId)
+      ?.items
+      .hasNext ?? false
+});
 </script>
 
 <template>

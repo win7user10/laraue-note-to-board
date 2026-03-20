@@ -14,6 +14,7 @@
   "unassignedTitle": "Unassigned",
   "messages": "message | messages",
   "addColumn": "Add column",
+  "editStatusColumn": "Edit Status Column",
   "addStatusColumn": "Add status column",
   "statusNameExample": "e.g. To Do, In Progress, Done...",
   "statusName": "Status name",

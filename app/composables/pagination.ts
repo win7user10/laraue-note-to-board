@@ -8,6 +8,16 @@ export interface FullPaginatedResult<T> extends ShortPaginatedResult<T>{
     lastPage: number;
 }
 
+export interface BatchResult<T>{
+    offset: number;
+    hasNext: boolean;
+    data: T[];
+}
+
+export interface InitialBatchResult<T> extends BatchResult<T> {
+    totalCount: number;
+}
+
 export interface ShortPaginatedResult<T> {
     page: number;
     perPage: number;

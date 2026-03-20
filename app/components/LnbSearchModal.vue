@@ -2,10 +2,6 @@
 
 import type {MessageListDto} from "~/composables/messagesApi";
 
-defineProps<{
-  categories: CategoryCountDto[]
-}>()
-
 const emits = defineEmits<{
   (e: 'openCard', card: MessageListDto): void,
 }>()
@@ -15,6 +11,9 @@ const request = ref({
   searchString: '',
   categoryId: null as null | number
 })
+
+const { state } = useBoard()
+const categories = computed(() => state.value.categories)
 
 const pagination = ref(DefaultPagination);
 const searchResults = ref<FullPaginatedResult<MessageListDto> | null>()

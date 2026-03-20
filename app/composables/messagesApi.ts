@@ -41,7 +41,7 @@ export interface SearchRequest {
 
 export interface ColumnMessages {
     statusId: number;
-    items: FullPaginatedResult<MessageListDto>
+    items: InitialBatchResult<MessageListDto>
 }
 
 export const useMessagesApi = () => {
@@ -49,26 +49,26 @@ export const useMessagesApi = () => {
 
     const loadMessages = (
         statusId: number | null,
-        pagination: PaginationData) => {
-        return client<ShortPaginatedResult<MessageListDto>>('/messages', {
+        skip: number,
+        take: number) => {
+        return client<BatchResult<MessageListDto>>('/messages', {
             method: 'GET',
             query: {
                 statusId: statusId ?? undefined,
-                page: pagination.page,
-                perPage: pagination.perPage,
+                skip: skip,
+                take: take,
             }
         });
     }
 
     const loadBoard = (
         categoryId: number | null,
-        pagination: PaginationData) => {
+        take: number) => {
         return client<ColumnMessages[]>('/messages/board', {
             method: 'GET',
             query: {
                 categoryId: categoryId ?? undefined,
-                page: pagination.page,
-                perPage: pagination.perPage,
+                take: take,
             }
         });
     }

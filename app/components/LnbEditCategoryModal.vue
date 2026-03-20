@@ -5,14 +5,11 @@ import type {EditCategoryRequest} from "~/composables/categoriesApi";
 import {useAppState} from "~/composables/appState";
 
 const { getRandomColor } = useAppState();
+const { state } = useBoard();
 
 const emit = defineEmits<{
   (e: 'close'): void,
   (e: 'edit', value: EditCategoryRequest): void
-}>()
-
-const props = defineProps<{
-  category: CategoryDto
 }>()
 
 const request = ref<EditCategoryRequest>({
@@ -21,8 +18,8 @@ const request = ref<EditCategoryRequest>({
 })
 
 onMounted(() => {
-  request.value.color = props.category.color ?? getRandomColor();
-  request.value.name = props.category.name;
+  request.value.color = state.value.currentCategory?.color ?? getRandomColor();
+  request.value.name = state.value.currentCategory?.name ?? '';
 })
 
 const { t } = useI18n();

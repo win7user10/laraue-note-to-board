@@ -15,6 +15,7 @@
   "messages": "сообщений | сообщение | сообщения | сообщений",
   "addColumn": "Создать",
   "addStatusColumn": "Создать статус",
+  "editStatusColumn": "Редактировать статус",
   "statusNameExample": "например, Сделать, В процессе, Готово...",
   "statusName": "Название статуса",
   "categoryNameExample": "например, Работа, Личное, Дизайн...",

@@ -280,23 +280,6 @@ const currentCategory = computed(() => {
 .col-add-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
 .col-add-btn svg { width: 12px; height: 12px; }
 
-.add-col-btn {
-  width: 240px;
-  min-width: 240px;
-  height: 52px;
-  border: 1.5px dashed var(--border);
-  border-radius: var(--radius);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text3);
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
-  align-self: flex-start;
-}
-.add-col-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+.add-col-btn{width:220px;min-width:220px;height:50px;border:1.5px dashed var(--border);border-radius:var(--radius);display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;font-weight:600;color:var(--text3);cursor:pointer;transition:all 0.2s;flex-shrink:0;align-self:flex-start;-webkit-tap-highlight-color:transparent}
+.add-col-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-glow)}
 </style>

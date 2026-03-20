@@ -11,7 +11,7 @@
   "noBoards": "No boards yet. Create a category first.",
   "backlogEmpty": "Backlog is clear",
   "backlogEmptySubtitle": "All messages have been assigned to boards",
-  "unassignedTitle": "Unassigned",
+  "unassignedTitle": "Unassigned · Move to categories",
   "messages": "message | messages",
   "addColumn": "Add column",
   "editStatusColumn": "Edit Status Column",

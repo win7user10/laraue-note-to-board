@@ -79,7 +79,7 @@ const closeEditCategory = () => {
 }
 
 const editCategoryInternal = async (request: EditCategoryRequest) => {
-  await board.createCategory(request);
+  await board.editCategory(request);
   closeEditCategory();
 }
 
@@ -144,7 +144,7 @@ const currentCategory = computed(() => {
               <path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z"/>
             </svg>
           </div>
-          <div @click="openDeleteStatus(status)" class="col-del-btn" v-if="currentCategory?.statuses.length ?? 0 > 1">
+          <div @click="openDeleteStatus(status)" class="col-del-btn" v-if="(currentCategory?.statuses.length ?? 0) > 1">
             <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
               <path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9"></path>
             </svg>
@@ -152,7 +152,7 @@ const currentCategory = computed(() => {
         </div>
         <LnbScrollArea :statusId="status.id">
           <div class="col-drag-inner" v-sortable="{ catId: board.state.value.categoryId, statusId: status?.id, onCardMoved }">
-            <lnb-card
+            <LnbCard
                 v-for="msg in cardsByStatus[status.id]?.data"
                 @openDelete="emits('openDelete', msg)"
                 @openEdit="emits('openEdit', $event)"

@@ -154,6 +154,10 @@ export const useBoard = () => {
         const category = state.value.categories.find(c => c.id === state.value.categoryId)!
         category.color = request.color;
         category.name = request.name;
+
+        state.value.currentCategory!.color = request.color;
+        state.value.currentCategory!.name = request.name;
+
         showToast(t('boardUpdated'), 'success', request.name);
     }
 

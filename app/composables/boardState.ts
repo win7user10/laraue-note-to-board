@@ -24,11 +24,11 @@ export const useBoard = () => {
         state.value.messages = await messagesApi.loadBoard(state.value.categoryId, DefaultPagination.perPage)
     }
 
-    const reloadColumn = async (statusId: number) => {
+    const reloadColumn = async (statusId: number, initialItemsCount: number) => {
         const messages = getMessagesByStatusId(statusId)!;
 
         // reload all already loaded
-        const result = await messagesApi.loadMessages(statusId, 0, messages.items.offset)
+        const result = await messagesApi.loadMessages(statusId, 0, initialItemsCount)
         messages.items.data = result.data;
         messages.items.offset = result.offset;
         messages.items.hasNext = result.hasNext;
@@ -52,8 +52,7 @@ export const useBoard = () => {
         const messagesByCategory = getMessagesByStatusId(value.statusId)!;
 
         // Create category should reload the column. Request the same count that was opened + 1
-        messagesByCategory.items.offset += 1;
-        await reloadColumn(value.statusId);
+        await reloadColumn(value.statusId, messagesByCategory.items.offset + 1);
 
         // Update top menu counters
         const messageCategory = state.value.categories.find(c => c.id === value.categoryId)
@@ -83,7 +82,7 @@ export const useBoard = () => {
             item.hasNext = newMessages.hasNext;
         } finally {
             const index = loadingCols.value.indexOf(statusId);
-            loadingCols.value = loadingCols.value.slice(index, 1);
+            loadingCols.value.splice(index, 1);
         }
     }
 
@@ -160,9 +159,27 @@ export const useBoard = () => {
 
     const deleteStatus = async (id: number) => {
         await statusApi.deleteStatus(id);
-        const status = statuses.value.find(c => c.id === id)!;
-        const statusName = status.name;
-        showToast(t('columnDeleted'), 'danger', statusName);
+
+        const removingStatus = statuses.value.find(c => c.id === id)!;
+        const removingStatusName = removingStatus.name;
+
+        // Drop status and save how many items were opened in dropped column
+        const removingIndex = state.value.messages.findIndex(c => c.statusId == id)
+        const { offset, totalCount } = state.value.messages[removingIndex]!.items;
+        state.value.messages.splice(removingIndex, 1)
+
+        // Remove column
+        const removeIndex = state.value.currentCategory!.statuses.findIndex(c => c.id === id);
+        state.value.currentCategory!.statuses.splice(removeIndex, 1)
+
+        // Reload first column, calculate new offset + total
+        const firstStatus = statuses.value[0]!
+        console.log(firstStatus)
+        const firstColumnMessages = state.value.messages.find(s => s.statusId == firstStatus.id)!;
+        firstColumnMessages.items.totalCount += totalCount;
+        await reloadColumn(firstColumnMessages.statusId, firstColumnMessages.items.offset + offset);
+
+        showToast(t('columnDeleted'), 'danger', removingStatusName);
     }
 
     const createStatus = async (value: CreateStatusRequest) => {
@@ -176,8 +193,19 @@ export const useBoard = () => {
             id: id,
             name: value.name,
             color: value.color,
-            sortOrder: lastOrder + 1
+            sortOrder: lastOrder + 1,
         })
+
+        state.value.messages.push({
+            statusId: id,
+            items: {
+                totalCount: 0,
+                offset: 0,
+                hasNext: false,
+                data: []
+            }
+        });
+
         showToast(t('columnCreated'), 'success', value.name);
     }
 
@@ -224,9 +252,8 @@ export const useBoard = () => {
         // update new column data
         const newColumnMessages = getMessagesByStatusId(statusId)!
         newColumnMessages.items.data.push(card)
-        newColumnMessages.items.offset += 1;
         newColumnMessages.items.totalCount += 1;
-        await reloadColumn(statusId)
+        await reloadColumn(statusId, newColumnMessages.items.offset + 1)
 
         // update card properties
         card.categoryId = categoryId!;
@@ -272,12 +299,12 @@ export const useBoard = () => {
         isColumnLoading,
         createCategory,
         setCategory,
+        createStatus,
         editCategory,
         deleteStatus,
         statuses,
         moveCard,
         changeColumnOrder,
-        createStatus,
         dbMessagesCount,
         editStatus,
     }

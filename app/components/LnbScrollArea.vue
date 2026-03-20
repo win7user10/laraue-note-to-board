@@ -12,7 +12,7 @@ const scrollableEl = ref(null);
 useInfiniteScroll(scrollableEl, async () => {
   await board.loadNextCards(props.statusId);
 }, {
-  distance: 80,
+  distance: 90,
   canLoadMore: () => board.state.value.messages
       .find(s => s.statusId === props.statusId)
       ?.items

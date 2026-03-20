@@ -49,6 +49,10 @@ export const useBoard = () => {
 
     const createCard = async (value: CreateCardRequest) => {
         await messagesApi.createMessage(value);
+
+        if (!value.statusId)
+            value.statusId = getDefaultStatus().id
+
         const messagesByCategory = getMessagesByStatusId(value.statusId)!;
 
         // Create category should reload the column. Request the same count that was opened + 1
@@ -66,6 +70,10 @@ export const useBoard = () => {
         const status = statuses.value.find(x => x.id === value.statusId);
         const subTitle = status ? `${state.value.currentCategory?.name} · ${status?.name}` : undefined;
         showToast(t('cardCreated'), 'success', subTitle);
+    }
+
+    const getDefaultStatus = () => {
+        return statuses.value[0]!
     }
 
     const loadingCols = ref<number[]>([]);
@@ -154,6 +162,7 @@ export const useBoard = () => {
 
         // Decrease offset for correct future loading
         columnMessages.items.offset -= 1;
+        columnMessages.items.totalCount -= 1;
 
         showToast(t('cardDeleted'), 'danger');
     }

@@ -117,7 +117,16 @@ export const useBoard = () => {
         if (oldCategory)
             oldCategory.count -= 1;
 
+        const messages = getMessagesByCardId(cardId);
+        const index = messages.items.data.findIndex(c => c.id === cardId)
+        messages.items.data.splice(index, 1);
+
         showToast(t('cardAssigned'), 'success', newCategory?.name);
+    }
+
+    const getMessagesByCardId = (cardId: number) => {
+        const card = allCards.value.find(c => c.id === cardId)!;
+        return getMessagesByStatusId(card.statusId)!
     }
 
     const editCard = async (id: number, value: EditCardRequest) => {

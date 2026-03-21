@@ -8,6 +8,11 @@ export interface MessageListDto {
     statusId: number;
     color: string;
     senderColor: string;
+    media: MediaInfo[];
+}
+
+export interface MediaInfo {
+    previewFileId: string;
 }
 
 export interface MessageDetailDto {

@@ -14,6 +14,9 @@
     (e: 'openEdit', message: MessageListDto): void,
   }>()
 
+  const messagesFileApi = useRuntimeConfig().public.messagesBaseAddress + 'telegram-files/';
+  const getImageUrl = (id: string) => messagesFileApi + id
+
   const { t } = useI18n();
 
   const hlTextChunks = computed<TextChunk[]>(() => {
@@ -85,6 +88,21 @@
       <template v-for="chunk in hlTextChunks">
         <span class="search-hl" v-if="chunk.isHighlighted">{{ chunk.content }}</span>
         <template v-else>{{ chunk.content }}</template>
+      </template>
+    </div>
+    <div
+      v-if="props.message.media.length"
+      class="card-media"
+      data-sortable-ignore="true"
+      :class="{'card-media-only': !props.message.content}">
+      <template v-for="(id, mi) in props.message.media.slice(0, 4)" :key="mi">
+        <div class="card-media-thumb">
+          <img :src="getImageUrl(id.previewFileId)" />
+          <!--<div class="play-icon" v-if="m.type==='video'"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 3l10 5-10 5V3z"/></svg></div>-->
+          <div class="media-count" v-if="mi===3 && props.message.media.length > 4">
+            +{{props.message.media.length - 4}}
+          </div>
+        </div>
       </template>
     </div>
     <div class="card-footer">
@@ -213,4 +231,14 @@
   .card-action-btn.danger:hover { background: var(--red-glow); color: var(--red); border-color: var(--red); }
   .card-action-btn svg { width: 11px; height: 11px; }
   :deep(.search-hl){color:var(--accent);background:var(--accent-glow);border-radius:2px;padding:0 2px}
+
+  /* CARD MEDIA STRIP */
+  .card-media{display:flex;gap:5px;overflow-x:auto;margin-bottom:8px;scrollbar-width:none;border-radius:var(--radius-sm);-webkit-overflow-scrolling:touch}
+  .card-media::-webkit-scrollbar{display:none}
+  .card-media-thumb{position:relative;width:72px;height:72px;min-width:72px;border-radius:6px;overflow:hidden;background:var(--surface3);flex-shrink:0;cursor:pointer}
+  .card-media-thumb img,.card-media-thumb video{width:100%;height:100%;object-fit:cover;display:block}
+  .card-media-thumb .play-icon{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.35)}
+  .card-media-thumb .play-icon svg{width:22px;height:22px;color:#fff;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.5))}
+  .card-media-thumb .media-count{position:absolute;inset:0;background:rgba(0,0,0,0.55);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;color:#fff}
+  .card-media-only{margin-bottom:0}
 </style>

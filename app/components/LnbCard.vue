@@ -97,7 +97,7 @@
       :class="{'card-media-only': !props.message.content}">
       <template v-for="(mediaInfo, i) in props.message.media.slice(0, 4)" :key="i">
         <div class="card-media-thumb" @click.stop="openMedia(props.message.media, i)">
-          <img :src="getImageUrl(mediaInfo.previewFileId)" />
+          <img v-if="mediaInfo.previewFileId" :src="getImageUrl(mediaInfo.previewFileId)" />
           <div class="play-icon" v-if="mediaInfo.type == MediaType.Video">
             <svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 3l10 5-10 5V3z"/></svg>
           </div>

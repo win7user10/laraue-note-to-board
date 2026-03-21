@@ -4,6 +4,9 @@ import {useUtils} from "~/composables/utils";
 
 const { getImageUrl } = useUtils()
 const { state, closeMedia, changeOpenedMediaIndex } = useBoard()
+const currentMediaElement = computed(() => state.value.openedMedia[state.value.openedMediaIndex])
+const currentMediaElementFile = computed(() => currentMediaElement.value?.originalFileId ?? currentMediaElement.value?.previewFileId)
+
 </script>
 
 <template>
@@ -15,16 +18,18 @@ const { state, closeMedia, changeOpenedMediaIndex } = useBoard()
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3l10 10M13 3L3 13"/></svg>
       </div>
       <div class="media-viewer-content">
-        <img
-          v-if="state.openedMedia[state.openedMediaIndex]?.type === MediaType.Image"
-          :src="getImageUrl(state.openedMedia[state.openedMediaIndex]!.previewFileId)"/>
-        <video
-          v-else
-          :src="getImageUrl(state.openedMedia[state.openedMediaIndex]!.previewFileId)"
-          controls
-          autoplay
-          playsinline>
-        </video>
+        <template v-if="currentMediaElementFile">
+          <img
+            v-if="currentMediaElement!.type === MediaType.Image"
+            :src="getImageUrl(currentMediaElementFile)"/>
+          <video
+            v-else
+            :src="getImageUrl(currentMediaElementFile)"
+            controls
+            autoplay
+            playsinline>
+          </video>
+        </template>
       </div>
       <div class="media-viewer-prev"
            v-if="state.openedMediaIndex > 0"

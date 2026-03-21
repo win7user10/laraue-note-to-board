@@ -12,7 +12,8 @@ export interface MessageListDto {
 }
 
 export interface MediaInfo {
-    previewFileId: string;
+    previewFileId?: string;
+    originalFileId?: string;
     type: MediaType
 }
 

@@ -197,6 +197,9 @@ const fabOpen = ref(false);
     @close="closeEditCard"
     v-if="modal.editCard"/>
 
+  <LnbMediaViewer
+    v-if="board.state.value.openedMedia.length > 0" />
+
   <!-- FAB backdrop -->
   <div class="fab-backdrop" v-if="fabOpen" @click="fabOpen=false"></div>
 

@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import {useUtils} from "~/composables/utils";
+  import {MediaType} from "~/composables/messagesApi";
 
   const props = defineProps<{
     message: MessageListDto,
@@ -14,10 +15,9 @@
     (e: 'openEdit', message: MessageListDto): void,
   }>()
 
-  const messagesFileApi = useRuntimeConfig().public.messagesBaseAddress + 'telegram-files/';
-  const getImageUrl = (id: string) => messagesFileApi + id
-
+  const { getImageUrl } = useUtils()
   const { t } = useI18n();
+  const { openMedia } = useBoard();
 
   const hlTextChunks = computed<TextChunk[]>(() => {
     const content = props.message.content;
@@ -95,11 +95,13 @@
       class="card-media"
       data-sortable-ignore="true"
       :class="{'card-media-only': !props.message.content}">
-      <template v-for="(id, mi) in props.message.media.slice(0, 4)" :key="mi">
-        <div class="card-media-thumb">
-          <img :src="getImageUrl(id.previewFileId)" />
-          <!--<div class="play-icon" v-if="m.type==='video'"><svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 3l10 5-10 5V3z"/></svg></div>-->
-          <div class="media-count" v-if="mi===3 && props.message.media.length > 4">
+      <template v-for="(mediaInfo, i) in props.message.media.slice(0, 4)" :key="i">
+        <div class="card-media-thumb" @click.stop="openMedia(props.message.media, i)">
+          <img :src="getImageUrl(mediaInfo.previewFileId)" />
+          <div class="play-icon" v-if="mediaInfo.type == MediaType.Video">
+            <svg viewBox="0 0 16 16" fill="currentColor"><path d="M4 3l10 5-10 5V3z"/></svg>
+          </div>
+          <div class="media-count" v-if="i===3 && props.message.media.length > 4">
             +{{props.message.media.length - 4}}
           </div>
         </div>

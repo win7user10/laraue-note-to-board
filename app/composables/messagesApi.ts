@@ -13,6 +13,12 @@ export interface MessageListDto {
 
 export interface MediaInfo {
     previewFileId: string;
+    type: MediaType
+}
+
+export enum MediaType {
+    Image,
+    Video,
 }
 
 export interface MessageDetailDto {

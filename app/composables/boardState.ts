@@ -14,6 +14,9 @@ export const useBoard = () => {
         categories: [] as CategoryCountDto[],
         categoryId: 0,
         currentCategory: undefined as CategoryDto | undefined,
+
+        openedMedia: [] as MediaInfo[],
+        openedMediaIndex: 0,
     }))
 
     const setCategory = (id: number) => {
@@ -22,6 +25,19 @@ export const useBoard = () => {
 
     const reloadBoard = async () => {
         state.value.messages = await messagesApi.loadBoard(state.value.categoryId, DefaultPagination.perPage)
+    }
+
+    const openMedia = (media: MediaInfo[], index: number) => {
+        state.value.openedMediaIndex = index;
+        state.value.openedMedia = media;
+    }
+
+    const closeMedia = () => {
+        state.value.openedMedia = [];
+    }
+
+    const changeOpenedMediaIndex = (index: number) => {
+        state.value.openedMediaIndex = index;
     }
 
     const reloadColumn = async (statusId: number, initialItemsCount: number) => {
@@ -332,5 +348,8 @@ export const useBoard = () => {
         changeColumnOrder,
         dbMessagesCount,
         editStatus,
+        openMedia,
+        closeMedia,
+        changeOpenedMediaIndex,
     }
 }

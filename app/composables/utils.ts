@@ -1,5 +1,5 @@
 export const useUtils = () => {
-
+    const messagesFileApi = useRuntimeConfig().public.messagesBaseAddress + 'telegram-files/';
     const dateFormatter = new Intl.DateTimeFormat(undefined, {
         month: '2-digit',
         day: '2-digit',
@@ -24,7 +24,10 @@ export const useUtils = () => {
         return dateFormatter.format(date);
     }
 
+    const getImageUrl = (id: string) => messagesFileApi + id
+
     return {
         formatDate,
+        getImageUrl,
     }
 }

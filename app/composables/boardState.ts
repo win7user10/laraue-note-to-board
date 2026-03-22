@@ -132,16 +132,20 @@ export const useBoard = () => {
 
     const updateCardCategory = async (cardId: number, categoryId: number) => {
         await messagesApi.updateCategory(cardId, categoryId)
+        const card = allCards.value.find(c => c.id === cardId)!;
 
         const newCategory = state.value.categories.find(c => c.id === categoryId)
         if (newCategory)
             newCategory.count += 1;
 
-        const oldCategory = state.value.categories.find(c => c.id === cardId)
+        const oldCategory = state.value.categories.find(c => c.id === card.categoryId)
         if (oldCategory)
             oldCategory.count -= 1;
 
+        card.categoryId = categoryId;
         const messages = getMessagesByCardId(cardId);
+        messages.items.totalCount -= 1;
+
         const index = messages.items.data.findIndex(c => c.id === cardId)
         messages.items.data.splice(index, 1);
 

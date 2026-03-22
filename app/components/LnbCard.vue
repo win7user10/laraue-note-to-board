@@ -20,9 +20,9 @@
   const { openMedia } = useBoard();
 
   const hlTextChunks = computed<TextChunk[]>(() => {
-    const content = props.message.content;
+    const content = props.message.content ?? '';
     const highlightText = props.highlightText?.trim();
-    if (!highlightText)
+    if (!highlightText || !content)
       return [{ content, isHighlighted: false }];
 
     const result: TextChunk[] = [];

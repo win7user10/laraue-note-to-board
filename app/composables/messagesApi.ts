@@ -3,7 +3,7 @@ export interface MessageListDto {
     time: string;
     sender?: string;
     senderInitial?: string;
-    content: string;
+    content?: string;
     categoryId: number;
     statusId: number;
     color: string;

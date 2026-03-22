@@ -10,9 +10,9 @@ const emits = defineEmits<{
   (e: 'openEdit', message: MessageListDto): void,
 }>()
 
-const { state } = useBoard()
+const { state, dbMessagesCount } = useBoard()
 
-const backlogMessagesResult = computed<InitialBatchResult<MessageListDto> | undefined>(() => {
+const backlogMessagesResult = computed(() => {
   return state.value.messages.length > 0
     ? state.value.messages[0]!.items
     : undefined
@@ -27,7 +27,7 @@ const { t } = useI18n();
     <div class="backlog-header">
       <h2>{{ t('backlog') }}</h2>
       <span class="badge">
-        {{ backlogMessagesResult?.totalCount }} {{ t('messages', { count: backlogMessagesResult?.totalCount }) }}
+        {{ dbMessagesCount }} {{ t('messages', { count: dbMessagesCount }) }}
       </span>
     </div>
 

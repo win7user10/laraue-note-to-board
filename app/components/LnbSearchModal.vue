@@ -78,15 +78,15 @@ const { t } = useI18n();
         <span :style="`color:${cat.color}`">● </span>{{cat.name}}
       </div>
     </div>
-    <div v-if="searchResults?.total != 0" ref="scrollableEl">
-      <div v-for="searchResult in searchResults?.data" :key="searchResult.id">
+    <div v-if="searchResults?.data?.length" ref="scrollableEl">
+      <div v-for="searchResult in searchResults.data" :key="searchResult.id">
         <LnbCard
-            @click.stop="emits('openCard', searchResult)"
-            style="margin-bottom: 6px;"
-            :deleteButton="false"
-            :assignButton="false"
-            :highlightText="request.searchString"
-            :message="searchResult"/>
+          @click.stop="emits('openCard', searchResult)"
+          style="margin-bottom: 6px;"
+          :deleteButton="false"
+          :assignButton="false"
+          :highlightText="request.searchString"
+          :message="searchResult"/>
       </div>
     </div>
     <div class="search-empty" v-else-if="request.searchString.trim()">

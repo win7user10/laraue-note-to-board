@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useAppState } from "~/composables/appState";
 import {ref} from "vue";
 import LnbIconBtn from "~/components/LnbIconBtn.vue";
 import type {MessageListDto} from "~/composables/messagesApi";

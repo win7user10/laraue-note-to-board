@@ -15,9 +15,11 @@ const categoryId = computed(() => state.value.categoryId);
 const { t } = useI18n();
 const board = useBoard();
 
-onMounted( async () => {
-  await board.reloadBoard()
-  await board.reloadCategories()
+onMounted(() => {
+  return Promise.all([
+    board.reloadBoard(),
+    board.reloadCategories()
+  ]);
 });
 
 watch(() => state.value.categoryId, () => {

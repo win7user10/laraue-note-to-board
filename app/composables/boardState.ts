@@ -24,6 +24,7 @@ export const useBoard = () => {
     }
 
     const reloadBoard = async () => {
+        state.value.messages = [];
         state.value.messages = await messagesApi.loadBoard(state.value.categoryId, DefaultPagination.perPage)
     }
 
@@ -51,6 +52,7 @@ export const useBoard = () => {
     }
 
     const reloadCategories = async () => {
+        state.value.categories = [];
         const data = await categoriesApi.loadCategories()
         const result = [{
             id: 0,

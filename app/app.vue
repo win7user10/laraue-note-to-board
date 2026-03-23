@@ -4,13 +4,12 @@ import {useAppState} from "~/composables/appState";
 import {onMounted, ref} from "vue";
 import WebApp from "@twa-dev/sdk";
 import LnbTgAuth from "~/components/LnbTgAuth.vue";
-import {useInitUser} from "~/composables/initUser";
 
 let initError = ref<any>(null)
 const configuration = useRuntimeConfig();
 const testUserToken = configuration.public.testUserToken;
 const { setIsAppInitialized, appState } = useAppState();
-const { setAppUser } = useInitUser();
+const { setAppUser, tryAuthWithStoredBearer } = useInitUser();
 const { t, setLocale, locales } = useI18n();
 
 const isAppInitialized = computed(() => appState.value.isAppInitialized)
@@ -18,14 +17,20 @@ const user = computed(() => appState.value.user)
 
 onMounted(async () => {
   try {
-    // 1. isTelegramMiniApp is true - run as Mini App
-    // 2. testUserToken is set - run Web Version as auth user
-    // 3. Otherwise, run as Web application
     const isInMiniApp = WebApp.initData !== '';
+    if (isInMiniApp)
+      await setupMiniAppWindow()
+
+    // If bearer exists - auth is not required
+    if (await tryAuthWithStoredBearer()) {
+      console.log("Auth with existing Bearer");
+      return;
+    }
+
+    // Try to get user token to check from the Telegram / variables
     if (isInMiniApp || testUserToken) {
       let token = '';
       if (isInMiniApp) {
-        await setupTelegram()
         token = WebApp.initData;
         console.log("Mini app launch");
       } else if (testUserToken) {
@@ -45,7 +50,7 @@ onMounted(async () => {
   }
 });
 
-const setupTelegram = async () => {
+const setupMiniAppWindow = async () => {
   // set launch language based on TG settings
   const language = WebApp.initDataUnsafe.user?.language_code;
   if (locales.value.find(l => l.code == language))
@@ -95,7 +100,7 @@ const setupTelegram = async () => {
 
 <template>
   <div id="app">
-    <LnbTgAuth v-if="isAppInitialized && !user" />
+    <LnbTgAuth v-if="isAppInitialized && !user && !initError" />
     <div v-else-if="!isAppInitialized" class="loader-overlay">
       <div class="loader-logo">Msg<span>board</span></div>
       <div class="loader-bar"><div class="loader-bar-fill"></div></div>

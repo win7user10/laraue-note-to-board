@@ -1,21 +1,46 @@
-import {useAppState} from "~/composables/appState";
-
 export const useInitUser = () => {
+    const appState = useAppState()
+    const { setLocale } = useI18n()
 
     const setAppUser = async (bearerToken: string) => {
-        const { setUser } = useAppState()
-        const { setLocale } = useI18n()
         localStorage.setItem('bearer', bearerToken)
 
         const { loadUser } = useUserApi();
         const user = await loadUser();
-        setUser(user);
+        await setUser(user);
+    }
 
+    const tryAuthWithStoredBearer = async () => {
+        const bearer = localStorage.getItem('bearer')
+        if (!bearer)
+            return false
+
+        const { loadUser } = useUserApi();
+        try {
+            const user = await loadUser();
+            await setUser(user);
+            return true;
+        }
+        catch (error) {
+            console.error(error);
+            return false;
+        }
+    }
+
+    const setUser = (user: UserDto) => {
+        appState.setUser(user);
         // @ts-ignore
-        await setLocale(user.languageCode);
+        return setLocale(user.languageCode);
+    }
+
+    const logout = () => {
+        appState.setUser(null);
+        localStorage.removeItem('bearer');
     }
 
     return {
         setAppUser,
+        tryAuthWithStoredBearer,
+        logout,
     }
 }

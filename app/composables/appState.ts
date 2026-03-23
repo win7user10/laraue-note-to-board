@@ -23,7 +23,7 @@ export const useAppState = () => {
         return appState.value.palette[Math.floor(Math.random() * appState.value.palette.length)]!;
     }
 
-    const setUser = (user: UserDto) => {
+    const setUser = (user: UserDto | null) => {
         appState.value.user = user;
     }
 

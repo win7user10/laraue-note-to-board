@@ -226,6 +226,7 @@ const fabOpen = ref(false);
   </div>
 
   <LnbToastStack />
+  <LnbUserAvatar />
 </template>
 
 <style scoped>

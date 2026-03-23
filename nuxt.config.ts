@@ -37,7 +37,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      messagesBaseAddress: process.env.NUXT_PUBLIC_MESSAGES_BASE_ADDRESS || 'https://msg-board.laraue.com/api/notes-board/',
+      messagesBaseAddress: process.env.NUXT_PUBLIC_MESSAGES_BASE_ADDRESS || 'https://msgboard.laraue.com/api/notes-board/',
       testUserToken: process.env.NUXT_PUBLIC_TEST_USER_TOKEN,
       botName: process.env.NUXT_PUBLIC_BOT_NAME || 'msgboard_bot',
     },

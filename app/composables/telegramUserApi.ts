@@ -1,8 +1,8 @@
 export const useTelegramUserApi = () => {
     const client = useTelegramUserClient()
 
-    const validate = (initData: string) => {
-        return client<string>('/user/validate', {
+    const authViaMiniApp = (initData: string) => {
+        return client<string>('/user/auth-via-mini-app', {
             method: 'POST',
             body: {
                 initData: initData
@@ -10,7 +10,15 @@ export const useTelegramUserApi = () => {
         });
     }
 
+    const authViaWebApp = (userData: any) => {
+        return client<string>('/user/auth', {
+            method: 'POST',
+            body: userData
+        });
+    }
+
     return {
-        validate,
+        authViaMiniApp,
+        authViaWebApp,
     }
 }

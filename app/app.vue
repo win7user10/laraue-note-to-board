@@ -3,55 +3,54 @@
 import {useAppState} from "~/composables/appState";
 import {onMounted, ref} from "vue";
 import WebApp from "@twa-dev/sdk";
-import {useUserApi} from "~/composables/userApi";
+import LnbTgAuth from "~/components/LnbTgAuth.vue";
+import {useInitUser} from "~/composables/initUser";
 
 let initError = ref<any>(null)
-const initialized = ref<boolean>(false);
 const configuration = useRuntimeConfig();
 const testUserToken = configuration.public.testUserToken;
-const { validate } = useTelegramUserApi();
-const { setUser } = useAppState();
+const { setIsAppInitialized, appState } = useAppState();
+const { setAppUser } = useInitUser();
 const { t, setLocale, locales } = useI18n();
+
+const isAppInitialized = computed(() => appState.value.isAppInitialized)
+const user = computed(() => appState.value.user)
 
 onMounted(async () => {
   try {
-    let token = testUserToken;
-    if (!testUserToken) {
-      // set launch language based on TG settings
-      const language = WebApp.initDataUnsafe.user?.language_code;
-      if (locales.value.find(l => l.code == language))
-        // @ts-ignore
-        await setLocale(language);
-
-      // Resize windows
-      setupTelegram()
-
-      // Get token to validate from the passed by TG
-      token = WebApp.initData;
-      if (!token) {
-        initError.value("The app should be run as Mini App");
-        return;
+    // 1. isTelegramMiniApp is true - run as Mini App
+    // 2. testUserToken is set - run Web Version as auth user
+    // 3. Otherwise, run as Web application
+    const isInMiniApp = WebApp.initData !== '';
+    if (isInMiniApp || testUserToken) {
+      let token = '';
+      if (isInMiniApp) {
+        await setupTelegram()
+        token = WebApp.initData;
+        console.log("Mini app launch");
+      } else if (testUserToken) {
+        token = testUserToken;
+        console.log("Dev web-app launch");
       }
+
+      const { authViaMiniApp } = useTelegramUserApi()
+      const bearer = await authViaMiniApp(token)
+      await setAppUser(bearer)
     }
-
-    const bearer = await validate(token)
-    localStorage.setItem('bearer', bearer)
-
-    const { loadUser } = useUserApi();
-    const user = await loadUser();
-    setUser(user);
-
-    // @ts-ignore
-    await setLocale(user.languageCode);
 
   } catch (err) {
     initError.value = err;
   } finally {
-    initialized.value = true;
+    setIsAppInitialized(true);
   }
 });
 
-const setupTelegram = () => {
+const setupTelegram = async () => {
+  // set launch language based on TG settings
+  const language = WebApp.initDataUnsafe.user?.language_code;
+  if (locales.value.find(l => l.code == language))
+    await setLocale(language as any);
+
   WebApp.ready();
   WebApp.expand();
   WebApp.requestFullscreen();
@@ -96,12 +95,12 @@ const setupTelegram = () => {
 
 <template>
   <div id="app">
-    <div class="loader-overlay" :class="{hidden: initialized}">
+    <LnbTgAuth v-if="isAppInitialized && !user" />
+    <div v-else-if="!isAppInitialized" class="loader-overlay">
       <div class="loader-logo">Msg<span>board</span></div>
       <div class="loader-bar"><div class="loader-bar-fill"></div></div>
       <div class="loader-text">{{ t('appInitializing') }}</div>
     </div>
-    <span v-if="!initialized">App is initializing...</span>
     <span v-else-if="initError">{{initError}}</span>
     <NuxtPage v-else />
   </div>

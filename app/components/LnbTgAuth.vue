@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import {useInitUser} from "~/composables/initUser";
+import {useAuthApi} from "~/composables/authApi";
 
 const widgetContainer = ref<HTMLElement | null>(null);
 
 const { setIsAppInitialized } = useAppState();
 const { setLocale, locales } = useI18n();
 const { setAppUser } = useInitUser();
+const configuration = useRuntimeConfig();
+const botName = configuration.public.botName;
 
 window.onTelegramAuth = async (user: any) => {
   try {
@@ -31,7 +34,7 @@ const tryAddLoginWidget = () => {
   const script = document.createElement('script');
   script.src = 'https://telegram.org/js/telegram-widget.js?22';
   script.async = true;
-  script.setAttribute('data-telegram-login', 'ai_saved_mesages_bot');
+  script.setAttribute('data-telegram-login', botName);
   script.setAttribute('data-size', 'large');
   script.setAttribute('data-onauth', 'onTelegramAuth(user)');
   script.setAttribute('data-request-access', 'write');

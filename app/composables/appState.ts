@@ -14,6 +14,7 @@ export const useAppState = () => {
         ],
         user: null as UserDto | null,
         isAppInitialized: false,
+        isInMiniApp: false,
         isLoading: false,
         loadingKeys: [] as string[],
         toasts: [] as Toast[],
@@ -29,6 +30,10 @@ export const useAppState = () => {
 
     const setIsAppInitialized = (state: boolean) => {
         appState.value.isAppInitialized = state;
+    }
+
+    const setIsInMiniApp = (state: boolean) => {
+        appState.value.isInMiniApp = state;
     }
 
     const addLoadingKey = (key: string) => {
@@ -63,5 +68,6 @@ export const useAppState = () => {
         removeLoadingKey,
         showToast,
         setIsAppInitialized,
+        setIsInMiniApp,
     }
 }

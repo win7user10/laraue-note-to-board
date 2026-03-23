@@ -3,6 +3,7 @@
   const initUser = useInitUser();
   const userPopupOpen = ref(false);
   const currentUser = computed(() => appState.value.user!);
+  const isInMiniApp = computed(() => appState.value.isInMiniApp!);
   const logout = () => {
     initUser.logout();
   }
@@ -10,7 +11,7 @@
 
 <template>
   <!-- USER AVATAR — shown on web only (hidden inside Telegram via CSS) -->
-  <div class="user-avatar-btn" @click.stop="userPopupOpen = !userPopupOpen">
+  <div class="user-avatar-btn" @click.stop="userPopupOpen = !userPopupOpen" v-if="!isInMiniApp">
     <div class="user-avatar"
        :style="currentUser.photoUrl
           ? ''

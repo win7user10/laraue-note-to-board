@@ -8,7 +8,7 @@ import LnbTgAuth from "~/components/LnbTgAuth.vue";
 let initError = ref<any>(null)
 const configuration = useRuntimeConfig();
 const testUserToken = configuration.public.testUserToken;
-const { setIsAppInitialized, appState } = useAppState();
+const { setIsAppInitialized, appState, setIsInMiniApp } = useAppState();
 const { setAppUser, tryAuthWithStoredBearer } = useInitUser();
 const { t, setLocale, locales } = useI18n();
 
@@ -18,8 +18,10 @@ const user = computed(() => appState.value.user)
 onMounted(async () => {
   try {
     const isInMiniApp = WebApp.initData !== '';
-    if (isInMiniApp)
+    if (isInMiniApp) {
+      setIsInMiniApp(true);
       await setupMiniAppWindow()
+    }
 
     // If bearer exists - auth is not required
     if (await tryAuthWithStoredBearer()) {

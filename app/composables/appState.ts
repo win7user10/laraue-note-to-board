@@ -6,14 +6,15 @@ export interface Toast {
 }
 
 export const useAppState = () => {
-
     const appState = useState('appState', () => ({
         palette: [
             '#2f81f7', '#3fb950', '#a371f7', '#d29922',
             '#ff7b72', '#79c0ff', '#56d364', '#ffa657',
             '#f778ba', '#39d353', '#e3b341', '#58a6ff',
         ],
-        user: {} as UserDto,
+        user: null as UserDto | null,
+        isAppInitialized: false,
+        isInMiniApp: false,
         isLoading: false,
         loadingKeys: [] as string[],
         toasts: [] as Toast[],
@@ -23,8 +24,16 @@ export const useAppState = () => {
         return appState.value.palette[Math.floor(Math.random() * appState.value.palette.length)]!;
     }
 
-    const setUser = (user: UserDto) => {
+    const setUser = (user: UserDto | null) => {
         appState.value.user = user;
+    }
+
+    const setIsAppInitialized = (state: boolean) => {
+        appState.value.isAppInitialized = state;
+    }
+
+    const setIsInMiniApp = (state: boolean) => {
+        appState.value.isInMiniApp = state;
     }
 
     const addLoadingKey = (key: string) => {
@@ -58,5 +67,7 @@ export const useAppState = () => {
         addLoadingKey,
         removeLoadingKey,
         showToast,
+        setIsAppInitialized,
+        setIsInMiniApp,
     }
 }

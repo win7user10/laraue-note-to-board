@@ -27,8 +27,9 @@ export const useBoard = () => {
         state.value.messages = [];
         state.value.messages = await messagesApi.loadBoard(state.value.categoryId, DefaultPagination.perPage)
 
-        const menuCategory = state.value.categories.find(c => c.id === state.value.categoryId)!
-        menuCategory.count = dbMessagesCount.value
+        const menuCategory = state.value.categories.find(c => c.id === state.value.categoryId)
+        if (menuCategory)
+            menuCategory.count = dbMessagesCount.value
     }
 
     const openMedia = (media: MediaInfo[], index: number) => {

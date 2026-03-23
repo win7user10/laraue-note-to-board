@@ -1,9 +1,6 @@
 import { DefaultPagination } from "~/composables/pagination";
 import {ref} from "vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
-const messagesApi = useMessagesApi()
-const categoriesApi = useCategoriesApi()
-const statusApi = useStatusesApi()
 const { showToast } = useAppState()
 
 export const useBoard = () => {
@@ -24,6 +21,7 @@ export const useBoard = () => {
     }
 
     const reloadBoard = async () => {
+        const messagesApi = useMessagesApi()
         state.value.messages = [];
         state.value.messages = await messagesApi.loadBoard(state.value.categoryId, DefaultPagination.perPage)
 
@@ -49,6 +47,7 @@ export const useBoard = () => {
         const messages = getMessagesByStatusId(statusId)!;
 
         // reload all already loaded
+        const messagesApi = useMessagesApi()
         const result = await messagesApi.loadMessages(statusId, 0, initialItemsCount)
         messages.items.data = result.data;
         messages.items.offset = result.offset;
@@ -57,6 +56,7 @@ export const useBoard = () => {
 
     const reloadCategories = async () => {
         state.value.categories = [];
+        const categoriesApi = useCategoriesApi()
         const data = await categoriesApi.loadCategories()
         const result = [{
             id: 0,
@@ -70,6 +70,7 @@ export const useBoard = () => {
     }
 
     const createCard = async (value: CreateCardRequest) => {
+        const messagesApi = useMessagesApi()
         await messagesApi.createMessage(value);
 
         if (!value.statusId)
@@ -106,6 +107,7 @@ export const useBoard = () => {
         try {
             loadingCols.value.push(statusId);
             const item = getMessagesByStatusId(statusId)!.items;
+            const messagesApi = useMessagesApi()
             const newMessages = await messagesApi.loadMessages(statusId, item.offset, DefaultPagination.perPage);
             item.data.push(...newMessages.data);
             item.offset = newMessages.offset;
@@ -125,6 +127,7 @@ export const useBoard = () => {
     }
 
     const createCategory = async (value: CreateCategoryRequest) => {
+        const categoriesApi = useCategoriesApi()
         const id = await categoriesApi.createCategory(value);
         state.value.categories.push({
             id: id,
@@ -137,6 +140,7 @@ export const useBoard = () => {
     }
 
     const updateCardCategory = async (cardId: number, categoryId: number) => {
+        const messagesApi = useMessagesApi()
         await messagesApi.updateCategory(cardId, categoryId)
         const card = allCards.value.find(c => c.id === cardId)!;
 
@@ -164,6 +168,7 @@ export const useBoard = () => {
     }
 
     const editCard = async (id: number, value: EditCardRequest) => {
+        const messagesApi = useMessagesApi()
         await messagesApi.editMessage(id, value);
         const card = allCards.value.find(x => x.id === id)
         if (card)
@@ -172,6 +177,7 @@ export const useBoard = () => {
     }
 
     const deleteCard = async (id: number) => {
+        const messagesApi = useMessagesApi()
         await messagesApi.deleteMessage(id)
 
         const card = allCards.value.find(c => c.id === id)
@@ -194,6 +200,7 @@ export const useBoard = () => {
     }
 
     const editCategory = async (request: EditCategoryRequest) => {
+        const categoriesApi = useCategoriesApi()
         await categoriesApi.editCategory(state.value.categoryId, request)
         const category = state.value.categories.find(c => c.id === state.value.categoryId)!
         category.color = request.color;
@@ -206,6 +213,7 @@ export const useBoard = () => {
     }
 
     const deleteStatus = async (id: number) => {
+        const statusApi = useStatusesApi()
         await statusApi.deleteStatus(id);
 
         const removingStatus = statuses.value.find(c => c.id === id)!;
@@ -231,6 +239,7 @@ export const useBoard = () => {
     }
 
     const createStatus = async (value: CreateStatusRequest) => {
+        const statusApi = useStatusesApi()
         const id = await statusApi.createStatus(value);
         const statuses = state.value.currentCategory?.statuses;
         if (!statuses)
@@ -258,6 +267,7 @@ export const useBoard = () => {
     }
 
     const editStatus = async (id: number, request: EditStatusRequest) => {
+        const statusApi = useStatusesApi()
         await statusApi.editStatus(id, request);
         const status = statuses.value.find(c => c.id === id)!;
         status.color = request.color;
@@ -267,6 +277,7 @@ export const useBoard = () => {
 
     const reloadCategory = async () => {
         state.value.currentCategory = undefined;
+        const categoriesApi = useCategoriesApi()
         state.value.currentCategory = await categoriesApi.loadCategory(state.value.categoryId)
     }
 
@@ -289,6 +300,7 @@ export const useBoard = () => {
         const card = allCards.value.find(m => m.id === cardId);
         if (!card) return;
 
+        const messagesApi = useMessagesApi()
         await messagesApi.updateStatus(card.id, statusId);
 
         // update old column data
@@ -329,6 +341,7 @@ export const useBoard = () => {
             status.sortOrder = i;
         })
 
+        const categoriesApi = useCategoriesApi()
         await categoriesApi.reorderStatuses(
             state.value.categoryId,
             Object.fromEntries(newStatuses.map(item => [item.id, item.sortOrder])))

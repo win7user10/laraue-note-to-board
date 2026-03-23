@@ -109,7 +109,8 @@ const setupMiniAppWindow = async () => {
       <div class="loader-text">{{ t('appInitializing') }}</div>
     </div>
     <span v-else-if="initError">{{initError}}</span>
-    <NuxtPage v-else />
+    <NuxtPage v-else-if="user" />
+    <span v-else>App is initializing</span>
   </div>
 </template>
 

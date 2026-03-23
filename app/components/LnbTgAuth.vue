@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {useInitUser} from "~/composables/initUser";
-import {useAuthApi} from "~/composables/authApi";
 
 const widgetContainer = ref<HTMLElement | null>(null);
 

@@ -21,7 +21,8 @@ export default defineNuxtConfig({
           href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&display=swap'
         }
       ],
-      viewport: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+      viewport: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover",
+      title: "Message Board"
     }
   },
 
@@ -38,7 +39,7 @@ export default defineNuxtConfig({
     public: {
       messagesBaseAddress: process.env.NUXT_PUBLIC_MESSAGES_BASE_ADDRESS || 'https://msg-board.laraue.com/api/notes-board/',
       testUserToken: process.env.NUXT_PUBLIC_TEST_USER_TOKEN,
-      botName: 'msgboard_bot',
+      botName: process.env.NUXT_PUBLIC_BOT_NAME || 'msgboard_bot',
     },
   },
 

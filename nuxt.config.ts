@@ -22,8 +22,7 @@ export default defineNuxtConfig({
         }
       ],
       viewport: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-    },
-    baseURL: '/msgboard-app/',
+    }
   },
 
   i18n: {
@@ -37,7 +36,7 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      messagesBaseAddress: process.env.NUXT_PUBLIC_MESSAGES_BASE_ADDRESS || 'https://laraue.com/api/notes-board/',
+      messagesBaseAddress: process.env.NUXT_PUBLIC_MESSAGES_BASE_ADDRESS || 'https://msg-board.laraue.com/api/notes-board/',
       testUserToken: process.env.NUXT_PUBLIC_TEST_USER_TOKEN,
     },
   },

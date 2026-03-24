@@ -30,6 +30,7 @@ const createCategory = () => {
       @apply="createCategory">
     <LnbModalLabel>{{ t('categoryName') }}</LnbModalLabel>
     <LnbModalInput
+      focus
       @enter="createCategory"
       v-model="newCategory.name"
       :placeholder="t('categoryNameExample')"/>

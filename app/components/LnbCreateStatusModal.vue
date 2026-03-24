@@ -34,6 +34,7 @@ const createStatus = () => {
       @apply="createStatus">
     <LnbModalLabel>{{ t('statusName') }}</LnbModalLabel>
     <LnbModalInput
+        focus
         @enter="createStatus"
         v-model="newStatus.name"
         :placeholder="t('statusNameExample')"/>

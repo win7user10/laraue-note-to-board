@@ -40,6 +40,7 @@ const createCard = () => {
     @close="emit('close')">
     <LnbModalLabel>{{ t('text') }}</LnbModalLabel>
     <LnbModalTextarea
+        focus
         v-model="newCard.content"
         :placeholder="t('contentExample')"/>
   </LnbModal>

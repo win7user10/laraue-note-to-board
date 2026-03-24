@@ -1,16 +1,24 @@
 <script setup lang="ts">
-  defineProps({
+  const props = defineProps({
     modelValue: { type: String, required: true },
     placeholder: { type: String, required: true },
+    focus: { type: Boolean, required: false },
   })
 
   const emits = defineEmits<{
     (e: 'update:modelValue', value: string): void,
   }>()
+
+  const textarea = ref(null);
+  onMounted(() => {
+    if (props.focus)
+      (textarea.value as any)?.focus();
+  })
 </script>
 
 <template>
   <textarea
+    ref="textarea"
     class="modal-textarea"
     :value="modelValue"
     @input="emits('update:modelValue', ($event.target as any).value)"

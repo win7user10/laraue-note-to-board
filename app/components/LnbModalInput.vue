@@ -1,18 +1,26 @@
 <script setup lang="ts">
-  defineProps({
+  const props = defineProps({
     modelValue: { type: String, required: true },
     placeholder: { type: String },
     disabled: { type: Boolean, default: false },
+    focus: { type: Boolean, required: false },
   })
 
   const emits = defineEmits<{
     (e: 'update:modelValue', value: string): void,
     (e: 'enter'): void,
   }>()
+
+  const input = ref(null);
+  onMounted(() => {
+    if (props.focus)
+      (input.value as any)?.focus();
+  })
 </script>
 
 <template>
   <input
+    ref="input"
     :class="disabled ? 'modal-input-disabled' : 'modal-input'"
     :value="modelValue"
     @input="emits('update:modelValue', ($event.target as any).value)"

@@ -44,9 +44,10 @@ const closeCreateCategory = () => {
 }
 
 const createCategoryInternal = async (value: CreateCategoryRequest) => {
-  await board.createCategory(value);
+  const id = await board.createCategory(value);
   closeCreateCategory();
   closeFab();
+  setCategory(id);
 }
 
 const categories = computed(() => board.state.value.categories);

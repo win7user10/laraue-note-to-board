@@ -160,6 +160,7 @@ export const useBoard = () => {
             statusesCount: 0,
         })
         showToast(t('boardCreated'), 'success', value.name);
+        return id;
     }
 
     const updateCardCategory = async (cardId: number, categoryId: number) => {

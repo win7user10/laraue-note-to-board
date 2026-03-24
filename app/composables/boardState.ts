@@ -3,6 +3,14 @@ import {ref} from "vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
 const { showToast } = useAppState()
 
+export interface MessageChanged {
+    id: number;
+    oldStatusId: number;
+    newStatusId: number;
+    oldCategoryId: number;
+    newCategoryId: number;
+}
+
 export const useBoard = () => {
     const { t } = useI18n()
 
@@ -15,6 +23,20 @@ export const useBoard = () => {
         openedMedia: [] as MediaInfo[],
         openedMediaIndex: 0,
     }))
+
+    const messageChangedHandlers = [] as ((item: MessageChanged) => void)[];
+    const addMessageChangedHandler = (handler: (item: MessageChanged) => void) => {
+        messageChangedHandlers.push(handler)
+    }
+
+    const removeMessageChangedHandler = (handler: (item: MessageChanged) => void) => {
+        const index = messageChangedHandlers.indexOf(handler);
+        if (index !== -1) messageChangedHandlers.splice(index, 1);
+    }
+
+    const raiseMessageChanged = (change: MessageChanged) => {
+        messageChangedHandlers.forEach((item) => item(change))
+    }
 
     const setCategory = (id: number) => {
         state.value.categoryId = id
@@ -74,7 +96,7 @@ export const useBoard = () => {
         await messagesApi.createMessage(value);
 
         if (!value.statusId)
-            value.statusId = getDefaultStatus().id
+            value.statusId = getDefaultStatus()?.id ?? 0
 
         const messagesByCategory = getMessagesByStatusId(value.statusId)!;
 
@@ -96,7 +118,7 @@ export const useBoard = () => {
     }
 
     const getDefaultStatus = () => {
-        return statuses.value[0]!
+        return statuses.value[0]
     }
 
     const loadingCols = ref<number[]>([]);
@@ -158,6 +180,14 @@ export const useBoard = () => {
 
         const index = messages.items.data.findIndex(c => c.id === cardId)
         messages.items.data.splice(index, 1);
+
+        raiseMessageChanged({
+            id: cardId,
+            oldStatusId: card.statusId,
+            newStatusId: card.statusId,
+            newCategoryId: categoryId,
+            oldCategoryId: oldCategory!.id ,
+        })
 
         showToast(t('cardAssigned'), 'success', newCategory?.name);
     }
@@ -374,5 +404,7 @@ export const useBoard = () => {
         openMedia,
         closeMedia,
         changeOpenedMediaIndex,
+        addMessageChangedHandler,
+        removeMessageChangedHandler,
     }
 }

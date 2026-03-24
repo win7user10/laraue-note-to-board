@@ -55,5 +55,12 @@
   "newCategoryBoard": "New Category Board",
   "create": "Create",
   "createCard": "Create Card",
-  "newBoard": "New Board"
+  "newBoard": "New Board",
+  "boardsOverview": "Boards overview",
+  "done": "done",
+  "turnMessages": "Turn your Telegram messages",
+  "intoBoard": "into organised boards",
+  "signIn": "Sign in to continue",
+  "dataStaysTelegram": "Your data stays in Telegram.",
+  "noSeparateAccount": "No separate account needed."
 }

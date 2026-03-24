@@ -56,6 +56,20 @@ export interface ColumnMessages {
     items: InitialBatchResult<MessageListDto>
 }
 
+export interface ColumnSummary{
+    id: number;
+    name: string;
+    color: string;
+    count: number;
+}
+
+export interface CategorySummary {
+    id: number;
+    name: string;
+    color: string;
+    columns: ColumnSummary[]
+}
+
 export const useMessagesApi = () => {
     const client = useMessagesClient()
 
@@ -130,6 +144,12 @@ export const useMessagesApi = () => {
         });
     }
 
+    const getBoardSummary = () => {
+        return client<CategorySummary[]>('/messages/summary', {
+            method: 'GET'
+        });
+    }
+
     return {
         loadMessages,
         updateStatus,
@@ -139,6 +159,7 @@ export const useMessagesApi = () => {
         editMessage,
         searchMessages,
         loadBoard,
-        getMessage
+        getMessage,
+        getBoardSummary,
     }
 }

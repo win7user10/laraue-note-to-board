@@ -4,7 +4,7 @@ import {useInitUser} from "~/composables/initUser";
 const widgetContainer = ref<HTMLElement | null>(null);
 
 const { setIsAppInitialized } = useAppState();
-const { setLocale, locales } = useI18n();
+const { setLocale, locales, t } = useI18n();
 const { setAppUser } = useInitUser();
 const configuration = useRuntimeConfig();
 const botName = configuration.public.botName;
@@ -57,13 +57,13 @@ const trySetLocale = async () => {
     <div class="login-card">
       <div class="login-logo">msg<span>board</span></div>
       <div class="login-tagline">
-        Turn your Telegram messages<br>into organised boards
+        {{ t('turnMessages') }}<br> {{ t('intoBoard') }}
       </div>
       <div class="login-divider"></div>
-      <div class="login-hint">Sign in to continue</div>
+      <div class="login-hint">{{ t('signIn') }}</div>
       <div ref="widgetContainer" class="login-widget"></div>
       <div class="login-footer">
-        Your data stays in Telegram.<br>No separate account needed.
+        {{ t('dataStaysTelegram') }}<br> {{ t('noSeparateAccount') }}
       </div>
     </div>
   </div>

@@ -31,24 +31,32 @@ const { t } = useI18n();
       </span>
     </div>
 
-    <LnbEmptyState
-      v-if="backlogMessagesResult?.data.length === 0"
-      :title="t('backlogEmpty')"
-      :subtitle="t('backlogEmptySubtitle')"/>
-
-    <div class="section-label" v-else>{{ t('unassignedTitle') }}</div>
-    <LnbScrollArea :statusId="statusId">
-      <LnbCard
-          v-for="msg in backlogMessagesResult?.data"
-          :deleteButton="true"
-          :message="msg"
-          :key="msg.id"
-          :assignButton="true"
-          @openDelete="emits('openDelete', $event)"
-          @openAssignToCategory="emits('openAssignToCategory', $event)"
-          @openEdit="emits('openEdit', $event)"
-          sender-color="#3fb950"/>
-    </LnbScrollArea>
+    <template v-if="backlogMessagesResult?.data.length === 0">
+      <template v-if="state.categories.length > 0">
+        <LnbBoardSummaryGrid />
+      </template>
+      <template v-else>
+        <LnbEmptyState
+            v-if="backlogMessagesResult?.data.length === 0"
+            :title="t('backlogEmpty')"
+            :subtitle="t('backlogEmptySubtitle')"/>
+      </template>
+    </template>
+    <template v-else>
+      <div class="section-label">{{ t('unassignedTitle') }}</div>
+      <LnbScrollArea :statusId="statusId">
+        <LnbCard
+            v-for="msg in backlogMessagesResult?.data"
+            :deleteButton="true"
+            :message="msg"
+            :key="msg.id"
+            :assignButton="true"
+            @openDelete="emits('openDelete', $event)"
+            @openAssignToCategory="emits('openAssignToCategory', $event)"
+            @openEdit="emits('openEdit', $event)"
+            sender-color="#3fb950"/>
+      </LnbScrollArea>
+    </template>
   </div>
 </template>
 

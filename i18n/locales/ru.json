@@ -56,5 +56,12 @@
   "newCategoryBoard": "Новая категория",
   "create": "Создать",
   "createCard": "Создать карточку",
-  "newBoard": "Новая категория"
+  "newBoard": "Новая категория",
+  "boardsOverview": "Статистика",
+  "done": "завершено",
+  "turnMessages": "Превратите свои сообщения",
+  "intoBoard": "в Канбан-доски",
+  "signIn": "Войдите, чтобы продолжить",
+  "dataStaysTelegram": "Данные пользователя остаются в Telegram.",
+  "noSeparateAccount": "Отдельный аккаунт не нужен."
 }

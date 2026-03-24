@@ -98,10 +98,11 @@ export const useBoard = () => {
         if (!value.statusId)
             value.statusId = getDefaultStatus()?.id ?? 0
 
-        const messagesByCategory = getMessagesByStatusId(value.statusId)!;
+        const messagesByCategory = getMessagesByStatusId(value.statusId);
 
         // Create category should reload the column. Request the same count that was opened + 1
-        await reloadColumn(value.statusId, messagesByCategory.items.offset + 1);
+        if (messagesByCategory)
+            await reloadColumn(value.statusId, messagesByCategory.items.offset + 1);
 
         // Update top menu counters
         const messageCategory = state.value.categories.find(c => c.id === value.categoryId)

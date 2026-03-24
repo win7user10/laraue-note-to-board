@@ -29,7 +29,9 @@ export interface MessageDetailDto {
     senderInitial?: string;
     content: string;
     categoryName?: string;
+    categoryColor?: string;
     statusName?: string;
+    statusColor?: string;
     color: string;
     senderColor: string;
 }
@@ -61,6 +63,7 @@ export interface ColumnSummary{
     name: string;
     color: string;
     count: number;
+    sortOrder: number;
 }
 
 export interface CategorySummary {

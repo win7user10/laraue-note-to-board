@@ -39,7 +39,7 @@
   "boardUpdated": "Категория отредактирована",
   "boardDeleted": "Доска удалена",
   "boardEdited": "Доска изменена",
-  "sender": "Имя отправителя",
+  "sender": "Отправитель",
   "created": "Создано",
   "text": "Текст",
   "delete": "Удалить",
@@ -63,5 +63,7 @@
   "intoBoard": "в Канбан-доски",
   "signIn": "Войдите, чтобы продолжить",
   "dataStaysTelegram": "Данные пользователя остаются в Telegram.",
-  "noSeparateAccount": "Отдельный аккаунт не нужен."
+  "noSeparateAccount": "Отдельный аккаунт не нужен.",
+  "status": "Статус",
+  "category": "Категория"
 }

@@ -33,19 +33,33 @@ onMounted(async () => {
 <template>
   <LnbModal
       :applyText="t('save')"
-      :title="t('editCard')"
+      :title="''"
       @apply="emit('edit', request)"
       @close="emit('close')">
 
-    <LnbModalLabel>{{ t('sender') }}</LnbModalLabel>
-    <LnbModalInput
-      :modelValue="data?.sender ?? ''"
-      disabled />
+    <LnbDetailMeta>
+      <LnbDetailRow :label="t('sender')">
+        {{ data?.sender }}
+      </LnbDetailRow>
 
-    <LnbModalLabel>{{ t('created') }}</LnbModalLabel>
-    <LnbModalInput
-      :modelValue="formatDate(data?.time)"
-      disabled />
+      <LnbDetailRow :label="t('created')">
+        {{ formatDate(data?.time) }}
+      </LnbDetailRow>
+
+      <LnbDetailRow :label="t('category')" v-if="data?.categoryName">
+        <span>
+          <span :style="{color: data?.categoryColor}">●</span>
+          {{ data?.categoryName }}
+        </span>
+      </LnbDetailRow>
+
+      <LnbDetailRow :label="t('status')" v-if="data?.statusName">
+        <span>
+          <span :style="{color: data?.statusColor}">●</span>
+          {{ data?.statusName }}
+        </span>
+      </LnbDetailRow>
+    </LnbDetailMeta>
 
     <LnbModalLabel>{{ t('text') }}</LnbModalLabel>
     <LnbModalTextarea

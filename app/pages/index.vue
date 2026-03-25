@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import LnbBacklogView from "~/components/LnbBacklogView.vue";
 import LnbBoardView from "~/components/LnbBoardView.vue";
-import { useAppState } from "~/composables/appState";
 import LnbCreateCategoryModal from "~/components/LnbCreateCategoryModal.vue";
 import {onMounted, ref} from "vue";
 import LnbFabItem from "~/components/LnbFabItem.vue";
-import {DefaultPagination} from "~/composables/pagination";
 import {useBoard} from "~/composables/boardState";
+import LnbNavLoader from "~/components/LnbNavLoader.vue";
 
-const { appState } = useAppState()
 const { setCategory, state } = useBoard()
 const categoryId = computed(() => state.value.categoryId);
 
@@ -138,9 +136,7 @@ const fabOpen = ref(false);
     <div class="topbar-logo">Msg<span>Board</span></div>
   </div>
 
-  <div class="nav-loader" :class="{active: appState.isLoading}">
-    <div class="nav-loader-fill"></div>
-  </div>
+  <LnbNavLoader />
 
   <!-- NAV TABS -->
   <div class="nav-tabs">
@@ -325,12 +321,6 @@ const fabOpen = ref(false);
 }
 .nav-tab-add:hover { border-color: var(--accent); color: var(--accent); }
 .nav-tab-add svg { width: 16px; height: 16px; }
-/* NAV LOADER — slim bar between stats and content */
-.nav-loader{height:3px;flex-shrink:0;pointer-events:none;opacity:0;transition:opacity 0.2s;background:var(--border)}
-.nav-loader.active{opacity:1}
-.nav-loader-fill{height:100%;background:var(--accent);border-radius:0 2px 2px 0;animation:nav-progress 0.5s cubic-bezier(0.4,0,0.2,1) forwards}
-@keyframes nav-progress{0%{width:0%}60%{width:75%}100%{width:100%}}
-
 
 /* FAB */
 .fab-wrap{position:fixed;bottom:calc(20px + var(--safe-bottom));right:calc(16px + var(--safe-right));z-index:90;display:flex;flex-direction:column-reverse;align-items:flex-end;gap:10px}

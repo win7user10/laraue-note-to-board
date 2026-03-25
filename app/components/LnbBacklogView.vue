@@ -32,7 +32,7 @@ const { t } = useI18n();
         {{ t('backlog') }}
       </template>
       <template #subtitle>
-        {{ dbMessagesCount }} {{ t('messages', { count: dbMessagesCount }) }}
+        {{ dbMessagesCount }} {{ t('cards', { count: dbMessagesCount }) }}
       </template>
     </LnbBoardHeader>
 

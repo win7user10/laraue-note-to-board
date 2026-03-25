@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import {useAppState} from "~/composables/appState";
-const { appState } = useAppState();
+const { palette } = useAppState();
 
 defineProps({
   modelValue: { type: String, required: true },
@@ -10,13 +10,23 @@ defineProps({
 const emits = defineEmits<{
   (e: 'update:modelValue', value: string): void,
 }>()
+
+const { appState } = useAppState()
+const isLoading = computed(() => appState.value.isLoading);
 </script>
 
 <template>
   <div class="color-picker">
-    <div v-for="c in appState.palette" :key="c" class="color-swatch" :style="`background:${c}`"
-       :class="{selected: modelValue === c}"
-       @click="emits('update:modelValue', c)">
+    <div
+      v-for="c in palette"
+      :key="c"
+      class="color-swatch"
+      :style="isLoading ? `background:var(--surface2)` : `background:${c}`"
+      :class="{
+        selected: modelValue === c,
+        disabled: isLoading,
+      }"
+      @click="isLoading ? () => {} : emits('update:modelValue', c)">
     </div>
   </div>
 </template>
@@ -36,4 +46,5 @@ const emits = defineEmits<{
   transition: all 0.15s;
 }
 .color-swatch.selected { border-color: white; transform: scale(1.15); }
+.color-swatch.disabled { cursor: not-allowed; }
 </style>

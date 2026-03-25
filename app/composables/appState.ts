@@ -7,11 +7,6 @@ export interface Toast {
 
 export const useAppState = () => {
     const appState = useState('appState', () => ({
-        palette: [
-            '#2f81f7', '#3fb950', '#a371f7', '#d29922',
-            '#ff7b72', '#79c0ff', '#56d364', '#ffa657',
-            '#f778ba', '#39d353', '#e3b341', '#58a6ff',
-        ],
         user: null as UserDto | null,
         isAppInitialized: false,
         isInMiniApp: false,
@@ -20,8 +15,9 @@ export const useAppState = () => {
         toasts: [] as Toast[],
     }))
 
+    const palette = computed(() => appState.value.user?.palette ?? []);
     const getRandomColor = () => {
-        return appState.value.palette[Math.floor(Math.random() * appState.value.palette.length)]!;
+        return palette.value[Math.floor(Math.random() * palette.value.length)]!;
     }
 
     const setUser = (user: UserDto | null) => {
@@ -69,5 +65,6 @@ export const useAppState = () => {
         showToast,
         setIsAppInitialized,
         setIsInMiniApp,
+        palette,
     }
 }

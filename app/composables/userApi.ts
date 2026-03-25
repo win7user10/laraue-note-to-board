@@ -8,6 +8,7 @@ export interface UserDto {
     firstName?: string;
     lastName?: string;
     initials?: string;
+    palette: string[];
 }
 
 export const useUserApi = () => {

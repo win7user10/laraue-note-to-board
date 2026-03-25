@@ -4,7 +4,6 @@
   const props = defineProps({
     modelValue: { type: String, required: true },
     placeholder: { type: String },
-    disabled: { type: Boolean, default: false },
     focus: { type: Boolean, required: false },
   })
 
@@ -13,19 +12,23 @@
     (e: 'enter'): void,
   }>()
 
+  const { appState } = useAppState()
+
   const input = ref(null);
   onMounted(() => {
     if (props.focus)
       (input.value as any)?.focus();
   })
+
+  const isLoading = computed(() => appState.value.isLoading);
 </script>
 
 <template>
   <LnbInput
-    :class="disabled ? 'modal-input-disabled' : 'modal-input'"
+    :class="isLoading ? 'modal-input-disabled' : 'modal-input'"
     :modelValue="modelValue"
     :placeholder="placeholder"
-    :disabled="disabled"
+    :disabled="isLoading"
     @input="emits('update:modelValue', $event.target.value)"
     @enter="emits('enter')" />
 </template>
@@ -49,6 +52,7 @@
   .modal-input-disabled{
     width:100%;
     background:var(--surface2);
+    cursor:not-allowed;
     border:1px solid var(--border);
     border-radius:var(--radius-sm);
     padding:10px 12px;
@@ -57,7 +61,6 @@
     font-family:'JetBrains Mono',monospace;
     outline:none;
     margin-bottom:12px;
-    cursor:not-allowed;
     user-select:none;
     opacity:0.7
   }

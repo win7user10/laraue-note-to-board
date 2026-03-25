@@ -23,7 +23,14 @@ onMounted(() => {
 });
 
 watch(() => state.value.categoryId, () => {
-  return board.reloadBoard();
+  return Promise.all([
+    board.reloadBoard(),
+    board.reloadCategory()
+  ]);
+})
+
+onMounted(async () => {
+  await board.reloadCategory();
 })
 
 const modal = reactive({

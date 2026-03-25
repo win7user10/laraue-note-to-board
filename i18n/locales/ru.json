@@ -57,7 +57,7 @@
   "create": "Создать",
   "createCard": "Создать карточку",
   "newBoard": "Новая категория",
-  "boardsOverview": "Статистика",
+  "boardsOverview": "Статистика · все элементы распределены по категориям",
   "done": "завершено",
   "turnMessages": "Превратите свои сообщения",
   "intoBoard": "в Канбан-доски",
@@ -65,5 +65,6 @@
   "dataStaysTelegram": "Данные пользователя остаются в Telegram.",
   "noSeparateAccount": "Отдельный аккаунт не нужен.",
   "status": "Статус",
-  "category": "Категория"
+  "category": "Категория",
+  "searchCards": "Поиск по элементам…"
 }

@@ -56,7 +56,7 @@
   "create": "Create",
   "createCard": "Create Card",
   "newBoard": "New Board",
-  "boardsOverview": "Boards overview",
+  "boardsOverview": "Boards overview · all cards are categorised",
   "done": "done",
   "turnMessages": "Turn your Telegram messages",
   "intoBoard": "into organised boards",
@@ -64,5 +64,6 @@
   "dataStaysTelegram": "Your data stays in Telegram.",
   "noSeparateAccount": "No separate account needed.",
   "status": "Status",
-  "category": "Category"
+  "category": "Category",
+  "searchCards": "Search cards…"
 }

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+  import LnbInput from "~/components/LnbInput.vue";
+
   const props = defineProps({
     modelValue: { type: String, required: true },
     placeholder: { type: String },
@@ -19,14 +21,13 @@
 </script>
 
 <template>
-  <input
-    ref="input"
+  <LnbInput
     :class="disabled ? 'modal-input-disabled' : 'modal-input'"
-    :value="modelValue"
-    @input="emits('update:modelValue', ($event.target as any).value)"
+    :modelValue="modelValue"
     :placeholder="placeholder"
     :disabled="disabled"
-    @keyup.enter="emits('enter')" />
+    @input="emits('update:modelValue', $event.target.value)"
+    @enter="emits('enter')" />
 </template>
 
 <style scoped>

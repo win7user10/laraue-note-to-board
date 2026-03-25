@@ -10,13 +10,8 @@
   }>()
 
   const { t } = useI18n();
-  const { loadCategories } = useCategoriesApi();
-
-  const categories = ref<CategoryCountDto[]>([])
-  onMounted(async () => {
-    const result = await loadCategories();
-    categories.value = result.categories;
-  })
+  const { state } = useBoard();
+  const categories = computed(() => state.value.categories.filter(x => x.id != 0));
 </script>
 
 <template>

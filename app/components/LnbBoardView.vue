@@ -17,14 +17,6 @@ const emits = defineEmits<{
   (e: 'openEdit', message: MessageListDto): void,
 }>()
 
-watch(() => categoryId.value, async _ => {
-  await board.reloadCategory();
-})
-
-onMounted(async () => {
-  await board.reloadCategory();
-})
-
 const modal = reactive({
   createStatus: false,
   deleteStatus: false,
@@ -97,26 +89,28 @@ const onColMoved = async (statusId: string, newSortOrder: number) => {
 const currentCategory = computed(() => {
   return board.state.value.currentCategory;
 })
+
+const searchString = computed(() => board.state.value.searchString);
 </script>
 
 <template>
   <!-- BOARD VIEW -->
   <div class="board-view">
-    <div class="board-header">
-      <div>
-        <div class="board-title" v-if="currentCategory">
-          <span :style="`color:${currentCategory.color}`">●</span> {{ currentCategory.name }}
-        </div>
-        <div class="board-subtitle">
-          {{ board.dbMessagesCount }} {{ t('cards', board.dbMessagesCount.value) }}
-        </div>
-      </div>
-      <div class="board-actions">
+
+    <LnbBoardHeader>
+      <template v-if="currentCategory" #title>
+        <span :style="`color:${currentCategory.color}`">●</span>
+        {{ currentCategory.name }}
+      </template>
+      <template #subtitle>
+        {{ board.dbMessagesCount }} {{ t('cards', board.dbMessagesCount.value) }}
+      </template>
+      <template #actions>
         <LnbIconBtn :title="t('editBoard')" @click="openEditCategory">
           <path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z"></path>
         </LnbIconBtn>
-      </div>
-    </div>
+      </template>
+    </LnbBoardHeader>
 
     <div class="board-columns" v-col-sortable="{ cat: currentCategory, onColMoved }">
       <div
@@ -158,6 +152,7 @@ const currentCategory = computed(() => {
                 :deleteButton="true"
                 :key="msg.id"
                 :assignButton="false"
+                :highlightText="searchString"
                 :message="msg"/>
           </div>
         </LnbScrollArea>
@@ -211,19 +206,12 @@ const currentCategory = computed(() => {
   padding-left: var(--safe-left);
   padding-right: var(--safe-right);
 }
-.board-header {
-  padding: 10px 14px 8px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-}
-.board-title { font-size: 14px; font-weight: 700; }
-.board-subtitle { font-size: 11px; color: var(--text3); }
-.board-actions { margin-left: auto; display: flex; gap: 6px; }
 
-.board-columns { flex: 1; overflow-x: auto; overflow-y: hidden; display: flex; gap: 10px; padding: 12px; align-items: flex-start; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.board-columns {
+  flex: 1;
+  overflow-x: auto; overflow-y: hidden; display: flex; gap: 10px;
+  padding: 12px calc(max(12px, var(--safe-right))) 12px calc(max(12px, var(--safe-left)));
+  align-items: flex-start; -webkit-overflow-scrolling: touch; scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 .board-columns::-webkit-scrollbar { height: 4px; }
 .board-columns::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 

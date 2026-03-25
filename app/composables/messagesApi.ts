@@ -79,25 +79,29 @@ export const useMessagesApi = () => {
     const loadMessages = (
         statusId: number | null,
         skip: number,
-        take: number) => {
+        take: number,
+        searchString: string) => {
         return client<BatchResult<MessageListDto>>('/messages', {
             method: 'GET',
             query: {
                 statusId: statusId ?? undefined,
                 skip: skip,
                 take: take,
+                searchString: searchString,
             }
         });
     }
 
     const loadBoard = (
         categoryId: number | null,
-        take: number) => {
+        take: number,
+        searchString: string) => {
         return client<ColumnMessages[]>('/messages/board', {
             method: 'GET',
             query: {
                 categoryId: categoryId ?? undefined,
                 take: take,
+                searchString: searchString
             }
         });
     }

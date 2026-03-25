@@ -19,7 +19,7 @@ export const useBoard = () => {
         categories: [] as CategoryCountDto[],
         categoryId: 0,
         currentCategory: undefined as CategoryDto | undefined,
-
+        searchString: '',
         openedMedia: [] as MediaInfo[],
         openedMediaIndex: 0,
     }))
@@ -39,13 +39,22 @@ export const useBoard = () => {
     }
 
     const setCategory = (id: number) => {
+        state.value.searchString = ''
         state.value.categoryId = id
+    }
+
+    const search = async(searchString: string) => {
+        state.value.searchString = searchString;
+        await reloadBoard();
     }
 
     const reloadBoard = async () => {
         const messagesApi = useMessagesApi()
         state.value.messages = [];
-        state.value.messages = await messagesApi.loadBoard(state.value.categoryId, DefaultPagination.perPage)
+        state.value.messages = await messagesApi.loadBoard(
+            state.value.categoryId,
+            DefaultPagination.perPage,
+            state.value.searchString)
 
         const menuCategory = state.value.categories.find(c => c.id === state.value.categoryId)
         if (menuCategory)
@@ -70,7 +79,12 @@ export const useBoard = () => {
 
         // reload all already loaded
         const messagesApi = useMessagesApi()
-        const result = await messagesApi.loadMessages(statusId, 0, initialItemsCount)
+        const result = await messagesApi.loadMessages(
+            statusId,
+            0,
+            initialItemsCount,
+            state.value.searchString)
+
         messages.items.data = result.data;
         messages.items.offset = result.offset;
         messages.items.hasNext = result.hasNext;
@@ -95,14 +109,15 @@ export const useBoard = () => {
         const messagesApi = useMessagesApi()
         await messagesApi.createMessage(value);
 
+        // Create from the global creation modal
         if (!value.statusId)
             value.statusId = getDefaultStatus()?.id ?? 0
 
         const messagesByCategory = getMessagesByStatusId(value.statusId);
 
         // Create category should reload the column. Request the same count that was opened + 1
-        if (messagesByCategory)
-            await reloadColumn(value.statusId, messagesByCategory.items.offset + 1);
+        const offset = messagesByCategory?.items?.offset;
+        await reloadColumn(value.statusId, offset ? offset + 1 : DefaultPagination.perPage);
 
         // Update top menu counters
         const messageCategory = state.value.categories.find(c => c.id === value.categoryId)
@@ -131,7 +146,12 @@ export const useBoard = () => {
             loadingCols.value.push(statusId);
             const item = getMessagesByStatusId(statusId)!.items;
             const messagesApi = useMessagesApi()
-            const newMessages = await messagesApi.loadMessages(statusId, item.offset, DefaultPagination.perPage);
+            const newMessages = await messagesApi.loadMessages(
+                statusId,
+                item.offset,
+                DefaultPagination.perPage,
+                state.value.searchString);
+
             item.data.push(...newMessages.data);
             item.offset = newMessages.offset;
             item.hasNext = newMessages.hasNext;
@@ -148,6 +168,10 @@ export const useBoard = () => {
     const isColumnLoading = (statusId: number) => {
         return loadingCols.value.includes(statusId);
     }
+
+    const isLoading = computed(() => {
+        return loadingCols.value.length > 0;
+    })
 
     const createCategory = async (value: CreateCategoryRequest) => {
         const categoriesApi = useCategoriesApi()
@@ -310,7 +334,8 @@ export const useBoard = () => {
     const reloadCategory = async () => {
         state.value.currentCategory = undefined;
         const categoriesApi = useCategoriesApi()
-        state.value.currentCategory = await categoriesApi.loadCategory(state.value.categoryId)
+        if (state.value.categoryId)
+            state.value.currentCategory = await categoriesApi.loadCategory(state.value.categoryId)
     }
 
     const statuses = computed(() => {
@@ -408,5 +433,7 @@ export const useBoard = () => {
         changeOpenedMediaIndex,
         addMessageChangedHandler,
         removeMessageChangedHandler,
+        search,
+        isLoading,
     }
 }

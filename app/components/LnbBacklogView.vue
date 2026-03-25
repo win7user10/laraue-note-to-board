@@ -18,18 +18,23 @@ const backlogMessagesResult = computed(() => {
     : undefined
 })
 
+const searchString = computed(() => state.value.searchString)
+
 const statusId = 0;
 const { t } = useI18n();
 </script>
 
 <template>
   <div class="backlog-view">
-    <div class="backlog-header">
-      <h2>{{ t('backlog') }}</h2>
-      <span class="badge">
+
+    <LnbBoardHeader style="padding:0 0 10px;border-bottom:none;margin-bottom:0">
+      <template #title>
+        {{ t('backlog') }}
+      </template>
+      <template #subtitle>
         {{ dbMessagesCount }} {{ t('messages', { count: dbMessagesCount }) }}
-      </span>
-    </div>
+      </template>
+    </LnbBoardHeader>
 
     <template v-if="backlogMessagesResult?.data.length === 0">
       <template v-if="state.categories.length > 0">
@@ -51,6 +56,7 @@ const { t } = useI18n();
             :message="msg"
             :key="msg.id"
             :assignButton="true"
+            :highlightText="searchString"
             @openDelete="emits('openDelete', $event)"
             @openAssignToCategory="emits('openAssignToCategory', $event)"
             @openEdit="emits('openEdit', $event)"

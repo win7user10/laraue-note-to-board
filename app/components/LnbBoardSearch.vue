@@ -1,5 +1,8 @@
 <script setup lang="ts">
   import LnbInput from "~/components/LnbInput.vue";
+  import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
+  import LnbSearchIcon from "~/components/icons/LnbSearchIcon.vue";
+  import LnbClearIcon from "~/components/icons/LnbClearIcon.vue";
 
   const emits = defineEmits<{
     (e: 'search', value: string): void,
@@ -44,19 +47,18 @@
       :placeholder="t('searchCards')"
       @escape="closeBoardSearch" />
     <div class="board-search-btn">
-      <svg
-        @click="openBoardSearch"
-        v-if="!searchFocus && !modelValue"
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.8">
-          <circle cx="6.5" cy="6.5" r="4"/>
-          <path d="M10 10l3 3"/>
-      </svg>
-      <svg v-else @click="clearBoardSearch" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-        <path d="M3 3l10 10M13 3L3 13"/>
-      </svg>
+      <LnbIconBtn
+          v-if="!searchFocus && !modelValue"
+          @click="openBoardSearch"
+          title="">
+        <LnbSearchIcon />
+      </LnbIconBtn>
+      <LnbIconBtn
+          v-else
+          @click="clearBoardSearch"
+          title="">
+        <LnbClearIcon />
+      </LnbIconBtn>
     </div>
   </div>
 </template>

@@ -15,18 +15,13 @@
 
   const { appState } = useAppState()
 
-  const input = ref(null);
-  onMounted(() => {
-    if (props.focus)
-      (input.value as any)?.focus();
-  })
-
   const isLoading = computed(() => appState.value.isLoading);
   const isDisabled = computed(() => isLoading.value && !props.preventDisableOnLoading);
 </script>
 
 <template>
   <LnbInput
+    :focus="focus"
     :class="isDisabled ? 'modal-input-disabled' : 'modal-input'"
     :modelValue="modelValue"
     :placeholder="placeholder"

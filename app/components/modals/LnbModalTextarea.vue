@@ -15,6 +15,11 @@
       (textarea.value as any)?.focus();
   })
 
+  watch(() => props.modelValue, (): void => {
+    if (props.focus)
+      (textarea.value as any)?.focus();
+  })
+
   const { appState } = useAppState();
   const isLoading = computed(() => appState.value.isLoading);
 </script>

@@ -17,6 +17,10 @@ onMounted(() => {
   if (props.focus)
     nextTick(() =>(input.value as any)?.focus());
 })
+watch(() => props.modelValue, (): void => {
+  if (props.focus)
+    (input.value as any)?.focus();
+})
 </script>
 
 <template>

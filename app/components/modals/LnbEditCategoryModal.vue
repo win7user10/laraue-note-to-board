@@ -37,6 +37,8 @@ const { t } = useI18n();
       @apply="emit('edit', request)">
     <LnbModalLabel>{{ t('categoryName') }}</LnbModalLabel>
     <LnbModalInput
+        focus
+        @enter="emit('edit', request)"
         v-model="request.name"
         :placeholder="t('categoryNameExample')"/>
     <LnbModalLabel>{{ t('color') }}</LnbModalLabel>

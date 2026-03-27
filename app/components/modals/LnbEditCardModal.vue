@@ -65,6 +65,7 @@ onMounted(async () => {
 
     <LnbModalLabel>{{ t('text') }}</LnbModalLabel>
     <LnbModalTextarea
+      focus
       v-model="request.content"
       :placeholder="t('contentExample')"/>
   </LnbModal>

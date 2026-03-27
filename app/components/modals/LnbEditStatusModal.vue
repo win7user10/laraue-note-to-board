@@ -40,6 +40,8 @@ const { t } = useI18n();
       @apply="emit('edit', newStatus)">
     <LnbModalLabel>{{ t('statusName') }}</LnbModalLabel>
     <LnbModalInput
+        focus
+        @enter="emit('edit', newStatus)"
         v-model="newStatus.name"
         :placeholder="t('statusNameExample')"/>
     <LnbModalLabel>{{ t('color') }}</LnbModalLabel>

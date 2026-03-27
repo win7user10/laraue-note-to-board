@@ -1,6 +1,7 @@
 <script setup lang="ts">
   import {useUtils} from "~/composables/utils";
   import {MediaType} from "~/composables/messagesApi";
+  import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
 
   const props = defineProps<{
     message: MessageListDto,
@@ -110,24 +111,23 @@
     <div class="card-footer">
       <!--<span class="card-tag">PM</span>-->
       <div class="card-actions">
-        <div
+        <LnbIconBtn
           v-if="assignButton"
-          class="card-action-btn"
           :title="t('assignToBoard')"
-          @click.stop="emits('openAssignToCategory', props.message)">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M3 8h10M9 4l4 4-4 4"/>
-          </svg>
-        </div>
-        <div
+          btnSize="small"
+          iconSize="mini"
+          bordered
+          icon="move"
+          @click.stop="emits('openAssignToCategory', props.message)" />
+        <LnbIconBtn
           v-if="deleteButton"
-          @click.stop="emits('openDelete', props.message)"
-          class="card-action-btn danger"
-          :title="t('delete')">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9"/>
-          </svg>
-        </div>
+          :title="t('delete')"
+          bordered
+          btnSize="small"
+          iconSize="mini"
+          type="danger"
+          icon="delete"
+          @click.stop="emits('openDelete', props.message)" />
       </div>
     </div>
   </div>

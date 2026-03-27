@@ -6,8 +6,6 @@ import LnbEditStatusModal from "~/components/LnbEditStatusModal.vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
 import LnbEditCategoryModal from "~/components/LnbEditCategoryModal.vue";
 import LnbScrollArea from "~/components/LnbScrollArea.vue";
-import LnbEditIcon from "~/components/icons/LnbEditIcon.vue";
-import LnbDeleteIcon from "~/components/icons/LnbDeleteIcon.vue";
 
 const board = useBoard();
 const { t } = useI18n();
@@ -122,12 +120,19 @@ const searchString = computed(() => board.state.value.searchString);
         {{ board.dbMessagesCount }} {{ t('cards', board.dbMessagesCount.value) }}
       </template>
       <template #actions>
-        <LnbIconBtn :title="t('editBoard')" @click="openEditCategory">
-          <LnbEditIcon />
-        </LnbIconBtn>
-        <LnbIconBtn type="danger" :title="t('deleteBoard')" @click="openDeleteCategory">
-          <LnbDeleteIcon />
-        </LnbIconBtn>
+        <LnbIconBtn
+          :title="t('editBoard')"
+          btnSize="medium"
+          iconSize="medium"
+          icon="edit"
+          @click="openEditCategory" />
+        <LnbIconBtn
+          type="danger"
+          btnSize="medium"
+          iconSize="medium"
+          :title="t('deleteBoard')"
+          icon="delete"
+          @click="openDeleteCategory" />
       </template>
     </LnbBoardHeader>
 
@@ -151,16 +156,20 @@ const searchString = computed(() => board.state.value.searchString);
           <div class="col-indicator" :style="`background:${status.color}`"></div>
           <div class="col-title">{{ status.name }}</div>
           <div class="col-count">{{ cardsByStatus[status.id]?.totalCount ?? 0 }}</div>
-          <div class="col-del-btn" @click.stop="openEditStatus(status)" style="color:var(--text3)">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-              <path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z"/>
-            </svg>
-          </div>
-          <div @click="openDeleteStatus(status)" class="col-del-btn" v-if="(currentCategory?.statuses.length ?? 0) > 1">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-              <path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9"></path>
-            </svg>
-          </div>
+          <LnbIconBtn
+            @click.stop="openEditStatus(status)"
+            title=""
+            icon="edit"
+            btnSize="mini"
+            iconSize="small" />
+          <LnbIconBtn
+            type="danger"
+            v-if="(currentCategory?.statuses.length ?? 0) > 1"
+            @click.stop="openDeleteStatus(status)"
+            title=""
+            icon="delete"
+            btnSize="mini"
+            iconSize="small" />
         </div>
         <LnbScrollArea :statusId="status.id">
           <div class="col-drag-inner" v-sortable="{ catId: board.state.value.categoryId, statusId: status?.id, onCardMoved }">

@@ -1,25 +1,43 @@
 <script setup lang="ts">
-  defineProps({
+  import LnbIcon from "~/components/icons/LnbIcon.vue";
+
+  const props = defineProps({
     title: {type: String, required: true},
-    type: {type: String as PropType<'primary' | 'danger'>, required: false},
+    type: {type: String as PropType<'primary' | 'danger'>, required: false, default: 'primary'},
+    btnSize: {type: String as PropType<'mini' | 'small' | 'medium'>, required: true },
+    iconSize: {type: String as PropType<'mini' | 'small' | 'medium'>, required: true },
+    icon: {type: String as PropType<'clear' | 'delete' | 'edit' | 'move' | 'search'>, required: true },
     bordered: {type: Boolean, default: false},
   })
-  const emits = defineEmits<{
-    (e: 'click'): void,
-  }>()
+
+  const pxSize = computed(() => {
+    switch (props.btnSize) {
+      case 'mini':
+        return 22
+      case 'small':
+        return 26
+      case 'medium':
+        return 28
+      default:
+        throw new Error(`Unknown size: ${props.btnSize}`)
+    }
+  })
 </script>
 
 <template>
   <div
     :class="['icon-btn', type, { bordered: bordered }]"
-    @click="emits('click')" :title="title">
-    <slot></slot>
+    :style="{
+      width: pxSize + 'px',
+      height: pxSize + 'px',
+    }"
+    :title="title">
+    <LnbIcon :size="iconSize" :icon="icon" :title="title" />
   </div>
 </template>
 
 <style scoped>
 .icon-btn {
-  width: 34px; height: 34px;
   color: var(--text2);
   display: flex; align-items: center; justify-content: center;
   cursor: pointer;

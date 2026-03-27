@@ -1,8 +1,6 @@
 <script setup lang="ts">
   import LnbInput from "~/components/LnbInput.vue";
   import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
-  import LnbSearchIcon from "~/components/icons/LnbSearchIcon.vue";
-  import LnbClearIcon from "~/components/icons/LnbClearIcon.vue";
 
   const emits = defineEmits<{
     (e: 'search', value: string): void,
@@ -48,17 +46,21 @@
       @escape="closeBoardSearch" />
     <div class="board-search-btn">
       <LnbIconBtn
-          v-if="!searchFocus && !modelValue"
-          @click="openBoardSearch"
-          title="">
-        <LnbSearchIcon />
-      </LnbIconBtn>
+        v-if="!searchFocus && !modelValue"
+        @click="openBoardSearch"
+        title=""
+        btnSize="medium"
+        iconSize="medium"
+        type="primary"
+        icon="search" />
       <LnbIconBtn
-          v-else
-          @click="clearBoardSearch"
-          title="">
-        <LnbClearIcon />
-      </LnbIconBtn>
+        v-else
+        @click="clearBoardSearch"
+        title=""
+        btnSize="medium"
+        iconSize="medium"
+        type="primary"
+        icon="clear" />
     </div>
   </div>
 </template>

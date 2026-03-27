@@ -5,6 +5,7 @@
     modelValue: { type: String, required: true },
     placeholder: { type: String },
     focus: { type: Boolean, required: false },
+    preventDisableOnLoading: { type: Boolean, required: false },
   })
 
   const emits = defineEmits<{
@@ -21,14 +22,15 @@
   })
 
   const isLoading = computed(() => appState.value.isLoading);
+  const isDisabled = computed(() => isLoading.value && !props.preventDisableOnLoading);
 </script>
 
 <template>
   <LnbInput
-    :class="isLoading ? 'modal-input-disabled' : 'modal-input'"
+    :class="isDisabled ? 'modal-input-disabled' : 'modal-input'"
     :modelValue="modelValue"
     :placeholder="placeholder"
-    :disabled="isLoading"
+    :disabled="isDisabled"
     @input="emits('update:modelValue', $event.target.value)"
     @enter="emits('enter')" />
 </template>

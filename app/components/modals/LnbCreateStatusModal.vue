@@ -3,6 +3,9 @@
 import LnbColorPicker from "~/components/LnbColorPicker.vue";
 import type {CreateStatusRequest} from "~/composables/statusesApi";
 import {useAppState} from "~/composables/appState";
+import LnbModal from "~/components/modals/LnbModal.vue";
+import LnbModalLabel from "~/components/modals/LnbModalLabel.vue";
+import LnbModalInput from "~/components/modals/LnbModalInput.vue";
 
 const { getRandomColor } = useAppState()
 const { state } = useBoard()

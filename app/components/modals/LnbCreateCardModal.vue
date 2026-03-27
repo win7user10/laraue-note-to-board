@@ -1,7 +1,9 @@
 <script setup lang="ts">
 
 import type {CreateCardRequest} from "~/composables/messagesApi";
-import LnbModalTextarea from "~/components/LnbModalTextarea.vue";
+import LnbModalTextarea from "~/components/modals/LnbModalTextarea.vue";
+import LnbModal from "~/components/modals/LnbModal.vue";
+import LnbModalLabel from "~/components/modals/LnbModalLabel.vue";
 
 const emit = defineEmits<{
   (e: 'close'): void,

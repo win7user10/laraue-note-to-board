@@ -37,7 +37,7 @@ const { t } = useI18n();
     </LnbBoardHeader>
 
     <template v-if="backlogMessagesResult?.data.length === 0">
-      <template v-if="state.categories.length > 0">
+      <template v-if="state.categories.length > 0 && !state.searchString">
         <LnbBoardSummaryGrid />
       </template>
       <template v-else>
@@ -76,25 +76,10 @@ const { t } = useI18n();
   flex-direction: column;
   gap: 8px;
 }
-.backlog-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 2px 0 8px;
-}
 .backlog-header h2 {
   font-size: 15px;
   font-weight: 700;
   color: var(--text);
-}
-.badge {
-  background: var(--surface3);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 1px 7px;
-  font-size: 11px;
-  color: var(--text2);
-  font-weight: 600;
 }
 .section-label {
   font-size: 10px;

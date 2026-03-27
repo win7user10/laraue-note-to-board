@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import type {MessageListDto} from "~/composables/messagesApi";
+  import LnbModal from "~/components/modals/LnbModal.vue";
 
   defineProps<{
     assignMsg?: MessageListDto,
@@ -11,7 +12,8 @@
 
   const { t } = useI18n();
   const { state } = useBoard();
-  const categories = computed(() => state.value.categories.filter(x => x.id != 0));
+  const categoryId = computed(() => state.value.categoryId);
+  const categories = computed(() => state.value.categories.filter(c => c.id != categoryId.value));
 </script>
 
 <template>

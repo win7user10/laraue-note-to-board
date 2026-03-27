@@ -2,19 +2,22 @@
 import {ref} from "vue";
 import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
 import type {MessageListDto} from "~/composables/messagesApi";
-import LnbEditStatusModal from "~/components/LnbEditStatusModal.vue";
+import LnbEditStatusModal from "~/components/modals/LnbEditStatusModal.vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
-import LnbEditCategoryModal from "~/components/LnbEditCategoryModal.vue";
+import LnbEditCategoryModal from "~/components/modals/LnbEditCategoryModal.vue";
 import LnbScrollArea from "~/components/LnbScrollArea.vue";
+import LnbCreateStatusModal from "~/components/modals/LnbCreateStatusModal.vue";
+import LnbDeleteColumnModal from "~/components/modals/LnbDeleteColumnModal.vue";
+import LnbCreateCardModal from "~/components/modals/LnbCreateCardModal.vue";
+import LnbDeleteCategoryModal from "~/components/modals/LnbDeleteCategoryModal.vue";
 
 const board = useBoard();
 const { t } = useI18n();
 
-const categoryId = computed(() => board.state.value.categoryId);
-
 const emits = defineEmits<{
   (e: 'openDelete', message: MessageListDto): void,
   (e: 'openEdit', message: MessageListDto): void,
+  (e: 'openAssignToCategory', message: MessageListDto): void,
 }>()
 
 const modal = reactive({
@@ -177,9 +180,10 @@ const searchString = computed(() => board.state.value.searchString);
                 v-for="msg in cardsByStatus[status.id]?.data"
                 @openDelete="emits('openDelete', msg)"
                 @openEdit="emits('openEdit', $event)"
+                @openAssignToCategory="emits('openAssignToCategory', $event)"
                 :deleteButton="true"
                 :key="msg.id"
-                :assignButton="false"
+                :assignButton="true"
                 :highlightText="searchString"
                 :message="msg"/>
           </div>

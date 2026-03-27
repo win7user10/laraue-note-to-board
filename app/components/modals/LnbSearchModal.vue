@@ -1,6 +1,8 @@
 <script setup lang="ts">
 
 import type {MessageListDto} from "~/composables/messagesApi";
+import LnbModal from "~/components/modals/LnbModal.vue";
+import LnbModalInput from "~/components/modals/LnbModalInput.vue";
 
 const emits = defineEmits<{
   (e: 'openCard', card: MessageListDto): void,
@@ -61,6 +63,7 @@ const { t } = useI18n();
       :fullHeight="true"
       :determineScroll="true">
     <LnbModalInput
+      preventDisableOnLoading
       v-model="request.searchString"
       :placeholder="t('searchPlaceholder')"/>
     <div class="search-filters">

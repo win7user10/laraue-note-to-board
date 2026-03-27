@@ -45,12 +45,13 @@ export const useBoard = () => {
 
     const search = async(searchString: string) => {
         state.value.searchString = searchString;
-        await reloadBoard();
+        await reloadBoard(false);
     }
 
-    const reloadBoard = async () => {
+    const reloadBoard = async (clearPreviousImmediately: boolean) => {
         const messagesApi = useMessagesApi()
-        state.value.messages = [];
+        if (clearPreviousImmediately)
+            state.value.messages = [];
         state.value.messages = await messagesApi.loadBoard(
             state.value.categoryId,
             DefaultPagination.perPage,

@@ -1,11 +1,16 @@
 <script setup lang="ts">
 import LnbBacklogView from "~/components/LnbBacklogView.vue";
 import LnbBoardView from "~/components/LnbBoardView.vue";
-import LnbCreateCategoryModal from "~/components/LnbCreateCategoryModal.vue";
+import LnbCreateCategoryModal from "~/components/modals/LnbCreateCategoryModal.vue";
 import {onMounted, ref} from "vue";
 import LnbFabItem from "~/components/LnbFabItem.vue";
 import {useBoard} from "~/composables/boardState";
 import LnbNavLoader from "~/components/LnbNavLoader.vue";
+import LnbEditCardModal from "~/components/modals/LnbEditCardModal.vue";
+import LnbSearchModal from "~/components/modals/LnbSearchModal.vue";
+import LnbAssignModal from "~/components/modals/LnbAssignModal.vue";
+import LnbCreateCardModal from "~/components/modals/LnbCreateCardModal.vue";
+import LnbDeleteCardModal from "~/components/modals/LnbDeleteCardModal.vue";
 
 const { setCategory, state } = useBoard()
 const categoryId = computed(() => state.value.categoryId);
@@ -15,14 +20,14 @@ const board = useBoard();
 
 onMounted(() => {
   return Promise.all([
-    board.reloadBoard(),
+    board.reloadBoard(true),
     board.reloadCategories()
   ]);
 });
 
 watch(() => state.value.categoryId, () => {
   return Promise.all([
-    board.reloadBoard(),
+    board.reloadBoard(true),
     board.reloadCategory()
   ]);
 })
@@ -165,6 +170,7 @@ const fabOpen = ref(false);
   </template>
   <template v-else>
     <LnbBoardView
+      @openAssignToCategory="openAssignToCategory"
       @openEdit="openEditCard"
       @openDelete="openDelete"/>
   </template>

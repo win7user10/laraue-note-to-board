@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import LnbColorPicker from "~/components/LnbColorPicker.vue";
 import {useAppState} from "~/composables/appState";
+import LnbModal from "~/components/modals/LnbModal.vue";
+import LnbModalLabel from "~/components/modals/LnbModalLabel.vue";
+import LnbModalInput from "~/components/modals/LnbModalInput.vue";
 
 const emit = defineEmits<{
   (e: 'close'): void,

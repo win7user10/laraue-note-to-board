@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type {EditCardRequest} from "~/composables/messagesApi";
-import LnbModalTextarea from "~/components/LnbModalTextarea.vue";
+import LnbModalTextarea from "~/components/modals/LnbModalTextarea.vue";
 import {ref} from "vue";
 import {useUtils} from "~/composables/utils";
+import LnbModal from "~/components/modals/LnbModal.vue";
+import LnbModalLabel from "~/components/modals/LnbModalLabel.vue";
 
 const props = defineProps<{
   id: number

@@ -34,6 +34,7 @@
   "cardEdited": "Карточка изменена",
   "cardAssigned": "Перенесено в категорию",
   "editBoard": "Редактировать доску",
+  "deleteBoard": "Удалить доску",
   "boardCreated": "Доска создана",
   "boardUpdated": "Категория отредактирована",
   "boardDeleted": "Доска удалена",
@@ -65,5 +66,7 @@
   "noSeparateAccount": "Отдельный аккаунт не нужен.",
   "status": "Статус",
   "category": "Категория",
-  "searchCards": "Поиск по элементам…"
+  "searchCards": "Поиск по элементам…",
+  "deleteBoardTitle": "Удалить доску?",
+  "deleteBoardConfirm": "Сообщения будут перещены в нераспределенные."
 }

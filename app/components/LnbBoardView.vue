@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import {ref} from "vue";
-import LnbIconBtn from "~/components/LnbIconBtn.vue";
+import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
 import type {MessageListDto} from "~/composables/messagesApi";
 import LnbEditStatusModal from "~/components/LnbEditStatusModal.vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
 import LnbEditCategoryModal from "~/components/LnbEditCategoryModal.vue";
 import LnbScrollArea from "~/components/LnbScrollArea.vue";
+import LnbEditIcon from "~/components/icons/LnbEditIcon.vue";
+import LnbDeleteIcon from "~/components/icons/LnbDeleteIcon.vue";
 
 const board = useBoard();
 const { t } = useI18n();
@@ -22,6 +24,7 @@ const modal = reactive({
   deleteStatus: false,
   editStatus: false,
   editCategory: false,
+  deleteCategory: false,
   addToBoard: false,
 });
 
@@ -74,6 +77,19 @@ const editCategoryInternal = async (request: EditCategoryRequest) => {
   closeEditCategory();
 }
 
+const openDeleteCategory = () => {
+  modal.deleteCategory = true;
+}
+
+const closeDeleteCategory = () => {
+  modal.deleteCategory = false;
+}
+
+const deleteCategoryInternal = async () => {
+  await board.deleteCategory();
+  closeDeleteCategory();
+}
+
 const cardsByStatus = computed(() => {
   return Object.fromEntries(board.state.value.messages.map(x => [x.statusId, x.items]));
 })
@@ -107,7 +123,10 @@ const searchString = computed(() => board.state.value.searchString);
       </template>
       <template #actions>
         <LnbIconBtn :title="t('editBoard')" @click="openEditCategory">
-          <path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z"></path>
+          <LnbEditIcon />
+        </LnbIconBtn>
+        <LnbIconBtn type="danger" :title="t('deleteBoard')" @click="openDeleteCategory">
+          <LnbDeleteIcon />
         </LnbIconBtn>
       </template>
     </LnbBoardHeader>
@@ -194,6 +213,10 @@ const searchString = computed(() => board.state.value.searchString);
     @close="closeEditCategory"
     @edit="editCategoryInternal"
     v-if="modal.editCategory"/>
+  <LnbDeleteCategoryModal
+    @close="closeDeleteCategory"
+    @delete="deleteCategoryInternal"
+    v-if="modal.deleteCategory"/>
 </template>
 
 <style scoped>

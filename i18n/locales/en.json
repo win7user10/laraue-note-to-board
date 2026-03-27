@@ -34,6 +34,7 @@
   "cardEdited": "Card edited",
   "cardAssigned": "Card assigned",
   "editBoard": "Edit board",
+  "deleteBoard": "Delete board",
   "boardCreated": "Board created",
   "boardDeleted": "Board deleted",
   "boardEdited": "Board edited",
@@ -64,5 +65,7 @@
   "noSeparateAccount": "No separate account needed.",
   "status": "Status",
   "category": "Category",
-  "searchCards": "Search cards…"
+  "searchCards": "Search cards…",
+  "deleteBoardTitle": "Delete Board?",
+  "deleteBoardConfirm": "Messages will be moved to Backlog."
 }

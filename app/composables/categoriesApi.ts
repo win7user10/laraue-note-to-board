@@ -72,11 +72,18 @@ export const useCategoriesApi = () => {
         });
     }
 
+    const deleteCategory = (id: number) => {
+        return client('/categories/' + id, {
+            method: 'DELETE'
+        });
+    }
+
     return {
         loadCategories,
         createCategory,
         loadCategory,
         reorderStatuses,
         editCategory,
+        deleteCategory,
     }
 }

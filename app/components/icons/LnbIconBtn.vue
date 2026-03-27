@@ -1,6 +1,7 @@
 <script setup lang="ts">
   defineProps({
-    title: { type: String, required: true },
+    title: {type: String, required: true},
+    type: {type: String as PropType<'primary' | 'danger'>, required: false},
   })
   const emits = defineEmits<{
     (e: 'click'): void,
@@ -8,10 +9,8 @@
 </script>
 
 <template>
-  <div class="icon-btn" @click="emits('click')" :title="title">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
-      <slot></slot>
-    </svg>
+  <div :class="'icon-btn ' + type" @click="emits('click')" :title="title">
+    <slot></slot>
   </div>
 </template>
 
@@ -28,5 +27,5 @@
   flex-shrink: 0;
 }
 .icon-btn:hover, .icon-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
-.icon-btn svg { width: 16px; height: 16px; }
+.icon-btn.danger:hover { background: var(--red-glow); border-color: var(--red); color: var(--red); }
 </style>

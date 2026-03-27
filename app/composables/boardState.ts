@@ -268,6 +268,17 @@ export const useBoard = () => {
         showToast(t('boardUpdated'), 'success', request.name);
     }
 
+    const deleteCategory = async () => {
+        const categoriesApi = useCategoriesApi()
+        await categoriesApi.deleteCategory(state.value.categoryId)
+        const index = state.value.categories.findIndex(c => c.id === state.value.categoryId)
+        state.value.categories.splice(index, 1);
+        state.value.currentCategory = undefined;
+        state.value.categoryId = 0;
+
+        showToast(t('boardDeleted'), 'danger');
+    }
+
     const deleteStatus = async (id: number) => {
         const statusApi = useStatusesApi()
         await statusApi.deleteStatus(id);
@@ -420,8 +431,9 @@ export const useBoard = () => {
         isColumnLoading,
         createCategory,
         setCategory,
-        createStatus,
         editCategory,
+        deleteCategory,
+        createStatus,
         deleteStatus,
         statuses,
         moveCard,

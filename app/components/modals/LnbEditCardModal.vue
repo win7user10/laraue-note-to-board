@@ -34,10 +34,10 @@ onMounted(async () => {
 
 <template>
   <LnbModal
-      :applyText="t('save')"
-      :title="''"
-      @apply="emit('edit', request)"
-      @close="emit('close')">
+    :applyText="t('save')"
+    :title="''"
+    @apply="emit('edit', request)"
+    @close="emit('close')">
 
     <LnbDetailMeta>
       <LnbDetailRow :label="t('sender')">
@@ -66,6 +66,7 @@ onMounted(async () => {
     <LnbModalLabel>{{ t('text') }}</LnbModalLabel>
     <LnbModalTextarea
       focus
+      @enter="emit('edit', request)"
       v-model="request.content"
       :placeholder="t('contentExample')"/>
   </LnbModal>

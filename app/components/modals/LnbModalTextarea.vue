@@ -1,4 +1,5 @@
 <script setup lang="ts">
+
   const props = defineProps({
     modelValue: { type: String, required: true },
     placeholder: { type: String, required: true },
@@ -7,9 +8,10 @@
 
   const emits = defineEmits<{
     (e: 'update:modelValue', value: string): void,
+    (e: 'enter'): void,
   }>()
 
-  const textarea = ref(null);
+  const textarea = ref<any>(null);
   onMounted(() => {
     if (props.focus)
       (textarea.value as any)?.focus();
@@ -22,6 +24,23 @@
 
   const { appState } = useAppState();
   const isLoading = computed(() => appState.value.isLoading);
+
+  const handleEnter = (e: KeyboardEvent) => {
+    if (e.ctrlKey || e.metaKey) {
+
+      const start = textarea.value.selectionStart;
+      const end = textarea.value.selectionEnd;
+      const newText = props.modelValue.substring(0, start) + '\n' + props.modelValue.substring(end)
+      emits('update:modelValue', newText);
+      nextTick(() => {
+        textarea.value.selectionStart = textarea.value.selectionEnd = start + 1
+      })
+
+      return;
+    }
+    e.preventDefault()
+    emits('enter')
+  }
 </script>
 
 <template>
@@ -33,6 +52,7 @@
     }"
     :value="modelValue"
     @input="emits('update:modelValue', ($event.target as any).value)"
+    @keydown.enter="handleEnter"
     :disabled="isLoading"
     :placeholder="placeholder">
   </textarea>

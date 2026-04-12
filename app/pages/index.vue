@@ -45,6 +45,8 @@ const modal = reactive({
   search: false,
 });
 
+const navSortPopupOpen = ref(false);
+
 const openCreateCategory = () => {
   modal.createCategory = true;
 }
@@ -60,7 +62,7 @@ const createCategoryInternal = async (value: CreateCategoryRequest) => {
   setCategory(id);
 }
 
-const categories = computed(() => board.state.value.categories);
+const categories = board.categories;
 
 const openCreateCard = () => {
   modal.createCard = true;
@@ -144,23 +146,36 @@ const fabOpen = ref(false);
   <LnbNavLoader />
 
   <!-- NAV TABS -->
-  <div class="nav-tabs">
-    <div
-        v-for="cat in categories"
-        class="nav-tab"
-        :class="{active: categoryId === cat.id}"
-        :style="categoryId === cat.id ? `--dot-color:${cat.color}` : ''"
-        @click="setCategory(cat.id)">
-      <span class="dot" :style="`background:${cat.color}`"></span>
-      {{ cat.name }}
-      <span class="nav-tab-count">{{ cat.count }}</span>
+  <div class="nav-tabs-wrap">
+    <div class="nav-tabs">
+      <div
+          v-for="cat in categories"
+          class="nav-tab"
+          :class="{active: categoryId === cat.id}"
+          :style="categoryId === cat.id ? `--dot-color:${cat.color}` : ''"
+          @click="setCategory(cat.id)">
+        <span class="dot" :style="`background:${cat.color}`"></span>
+        {{ cat.name }}
+        <span class="nav-tab-count">{{ cat.count }}</span>
+      </div>
+      <div class="nav-tab-add" title="Add category" @click="openCreateCategory">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M8 3v10M3 8h10"/>
+        </svg>
+      </div>
     </div>
-    <div class="nav-tab-add" title="Add category" @click="openCreateCategory">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-        <path d="M8 3v10M3 8h10"/>
-      </svg>
+    <!-- Board nav controls: search + sort — pinned to right edge -->
+    <div class="nav-tabs-controls">
+      <!-- Sort -->
+      <div class="nav-ctrl-btn" @click.stop="navSortPopupOpen = !navSortPopupOpen">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h10M5 8h6M7 11h2"/></svg>
+      </div>
     </div>
   </div>
+
+  <LnbNavSortPopup
+    v-if="navSortPopupOpen"
+    @close="navSortPopupOpen = false"/>
 
   <template v-if="categoryId === 0">
     <LnbBacklogView
@@ -263,6 +278,7 @@ const fabOpen = ref(false);
 .topbar-logo span { color: var(--text2); font-weight: 400; margin-left: 10px; }
 
 /* ── NAV TABS ── */
+.nav-tabs-wrap{display:flex;align-items:center;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
 .nav-tabs {
   display: flex;
   gap: 4px;
@@ -270,7 +286,7 @@ const fabOpen = ref(false);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   overflow-x: auto;
-  flex-shrink: 0;
+  flex: 1;
   scrollbar-width: none;
 }
 .nav-tabs::-webkit-scrollbar { display: none; }
@@ -336,4 +352,10 @@ const fabOpen = ref(false);
 .fab-main svg{width:22px;height:22px}
 .fab-items{display:flex;flex-direction:column-reverse;gap:8px;align-items:flex-end}
 .fab-backdrop{position:fixed;inset:0;z-index:89;background:rgba(0,0,0,0);cursor:default}
+
+/* BOARD LIST CONTROLS */
+.nav-tabs-controls{display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0; padding: 0 10px;border-left:1px solid var(--border);}
+.nav-ctrl-btn{width:26px;height:26px;border-radius:var(--radius-sm);border:1px solid transparent;background:transparent;color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.nav-ctrl-btn:hover,.nav-ctrl-btn.active{background:var(--surface3);border-color:var(--border);color:var(--text)}
+.nav-ctrl-btn svg{width:13px;height:13px}
 </style>

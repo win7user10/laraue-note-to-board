@@ -1,7 +1,7 @@
 import { DefaultPagination } from "~/composables/pagination";
 import {ref} from "vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
-const { showToast } = useAppState()
+const { showToast, appState } = useAppState()
 
 export interface MessageChanged {
     id: number;
@@ -13,30 +13,18 @@ export interface MessageChanged {
 
 export const useBoard = () => {
     const { t } = useI18n()
+    const { now } = useUtils();
 
     const state = useState('boardState', () => ({
         messages: [] as ColumnMessages[],
         categories: [] as CategoryCountDto[],
+        backlogCount: 0,
         categoryId: 0,
         currentCategory: undefined as CategoryDto | undefined,
         searchString: '',
         openedMedia: [] as MediaInfo[],
         openedMediaIndex: 0,
     }))
-
-    const messageChangedHandlers = [] as ((item: MessageChanged) => void)[];
-    const addMessageChangedHandler = (handler: (item: MessageChanged) => void) => {
-        messageChangedHandlers.push(handler)
-    }
-
-    const removeMessageChangedHandler = (handler: (item: MessageChanged) => void) => {
-        const index = messageChangedHandlers.indexOf(handler);
-        if (index !== -1) messageChangedHandlers.splice(index, 1);
-    }
-
-    const raiseMessageChanged = (change: MessageChanged) => {
-        messageChangedHandlers.forEach((item) => item(change))
-    }
 
     const setCategory = (id: number) => {
         state.value.searchString = ''
@@ -95,16 +83,30 @@ export const useBoard = () => {
         state.value.categories = [];
         const categoriesApi = useCategoriesApi()
         const data = await categoriesApi.loadCategories()
-        const result = [{
+        state.value.categories = data.categories;
+        state.value.backlogCount = data.backlogCount;
+    }
+
+    const categories = computed(() => {
+        const categoryOrder = appState.value.userPreferences!.epicSortOrder
+        let data = [...state.value.categories];
+        if (categoryOrder === EpicSortOrder.Alphabetical)
+            data.sort((a, b) => a.name.localeCompare(b.name));
+        else if (categoryOrder === EpicSortOrder.LastUpdated)
+            data.sort((a, b) => b.touchedAt.localeCompare(a.touchedAt));
+
+        const result = {
             id: 0,
             name: t('backlog'),
             color: '#ff0000',
-            count: data.backlogCount,
+            count: state.value.backlogCount,
             statusesCount: 0,
-        }]
-        result.push(...data.categories)
-        state.value.categories = result;
-    }
+            touchedAt: '0000-01-01',
+        }
+
+        data.unshift(result)
+        return data
+    })
 
     const createCard = async (value: CreateCardRequest) => {
         const messagesApi = useMessagesApi()
@@ -122,8 +124,10 @@ export const useBoard = () => {
 
         // Update top menu counters
         const messageCategory = state.value.categories.find(c => c.id === value.categoryId)
-        if (messageCategory)
+        if (messageCategory) {
             messageCategory.count++;
+            messageCategory.touchedAt = now();
+        }
 
         // Update status counters
         if (messagesByCategory)
@@ -183,6 +187,7 @@ export const useBoard = () => {
             color: value.color,
             count: 0,
             statusesCount: 0,
+            touchedAt: now(),
         })
         showToast(t('boardCreated'), 'success', value.name);
         return id;
@@ -194,8 +199,10 @@ export const useBoard = () => {
         const card = allCards.value.find(c => c.id === cardId)!;
 
         const newCategory = state.value.categories.find(c => c.id === categoryId)
-        if (newCategory)
+        if (newCategory) {
             newCategory.count += 1;
+            newCategory.touchedAt = now();
+        }
 
         const oldCategory = state.value.categories.find(c => c.id === card.categoryId)
         if (oldCategory)
@@ -207,14 +214,6 @@ export const useBoard = () => {
 
         const index = messages.items.data.findIndex(c => c.id === cardId)
         messages.items.data.splice(index, 1);
-
-        raiseMessageChanged({
-            id: cardId,
-            oldStatusId: card.statusId,
-            newStatusId: card.statusId,
-            newCategoryId: categoryId,
-            oldCategoryId: oldCategory!.id ,
-        })
 
         showToast(t('cardAssigned'), 'success', newCategory?.name);
     }
@@ -230,6 +229,11 @@ export const useBoard = () => {
         const card = allCards.value.find(x => x.id === id)
         if (card)
             card.content = value.content;
+
+        const category = state.value.categories.find(c => c.id === card?.categoryId)
+        if (category)
+            category.touchedAt = now();
+
         showToast(t('cardEdited'), 'success');
     }
 
@@ -262,8 +266,10 @@ export const useBoard = () => {
         const category = state.value.categories.find(c => c.id === state.value.categoryId)!
         category.color = request.color;
         category.name = request.name;
+        category.touchedAt = now();
 
         state.value.currentCategory!.color = request.color;
+        state.value.currentCategory!.name = request.name;
         state.value.currentCategory!.name = request.name;
 
         showToast(t('boardUpdated'), 'success', request.name);
@@ -424,16 +430,17 @@ export const useBoard = () => {
         reloadBoard,
         reloadCategories,
         reloadCategory,
+        createCategory,
+        setCategory,
+        editCategory,
+        deleteCategory,
+        categories,
         createCard,
         editCard,
         deleteCard,
         updateCardCategory,
         loadNextCards,
         isColumnLoading,
-        createCategory,
-        setCategory,
-        editCategory,
-        deleteCategory,
         createStatus,
         deleteStatus,
         statuses,
@@ -444,8 +451,6 @@ export const useBoard = () => {
         openMedia,
         closeMedia,
         changeOpenedMediaIndex,
-        addMessageChangedHandler,
-        removeMessageChangedHandler,
         search,
         isLoading,
     }

@@ -68,5 +68,7 @@
   "category": "Категория",
   "searchCards": "Поиск по элементам…",
   "deleteBoardTitle": "Удалить доску?",
-  "deleteBoardConfirm": "Сообщения будут перещены в нераспределенные."
+  "deleteBoardConfirm": "Сообщения будут перещены в нераспределенные.",
+  "alphabetical": "В алфавитном порядке",
+  "lastUpdated": "По дате обновления"
 }

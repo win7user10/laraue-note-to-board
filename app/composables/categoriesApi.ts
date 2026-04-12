@@ -11,6 +11,7 @@ export interface CategoryCountDto {
     color: string;
     count: number;
     statusesCount: number;
+    touchedAt: string;
 }
 
 export interface CreateCategoryRequest {

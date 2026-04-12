@@ -67,5 +67,7 @@
   "category": "Category",
   "searchCards": "Search cards…",
   "deleteBoardTitle": "Delete Board?",
-  "deleteBoardConfirm": "Messages will be moved to Backlog."
+  "deleteBoardConfirm": "Messages will be moved to Backlog.",
+  "alphabetical": "Alphabetical",
+  "lastUpdated": "Last Updated"
 }

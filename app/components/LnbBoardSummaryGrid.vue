@@ -3,32 +3,13 @@ import {type CategorySummary, useMessagesApi} from "~/composables/messagesApi";
 import type {MessageChanged} from "~/composables/boardState";
 const summaries = ref<CategorySummary[]>([]);
 const { getBoardSummary } = useMessagesApi()
-const { addMessageChangedHandler, removeMessageChangedHandler, setCategory } = useBoard();
+const { setCategory } = useBoard();
 
 onMounted(async () => {
   summaries.value = await getBoardSummary();
-  addMessageChangedHandler(handleMessageChanged)
-})
-
-onBeforeUnmount(() => {
-  removeMessageChangedHandler(handleMessageChanged)
 })
 
 const { t } = useI18n()
-const handleMessageChanged = (change: MessageChanged) => {
-  // Category changed
-  if (change.oldStatusId != change.newStatusId) {
-    const newStatusCategory = summaries.value.find(x => x.id === change.newCategoryId);
-    const newStatus = newStatusCategory?.columns.find(x => x.id == change.newStatusId);
-    if (newStatus)
-      newStatus.count += 1;
-
-    const oldStatusCategory = summaries.value.find(x => x.id === change.oldCategoryId);
-    const oldStatus = oldStatusCategory?.columns.find(x => x.id == change.oldStatusId);
-    if (oldStatus)
-      oldStatus.count -= 1;
-  }
-}
 
 const getToDo = (summary: CategorySummary) => {
   if (summary.columns.length == 1)

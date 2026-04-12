@@ -6,6 +6,7 @@ export const useInitUser = () => {
         localStorage.setItem('bearer', bearerToken)
 
         const { loadUser } = useUserApi();
+
         const user = await loadUser();
         await setUser(user);
     }
@@ -27,8 +28,13 @@ export const useInitUser = () => {
         }
     }
 
-    const setUser = (user: UserDto) => {
+    const setUser = async (user: UserDto) => {
         appState.setUser(user);
+
+        const { loadPreferences } = useUserPreferencesApi()
+        const preferences = await loadPreferences();
+        appState.setPreferences(preferences);
+
         // @ts-ignore
         return setLocale(user.languageCode);
     }

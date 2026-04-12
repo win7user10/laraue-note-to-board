@@ -8,6 +8,7 @@ export interface Toast {
 export const useAppState = () => {
     const appState = useState('appState', () => ({
         user: null as UserDto | null,
+        userPreferences: null as UserPreferencesDto | null,
         isAppInitialized: false,
         isInMiniApp: false,
         isLoading: false,
@@ -56,6 +57,14 @@ export const useAppState = () => {
         }, 1200);
     }
 
+    const setPreferences = (preferences: UserPreferencesDto) => {
+        appState.value.userPreferences = preferences;
+    }
+
+    const updateCategoriesOrdering = (sortOrder: EpicSortOrder) => {
+        appState.value.userPreferences!.epicSortOrder = sortOrder;
+    }
+
     return {
         appState: readonly(appState),
         getRandomColor,
@@ -66,5 +75,7 @@ export const useAppState = () => {
         setIsAppInitialized,
         setIsInMiniApp,
         palette,
+        setPreferences,
+        updateCategoriesOrdering,
     }
 }

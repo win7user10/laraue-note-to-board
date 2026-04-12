@@ -24,10 +24,15 @@ export const useUtils = () => {
         return dateFormatter.format(date);
     }
 
+    const now = () => {
+        return new Date().toISOString()
+    }
+
     const getImageUrl = (id: string) => messagesFileApi + id
 
     return {
         formatDate,
         getImageUrl,
+        now,
     }
 }

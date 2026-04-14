@@ -19,6 +19,7 @@ export const useBoard = () => {
         messages: [] as ColumnMessages[],
         categories: [] as CategoryCountDto[],
         spaces: [] as SpaceDto[],
+        noSpaceEpicsCount: 0,
         backlogCount: 0,
         categoryId: 0,
         currentCategory: undefined as CategoryDto | undefined,
@@ -32,7 +33,8 @@ export const useBoard = () => {
         const result = [{
             id: 0,
             name: t('noSpace'),
-            color: '#49a1a1'
+            color: '#49a1a1',
+            epicsCount: state.value.noSpaceEpicsCount,
         }]
 
         result.push(...state.value.spaces.sort((a, b) => a.name.localeCompare(b.name)))
@@ -61,7 +63,9 @@ export const useBoard = () => {
         const messagesApi = useMessagesApi()
         if (clearPreviousImmediately)
             state.value.messages = [];
+
         state.value.messages = await messagesApi.loadBoard(
+            spaceId.value,
             state.value.categoryId,
             DefaultPagination.perPage,
             state.value.searchString)
@@ -103,7 +107,9 @@ export const useBoard = () => {
     const reloadCategories = async () => {
         state.value.categories = [];
         const categoriesApi = useCategoriesApi()
-        const data = await categoriesApi.loadCategories()
+        const data = await categoriesApi.loadCategories({
+            spaceId: spaceId.value
+        })
         state.value.categories = data.categories;
         state.value.backlogCount = data.backlogCount;
     }
@@ -448,7 +454,9 @@ export const useBoard = () => {
 
     const reloadSpaces = async () => {
         const spacesApi = useSpacesApi()
-        state.value.spaces = await spacesApi.getSpaces()
+        const { spaces, noSpaceEpicsCount } = await spacesApi.getSpaces()
+        state.value.spaces = spaces
+        state.value.noSpaceEpicsCount = noSpaceEpicsCount
     }
 
     const createSpace = async (request: CreateSpaceRequest) => {
@@ -458,6 +466,7 @@ export const useBoard = () => {
             id: spaceId,
             name: request.name,
             color: request.color,
+            epicsCount: 0,
         })
         showToast(t('spaceCreated'), 'success', request.name)
     }

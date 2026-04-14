@@ -40,6 +40,7 @@ export interface CreateCardRequest {
     content: string;
     categoryId: number;
     statusId: number;
+    spaceId: number;
 }
 
 export interface EditCardRequest {
@@ -81,7 +82,7 @@ export const useMessagesApi = () => {
         skip: number,
         take: number,
         searchString: string) => {
-        return client<BatchResult<MessageListDto>>('/messages', {
+        return client<BatchResult<MessageListDto>>('/issues', {
             method: 'GET',
             query: {
                 statusId: statusId ?? undefined,
@@ -93,66 +94,68 @@ export const useMessagesApi = () => {
     }
 
     const loadBoard = (
-        categoryId: number | null,
+        spaceId: number,
+        categoryId: number,
         take: number,
         searchString: string) => {
-        return client<ColumnMessages[]>('/messages/board', {
+        return client<ColumnMessages[]>('/issues/board', {
             method: 'GET',
             query: {
                 categoryId: categoryId ?? undefined,
                 take: take,
-                searchString: searchString
+                searchString: searchString,
+                spaceId: spaceId,
             }
         });
     }
 
     const updateStatus = (messageId: number, statusId: number | null) => {
-        return client('/messages/' + messageId + '/status/' + statusId, {
+        return client('/issues/' + messageId + '/status/' + statusId, {
             method: 'PUT'
         });
     }
 
     const updateCategory = (messageId: number, categoryId: number) => {
-        return client('/messages/' + messageId + '/category/' + categoryId, {
+        return client('/issues/' + messageId + '/epic/' + categoryId, {
             method: 'PUT'
         });
     }
 
     const deleteMessage = (id: number) => {
-        return client('/messages/' + id, {
+        return client('/issues/' + id, {
             method: 'DELETE'
         });
     }
 
     const createMessage = (request: CreateCardRequest) => {
-        return client<number>('/messages', {
+        return client<number>('/issues', {
             method: 'POST',
             body: request
         });
     }
 
     const editMessage = (id: number, request: EditCardRequest) => {
-        return client('/messages/' + id, {
+        return client('/issues/' + id, {
             method: 'PUT',
             body: request
         });
     }
 
     const searchMessages = (request: SearchRequest) => {
-        return client<FullPaginatedResult<MessageListDto>>('/messages/search', {
+        return client<FullPaginatedResult<MessageListDto>>('/issues/search', {
             method: 'GET',
             query: request
         });
     }
 
     const getMessage = (id: number) => {
-        return client<MessageDetailDto>('/messages/' + id, {
+        return client<MessageDetailDto>('/issues/' + id, {
             method: 'GET'
         });
     }
 
     const getBoardSummary = () => {
-        return client<CategorySummary[]>('/messages/summary', {
+        return client<CategorySummary[]>('/issues/summary', {
             method: 'GET'
         });
     }

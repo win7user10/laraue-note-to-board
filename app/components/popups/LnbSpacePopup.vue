@@ -10,13 +10,21 @@ const emits = defineEmits<{
 
 const { t } = useI18n()
 
-const { currentSpace, spaces, createSpace } = useBoard()
+const { currentSpace, spaces, createSpace, reloadBoard, reloadCategories, setCategory } = useBoard()
 const { updateSpaceId } = useAppState()
 const { updateSpace } = useUserPreferencesApi()
 const openSpaceModal = ref(false)
 
 const setSpaceInternal = async (id: number) => {
+  // change state
   updateSpaceId(id)
+  setCategory(0)
+
+  // reload data
+  await reloadCategories()
+  await reloadBoard(true)
+
+  // update preferences
   await updateSpace(id)
   emits('close')
 }
@@ -40,7 +48,7 @@ const createSpaceInternal = async (request: CreateSpaceRequest) => {
       @click="setSpaceInternal(s.id)">
       <div class="space-switcher-dot" :style="`background:${s.color}`"></div>
       <div class="space-popup-item-name">{{s.name}}</div>
-      <div class="space-popup-item-count">0 {{ t('boards', 0) }}</div>
+      <div class="space-popup-item-count">{{ s.epicsCount }} {{ t('boards', s.epicsCount) }}</div>
       <svg v-if="currentSpace?.id === s.id" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;color:var(--accent)"><path d="M2 7l3.5 3.5L12 3"/></svg>
     </LnbPopupItem>
 

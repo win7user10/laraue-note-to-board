@@ -12,13 +12,19 @@ export interface SpaceDto {
     id: number;
     name: string;
     color: string;
+    epicsCount: number;
+}
+
+export interface GetSpacesResponse {
+    spaces: SpaceDto[];
+    noSpaceEpicsCount: number;
 }
 
 export const useSpacesApi = () => {
     const client = useSpacesClient()
 
     const getSpaces = () => {
-        return client<SpaceDto[]>('/spaces', {
+        return client<GetSpacesResponse>('/spaces', {
             method: 'GET'
         });
     }

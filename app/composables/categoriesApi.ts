@@ -37,12 +37,17 @@ export interface EditCategoryRequest {
     color: string;
 }
 
+export interface GetEpicsRequest {
+    spaceId: number;
+}
+
 export const useCategoriesApi = () => {
     const client = useCategoriesClient()
 
-    const loadCategories = () => {
+    const loadCategories = (request: GetEpicsRequest) => {
         return client<CategoryCountResult>('/categories/categories-with-count', {
-            method: 'GET'
+            method: 'GET',
+            query: request
         });
     }
 

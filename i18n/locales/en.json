@@ -8,6 +8,7 @@
   "save": "Save",
   "columns": "columns",
   "cards": "card | cards",
+  "boards": "board | boards",
   "noBoards": "No boards yet. Create a category first.",
   "backlogEmpty": "Backlog is clear",
   "backlogEmptySubtitle": "All messages have been assigned to boards",
@@ -69,5 +70,11 @@
   "deleteBoardTitle": "Delete Board?",
   "deleteBoardConfirm": "Messages will be moved to Backlog.",
   "alphabetical": "Alphabetical",
-  "lastUpdated": "Last Updated"
+  "lastUpdated": "Last Updated",
+  "createSpace": "Create Space",
+  "newSpace": "New Space",
+  "spaceName": "Space Name",
+  "spaceNameExample": "e.g. Mobile App, Marketing…",
+  "spaceCreated": "Space created",
+  "noSpace": "No Space"
 }

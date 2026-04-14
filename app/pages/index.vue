@@ -11,6 +11,8 @@ import LnbSearchModal from "~/components/modals/LnbSearchModal.vue";
 import LnbAssignModal from "~/components/modals/LnbAssignModal.vue";
 import LnbCreateCardModal from "~/components/modals/LnbCreateCardModal.vue";
 import LnbDeleteCardModal from "~/components/modals/LnbDeleteCardModal.vue";
+import LnbSpacePopup from "~/components/popups/LnbSpacePopup.vue";
+import LnbNavSortPopup from "~/components/popups/LnbNavSortPopup.vue";
 
 const { setCategory, state } = useBoard()
 const categoryId = computed(() => state.value.categoryId);
@@ -33,7 +35,10 @@ watch(() => state.value.categoryId, () => {
 })
 
 onMounted(async () => {
-  await board.reloadCategory();
+  return Promise.all([
+    board.reloadCategory(),
+    board.reloadSpaces(),
+  ]);
 })
 
 const modal = reactive({
@@ -46,6 +51,7 @@ const modal = reactive({
 });
 
 const navSortPopupOpen = ref(false);
+const spacePopupOpen = ref(false);
 
 const openCreateCategory = () => {
   modal.createCategory = true;
@@ -134,13 +140,25 @@ const closeFab = () => {
 }
 
 const fabOpen = ref(false);
+const currentSpace = board.currentSpace;
 
 </script>
 
 <template>
   <!-- TOP BAR -->
   <div class="topbar">
-    <div class="topbar-logo">Msg<span>Board</span></div>
+    <div class="topbar-logo"><span></span></div>
+
+    <!-- Space switcher — only visible when spaces exist -->
+    <div class="space-switcher" @click.stop="spacePopupOpen =! spacePopupOpen">
+      <div class="space-switcher-dot" :style="`background:${currentSpace?.color||'var(--text3)'}`"></div>
+      <div class="space-switcher-name">{{currentSpace?.name}}</div>
+      <div class="space-switcher-chevron"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3.5l3 3 3-3"/></svg></div>
+    </div>
+
+    <LnbSpacePopup
+      v-if="spacePopupOpen"
+      @close="spacePopupOpen = false"/>
   </div>
 
   <LnbNavLoader />
@@ -164,18 +182,18 @@ const fabOpen = ref(false);
         </svg>
       </div>
     </div>
+
     <!-- Board nav controls: search + sort — pinned to right edge -->
     <div class="nav-tabs-controls">
       <!-- Sort -->
       <div class="nav-ctrl-btn" @click.stop="navSortPopupOpen = !navSortPopupOpen">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h10M5 8h6M7 11h2"/></svg>
       </div>
+      <LnbNavSortPopup
+        v-if="navSortPopupOpen"
+        @close="navSortPopupOpen = false"/>
     </div>
   </div>
-
-  <LnbNavSortPopup
-    v-if="navSortPopupOpen"
-    @close="navSortPopupOpen = false"/>
 
   <template v-if="categoryId === 0">
     <LnbBacklogView
@@ -261,7 +279,7 @@ const fabOpen = ref(false);
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: calc(12px + var(--safe-top)) var(--safe-right) 14px var(--safe-left);
+  padding: calc(12px + var(--safe-top)) var(--safe-right) 12px var(--safe-left);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
@@ -354,8 +372,16 @@ const fabOpen = ref(false);
 .fab-backdrop{position:fixed;inset:0;z-index:89;background:rgba(0,0,0,0);cursor:default}
 
 /* BOARD LIST CONTROLS */
-.nav-tabs-controls{display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0; padding: 0 10px;border-left:1px solid var(--border);}
+.nav-tabs-controls{display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0; padding: 0 10px;border-left:1px solid var(--border);position: relative;}
 .nav-ctrl-btn{width:26px;height:26px;border-radius:var(--radius-sm);border:1px solid transparent;background:transparent;color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .nav-ctrl-btn:hover,.nav-ctrl-btn.active{background:var(--surface3);border-color:var(--border);color:var(--text)}
 .nav-ctrl-btn svg{width:13px;height:13px}
+
+/* SPACE SWITCHER */
+.space-switcher{display:flex;align-items:center;gap:5px;padding:4px 8px 4px 6px;border-radius:20px;border:1px solid var(--border);background:var(--surface3);cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;max-width:140px}
+.space-switcher:hover{border-color:var(--border2);background:var(--surface2)}
+.space-switcher-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.space-switcher-name{font-size:11px;font-weight:700;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.space-switcher-chevron{color:var(--text3);flex-shrink:0}
+.space-switcher-chevron svg{width:10px;height:10px}
 </style>

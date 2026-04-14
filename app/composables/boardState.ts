@@ -18,13 +18,34 @@ export const useBoard = () => {
     const state = useState('boardState', () => ({
         messages: [] as ColumnMessages[],
         categories: [] as CategoryCountDto[],
+        spaces: [] as SpaceDto[],
         backlogCount: 0,
         categoryId: 0,
         currentCategory: undefined as CategoryDto | undefined,
+        currentSpace: undefined as SpaceDto | undefined,
         searchString: '',
         openedMedia: [] as MediaInfo[],
         openedMediaIndex: 0,
     }))
+
+    const spaces = computed(() => {
+        const result = [{
+            id: 0,
+            name: t('noSpace'),
+            color: '#49a1a1'
+        }]
+
+        result.push(...state.value.spaces.sort((a, b) => a.name.localeCompare(b.name)))
+        return result
+    })
+
+    const spaceId = computed(() => {
+        return appState.value.userPreferences?.spaceId ?? 0
+    })
+
+    const currentSpace = computed(() => {
+        return spaces.value.find(x => x.id === spaceId.value) ?? spaces.value[0]
+    })
 
     const setCategory = (id: number) => {
         state.value.searchString = ''
@@ -425,6 +446,22 @@ export const useBoard = () => {
         showToast(t('columnReordered'), 'default')
     };
 
+    const reloadSpaces = async () => {
+        const spacesApi = useSpacesApi()
+        state.value.spaces = await spacesApi.getSpaces()
+    }
+
+    const createSpace = async (request: CreateSpaceRequest) => {
+        const spacesApi = useSpacesApi()
+        const spaceId = await spacesApi.createSpace(request)
+        state.value.spaces.push({
+            id: spaceId,
+            name: request.name,
+            color: request.color,
+        })
+        showToast(t('spaceCreated'), 'success', request.name)
+    }
+
     return {
         state: readonly(state),
         reloadBoard,
@@ -453,5 +490,9 @@ export const useBoard = () => {
         changeOpenedMediaIndex,
         search,
         isLoading,
+        spaces,
+        currentSpace,
+        reloadSpaces,
+        createSpace,
     }
 }

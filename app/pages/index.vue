@@ -147,18 +147,25 @@ const currentSpace = board.currentSpace;
 <template>
   <!-- TOP BAR -->
   <div class="topbar">
-    <div class="topbar-logo"><span></span></div>
-
-    <!-- Space switcher — only visible when spaces exist -->
-    <div class="space-switcher" @click.stop="spacePopupOpen =! spacePopupOpen">
-      <div class="space-switcher-dot" :style="`background:${currentSpace?.color||'var(--text3)'}`"></div>
-      <div class="space-switcher-name">{{currentSpace?.name}}</div>
-      <div class="space-switcher-chevron"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3.5l3 3 3-3"/></svg></div>
+    <div class="topbar-logo">
+      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="36" height="36" rx="10" fill="#2f81f7"/>
+        <text x="18" y="24" font-size="14" font-weight="800" fill="white" text-anchor="middle" font-family="Inter,sans-serif" letter-spacing="-0.5">LB</text>
+      </svg>
     </div>
 
-    <LnbSpacePopup
-      v-if="spacePopupOpen"
-      @close="spacePopupOpen = false"/>
+    <!-- Space switcher — only visible when spaces exist -->
+    <div class="space-switcher-wrap">
+      <div class="space-switcher" @click.stop="spacePopupOpen =! spacePopupOpen">
+        <div class="space-switcher-dot" :style="`background:${currentSpace?.color||'var(--text3)'}`"></div>
+        <div class="space-switcher-name">{{currentSpace?.name}}</div>
+        <div class="space-switcher-chevron"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3.5l3 3 3-3"/></svg></div>
+      </div>
+
+      <LnbSpacePopup
+        v-if="spacePopupOpen"
+        @close="spacePopupOpen = false"/>
+    </div>
   </div>
 
   <LnbNavLoader />
@@ -277,21 +284,18 @@ const currentSpace = board.currentSpace;
 .topbar {
   display: flex;
   align-items: center;
-  justify-content: center;
   gap: 10px;
-  padding: calc(12px + var(--safe-top)) var(--safe-right) 12px var(--safe-left);
+  padding: calc(10px + var(--safe-top)) calc(14px + var(--safe-right)) 10px calc(14px + var(--safe-left));
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  position: relative;
   z-index: 10;
+  justify-content: center;
 }
 .topbar-logo {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  color: var(--accent);
-  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
 }
 .topbar-logo span { color: var(--text2); font-weight: 400; margin-left: 10px; }
 
@@ -384,4 +388,5 @@ const currentSpace = board.currentSpace;
 .space-switcher-name{font-size:11px;font-weight:700;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
 .space-switcher-chevron{color:var(--text3);flex-shrink:0}
 .space-switcher-chevron svg{width:10px;height:10px}
+.space-switcher-wrap{position:relative;display:flex;flex-direction:column;gap:1px}
 </style>

@@ -94,6 +94,7 @@ export const useBoard = () => {
         // reload all already loaded
         const messagesApi = useMessagesApi()
         const result = await messagesApi.loadMessages(
+            spaceId.value,
             statusId,
             0,
             initialItemsCount,
@@ -150,10 +151,14 @@ export const useBoard = () => {
         await reloadColumn(value.statusId, offset ? offset + 1 : DefaultPagination.perPage);
 
         // Update top menu counters
-        const messageCategory = state.value.categories.find(c => c.id === value.categoryId)
-        if (messageCategory) {
-            messageCategory.count++;
-            messageCategory.touchedAt = now();
+        if (value.categoryId === 0)
+            state.value.backlogCount++;
+        else {
+            const messageCategory = state.value.categories.find(c => c.id === value.categoryId)
+            if (messageCategory) {
+                messageCategory.count++;
+                messageCategory.touchedAt = now();
+            }
         }
 
         // Update status counters
@@ -179,6 +184,7 @@ export const useBoard = () => {
             const item = getMessagesByStatusId(statusId)!.items;
             const messagesApi = useMessagesApi()
             const newMessages = await messagesApi.loadMessages(
+                spaceId.value,
                 statusId,
                 item.offset,
                 DefaultPagination.perPage,

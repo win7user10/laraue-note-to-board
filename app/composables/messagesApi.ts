@@ -78,6 +78,7 @@ export const useMessagesApi = () => {
     const client = useMessagesClient()
 
     const loadMessages = (
+        spaceId: number,
         statusId: number | null,
         skip: number,
         take: number,
@@ -85,6 +86,7 @@ export const useMessagesApi = () => {
         return client<BatchResult<MessageListDto>>('/issues', {
             method: 'GET',
             query: {
+                spaceId: spaceId,
                 statusId: statusId ?? undefined,
                 skip: skip,
                 take: take,

@@ -20,7 +20,7 @@
 
 <template>
   <!-- Sort popup -->
-  <LnbPopup align-right @close="emits('close')">
+  <LnbPopup align-right @close="emits('close')" :min-width="160">
     <LnbPopupItem :active="sortOrder === EpicSortOrder.LastUpdated" @click="updateSortOrder(EpicSortOrder.LastUpdated)">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="8" cy="8" r="5"/><path d="M8 5.5V8.5l2 1"/></svg>
       {{ t('lastUpdated') }}

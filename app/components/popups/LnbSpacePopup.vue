@@ -38,7 +38,7 @@ const createSpaceInternal = async (request: CreateSpaceRequest) => {
 
 <template>
   <!-- Space popup -->
-  <LnbPopup @close="emits('close')">
+  <LnbPopup @close="emits('close')" :min-width="200">
 
     <!-- Spaces -->
     <LnbPopupItem

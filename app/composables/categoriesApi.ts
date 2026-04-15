@@ -17,6 +17,7 @@ export interface CategoryCountDto {
 export interface CreateCategoryRequest {
     name: string;
     color: string;
+    spaceId: number;
 }
 
 export interface CategoryDto {

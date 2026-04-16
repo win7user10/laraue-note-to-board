@@ -18,6 +18,8 @@ export const useBoard = () => {
     const state = useState('boardState', () => ({
         messages: [] as ColumnMessages[],
         categories: [] as CategoryCountDto[],
+        spaces: [] as SpaceDto[],
+        noSpaceEpicsCount: 0,
         backlogCount: 0,
         categoryId: 0,
         currentCategory: undefined as CategoryDto | undefined,
@@ -25,6 +27,26 @@ export const useBoard = () => {
         openedMedia: [] as MediaInfo[],
         openedMediaIndex: 0,
     }))
+
+    const spaces = computed(() => {
+        const result = [{
+            id: 0,
+            name: t('noSpace'),
+            color: '#49a1a1',
+            epicsCount: state.value.noSpaceEpicsCount,
+        }]
+
+        result.push(...state.value.spaces.sort((a, b) => a.name.localeCompare(b.name)))
+        return result
+    })
+
+    const spaceId = computed(() => {
+        return appState.value.userPreferences?.spaceId ?? 0
+    })
+
+    const currentSpace = computed(() => {
+        return spaces.value.find(x => x.id === spaceId.value) ?? spaces.value[0]
+    })
 
     const setCategory = (id: number) => {
         state.value.searchString = ''
@@ -40,7 +62,9 @@ export const useBoard = () => {
         const messagesApi = useMessagesApi()
         if (clearPreviousImmediately)
             state.value.messages = [];
+
         state.value.messages = await messagesApi.loadBoard(
+            spaceId.value,
             state.value.categoryId,
             DefaultPagination.perPage,
             state.value.searchString)
@@ -69,6 +93,7 @@ export const useBoard = () => {
         // reload all already loaded
         const messagesApi = useMessagesApi()
         const result = await messagesApi.loadMessages(
+            spaceId.value,
             statusId,
             0,
             initialItemsCount,
@@ -82,7 +107,9 @@ export const useBoard = () => {
     const reloadCategories = async () => {
         state.value.categories = [];
         const categoriesApi = useCategoriesApi()
-        const data = await categoriesApi.loadCategories()
+        const data = await categoriesApi.loadCategories({
+            spaceId: spaceId.value
+        })
         state.value.categories = data.categories;
         state.value.backlogCount = data.backlogCount;
     }
@@ -123,10 +150,14 @@ export const useBoard = () => {
         await reloadColumn(value.statusId, offset ? offset + 1 : DefaultPagination.perPage);
 
         // Update top menu counters
-        const messageCategory = state.value.categories.find(c => c.id === value.categoryId)
-        if (messageCategory) {
-            messageCategory.count++;
-            messageCategory.touchedAt = now();
+        if (value.categoryId === 0)
+            state.value.backlogCount++;
+        else {
+            const messageCategory = state.value.categories.find(c => c.id === value.categoryId)
+            if (messageCategory) {
+                messageCategory.count++;
+                messageCategory.touchedAt = now();
+            }
         }
 
         // Update status counters
@@ -152,6 +183,7 @@ export const useBoard = () => {
             const item = getMessagesByStatusId(statusId)!.items;
             const messagesApi = useMessagesApi()
             const newMessages = await messagesApi.loadMessages(
+                spaceId.value,
                 statusId,
                 item.offset,
                 DefaultPagination.perPage,
@@ -191,31 +223,6 @@ export const useBoard = () => {
         })
         showToast(t('boardCreated'), 'success', value.name);
         return id;
-    }
-
-    const updateCardCategory = async (cardId: number, categoryId: number) => {
-        const messagesApi = useMessagesApi()
-        await messagesApi.updateCategory(cardId, categoryId)
-        const card = allCards.value.find(c => c.id === cardId)!;
-
-        const newCategory = state.value.categories.find(c => c.id === categoryId)
-        if (newCategory) {
-            newCategory.count += 1;
-            newCategory.touchedAt = now();
-        }
-
-        const oldCategory = state.value.categories.find(c => c.id === card.categoryId)
-        if (oldCategory)
-            oldCategory.count -= 1;
-
-        card.categoryId = categoryId;
-        const messages = getMessagesByCardId(cardId);
-        messages.items.totalCount -= 1;
-
-        const index = messages.items.data.findIndex(c => c.id === cardId)
-        messages.items.data.splice(index, 1);
-
-        showToast(t('cardAssigned'), 'success', newCategory?.name);
     }
 
     const getMessagesByCardId = (cardId: number) => {
@@ -371,12 +378,12 @@ export const useBoard = () => {
             .reduce((acc, x) => acc + x, 0)
     })
 
-    const moveCard = async (cardId: number, categoryId: number, statusId: number) => {
+    const moveCard = async (cardId: number, spaceId: number, categoryId: number, statusId: number) => {
         const card = allCards.value.find(m => m.id === cardId);
         if (!card) return;
 
         const messagesApi = useMessagesApi()
-        await messagesApi.updateStatus(card.id, statusId);
+        await messagesApi.move(card.id, spaceId, categoryId, statusId);
 
         // update old column data
         const oldColumnMessages = getMessagesByStatusId(card!.statusId)!
@@ -385,18 +392,30 @@ export const useBoard = () => {
         oldColumnMessages.items.totalCount -= 1;
 
         // update new column data
-        const newColumnMessages = getMessagesByStatusId(statusId)!
-        newColumnMessages.items.data.push(card)
-        newColumnMessages.items.totalCount += 1;
-        await reloadColumn(statusId, newColumnMessages.items.offset + 1)
+        const newColumnMessages = getMessagesByStatusId(statusId)
+        if (newColumnMessages) {
+            newColumnMessages.items.data.push(card)
+            newColumnMessages.items.totalCount += 1;
+            await reloadColumn(statusId, newColumnMessages.items.offset + 1)
+        }
+
+        // update epics
+        const newCategory = state.value.categories.find(c => c.id === categoryId)
+        if (newCategory) {
+            newCategory.count += 1;
+            newCategory.touchedAt = now();
+        }
+
+        const oldCategory = state.value.categories.find(c => c.id === card.categoryId)
+        if (oldCategory)
+            oldCategory.count -= 1;
 
         // update card properties
         card.categoryId = categoryId!;
         card.statusId = statusId;
 
-        // raise notifications
-        const status = statuses.value.find(x => x.id === statusId);
-        showToast(t('cardMoved'), 'default', status?.name)
+        // raise notification
+        showToast(t('cardMoved'), 'default')
     };
 
     const changeColumnOrder = async (statusId: number, newSortOrder: number) => {
@@ -425,6 +444,25 @@ export const useBoard = () => {
         showToast(t('columnReordered'), 'default')
     };
 
+    const reloadSpaces = async () => {
+        const spacesApi = useSpacesApi()
+        const { spaces, noSpaceEpicsCount } = await spacesApi.getSpaces()
+        state.value.spaces = spaces
+        state.value.noSpaceEpicsCount = noSpaceEpicsCount
+    }
+
+    const createSpace = async (request: CreateSpaceRequest) => {
+        const spacesApi = useSpacesApi()
+        const spaceId = await spacesApi.createSpace(request)
+        state.value.spaces.push({
+            id: spaceId,
+            name: request.name,
+            color: request.color,
+            epicsCount: 0,
+        })
+        showToast(t('spaceCreated'), 'success', request.name)
+    }
+
     return {
         state: readonly(state),
         reloadBoard,
@@ -438,7 +476,6 @@ export const useBoard = () => {
         createCard,
         editCard,
         deleteCard,
-        updateCardCategory,
         loadNextCards,
         isColumnLoading,
         createStatus,
@@ -453,5 +490,9 @@ export const useBoard = () => {
         changeOpenedMediaIndex,
         search,
         isLoading,
+        spaces,
+        currentSpace,
+        reloadSpaces,
+        createSpace,
     }
 }

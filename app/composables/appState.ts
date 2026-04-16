@@ -65,6 +65,10 @@ export const useAppState = () => {
         appState.value.userPreferences!.epicSortOrder = sortOrder;
     }
 
+    const updateSpaceId = (spaceId: number) => {
+        appState.value.userPreferences!.spaceId = spaceId;
+    }
+
     return {
         appState: readonly(appState),
         getRandomColor,
@@ -77,5 +81,6 @@ export const useAppState = () => {
         palette,
         setPreferences,
         updateCategoriesOrdering,
+        updateSpaceId,
     }
 }

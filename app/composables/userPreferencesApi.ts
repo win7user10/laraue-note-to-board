@@ -2,6 +2,7 @@ import {useUserPreferencesClient} from "~/composables/userPreferencesClient";
 
 export interface UserPreferencesDto {
     epicSortOrder: EpicSortOrder;
+    spaceId: number;
 }
 
 export enum EpicSortOrder {
@@ -19,7 +20,13 @@ export const useUserPreferencesApi = () => {
     }
 
     const updateEpicSortOrder = (newOrder: EpicSortOrder) => {
-        return client<UserPreferencesDto>('/user-preferences/epic-sort-order/' + newOrder, {
+        return client('/user-preferences/epic-sort-order/' + newOrder, {
+            method: 'PUT'
+        });
+    }
+
+    const updateSpace = (spaceId: number) => {
+        return client('/user-preferences/space/' + spaceId, {
             method: 'PUT'
         });
     }
@@ -27,5 +34,6 @@ export const useUserPreferencesApi = () => {
     return {
         loadPreferences,
         updateEpicSortOrder,
+        updateSpace,
     }
 }

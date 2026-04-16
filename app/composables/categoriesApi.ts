@@ -17,6 +17,7 @@ export interface CategoryCountDto {
 export interface CreateCategoryRequest {
     name: string;
     color: string;
+    spaceId: number;
 }
 
 export interface CategoryDto {
@@ -37,44 +38,49 @@ export interface EditCategoryRequest {
     color: string;
 }
 
+export interface GetEpicsRequest {
+    spaceId: number;
+}
+
 export const useCategoriesApi = () => {
     const client = useCategoriesClient()
 
-    const loadCategories = () => {
-        return client<CategoryCountResult>('/categories/categories-with-count', {
-            method: 'GET'
+    const loadCategories = (request: GetEpicsRequest) => {
+        return client<CategoryCountResult>('/epics', {
+            method: 'GET',
+            query: request
         });
     }
 
     const loadCategory = (id: number) => {
-        return client<CategoryDto>('/categories/' + id, {
+        return client<CategoryDto>('/epics/' + id, {
             method: 'GET'
         });
     }
 
     const createCategory = (request: CreateCategoryRequest) => {
-        return client<number>('/categories', {
+        return client<number>('/epics', {
             method: 'POST',
             body: request
         });
     }
 
     const reorderStatuses = (id: number, sortOrderByStatus: { [id: number]: number }) => {
-        return client<number>('/categories/' + id + '/reorder-statuses', {
+        return client<number>('/epics/' + id + '/reorder-statuses', {
             method: 'POST',
             body: sortOrderByStatus
         });
     }
 
     const editCategory = (id: number, request: EditCategoryRequest) => {
-        return client('/categories/' + id, {
+        return client('/epics/' + id, {
             method: 'PUT',
             body: request
         });
     }
 
     const deleteCategory = (id: number) => {
-        return client('/categories/' + id, {
+        return client('/epics/' + id, {
             method: 'DELETE'
         });
     }

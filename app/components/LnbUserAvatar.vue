@@ -43,7 +43,7 @@
 
 <style scoped>
 /* USER AVATAR (bottom-left, web only) */
-.user-avatar-btn{position:fixed;top:calc(8px + var(--safe-top));right:calc(8px + var(--safe-right));z-index:90;display:flex;align-items:center;gap:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.user-avatar-btn{position:fixed;top:calc(12px + var(--safe-top));right:calc(12px + var(--safe-right));z-index:90;display:flex;align-items:center;gap:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .user-avatar{width:34px;height:34px;border-radius:50%;background:var(--surface3);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--text);transition:border-color 0.15s;overflow:hidden;flex-shrink:0}
 .user-avatar img{width:100%;height:100%;object-fit:cover}
 .user-avatar-btn:hover .user-avatar{border-color:var(--accent)}

@@ -11,10 +11,10 @@ const emits = defineEmits<{
 const { searchMessages } = useMessagesApi();
 const request = ref({
   searchString: '',
-  categoryId: null as null | number
+  epicId: null as null | number,
 })
 
-const { state } = useBoard()
+const { state, currentSpace } = useBoard()
 const categories = computed(() => state.value.categories)
 
 const pagination = ref(DefaultPagination);
@@ -24,10 +24,11 @@ const isLoading = ref(true)
 watch(request, async (newValue) => {
   isLoading.value = true;
   searchResults.value = await searchMessages({
-    categoryId: newValue.categoryId,
+    epicId: newValue.epicId,
     searchString: newValue.searchString,
     page: pagination.value.page,
-    perPage: pagination.value.perPage
+    perPage: pagination.value.perPage,
+    spaceId: currentSpace.value!.id
   });
   isLoading.value = false;
 }, { deep: true, immediate: true })
@@ -40,9 +41,10 @@ const loadMore = async () => {
     const item = searchResults.value!;
     const newMessages = await searchMessages({
       searchString: request.value.searchString,
-      categoryId: request.value.categoryId,
+      epicId: request.value.epicId,
       perPage: searchResults.value!.perPage,
-      page: searchResults.value!.page + 1
+      page: searchResults.value!.page + 1,
+      spaceId: currentSpace.value!.id
     })
     item.data.push(...newMessages.data);
     item.page = newMessages.page;

@@ -6,6 +6,7 @@
     applyText: { type: String, required: false },
     fullHeight: { type: Boolean, required: false },
     determineScroll: { type: Boolean, required: false },
+    disableApply: { type: Boolean, required: false },
   })
   const emit = defineEmits<{
     (e: 'close'): void,
@@ -65,9 +66,9 @@
             </button>
             <button
                 :class="{
-                  disabled: isLoading,
+                  disabled: isLoading || disableApply,
                 }"
-                :disabled="isLoading"
+                :disabled="isLoading || disableApply"
                 v-if="applyText"
                 class="btn btn-primary"
                 @click="apply">

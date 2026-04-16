@@ -10,6 +10,7 @@ const emit = defineEmits<{
   (e: 'create', value: CreateCategoryRequest): void
 }>()
 
+const { currentSpace } = useBoard()
 const { t } = useI18n();
 
 const { getRandomColor } = useAppState();
@@ -17,6 +18,7 @@ const { getRandomColor } = useAppState();
 const newCategory = ref<CreateCategoryRequest>({
   name: "",
   color: getRandomColor(),
+  spaceId: currentSpace.value!.id
 })
 
 const createCategory = () => {

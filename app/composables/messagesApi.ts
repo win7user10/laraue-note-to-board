@@ -40,6 +40,7 @@ export interface CreateCardRequest {
     content: string;
     categoryId: number;
     statusId: number;
+    spaceId: number;
 }
 
 export interface EditCardRequest {
@@ -50,7 +51,8 @@ export interface SearchRequest {
     searchString: string;
     page: number;
     perPage: number;
-    categoryId: number | null;
+    epicId: number | null;
+    spaceId: number | null;
 }
 
 export interface ColumnMessages {
@@ -77,13 +79,15 @@ export const useMessagesApi = () => {
     const client = useMessagesClient()
 
     const loadMessages = (
+        spaceId: number,
         statusId: number | null,
         skip: number,
         take: number,
         searchString: string) => {
-        return client<BatchResult<MessageListDto>>('/messages', {
+        return client<BatchResult<MessageListDto>>('/issues', {
             method: 'GET',
             query: {
+                spaceId: spaceId,
                 statusId: statusId ?? undefined,
                 skip: skip,
                 take: take,
@@ -93,74 +97,77 @@ export const useMessagesApi = () => {
     }
 
     const loadBoard = (
-        categoryId: number | null,
+        spaceId: number,
+        categoryId: number,
         take: number,
         searchString: string) => {
-        return client<ColumnMessages[]>('/messages/board', {
+        return client<ColumnMessages[]>('/issues/board', {
             method: 'GET',
             query: {
                 categoryId: categoryId ?? undefined,
                 take: take,
-                searchString: searchString
+                searchString: searchString,
+                spaceId: spaceId,
             }
         });
     }
 
-    const updateStatus = (messageId: number, statusId: number | null) => {
-        return client('/messages/' + messageId + '/status/' + statusId, {
-            method: 'PUT'
-        });
-    }
-
-    const updateCategory = (messageId: number, categoryId: number) => {
-        return client('/messages/' + messageId + '/category/' + categoryId, {
-            method: 'PUT'
+    const move = (messageId: number, spaceId: number, categoryId: number, statusId: number | null) => {
+        return client('/issues/' + messageId + '/move', {
+            method: 'PUT',
+            body: {
+                spaceId: spaceId,
+                epicId: categoryId,
+                statusId: statusId,
+            }
         });
     }
 
     const deleteMessage = (id: number) => {
-        return client('/messages/' + id, {
+        return client('/issues/' + id, {
             method: 'DELETE'
         });
     }
 
     const createMessage = (request: CreateCardRequest) => {
-        return client<number>('/messages', {
+        return client<number>('/issues', {
             method: 'POST',
             body: request
         });
     }
 
     const editMessage = (id: number, request: EditCardRequest) => {
-        return client('/messages/' + id, {
+        return client('/issues/' + id, {
             method: 'PUT',
             body: request
         });
     }
 
     const searchMessages = (request: SearchRequest) => {
-        return client<FullPaginatedResult<MessageListDto>>('/messages/search', {
+        return client<FullPaginatedResult<MessageListDto>>('/issues/search', {
             method: 'GET',
             query: request
         });
     }
 
     const getMessage = (id: number) => {
-        return client<MessageDetailDto>('/messages/' + id, {
+        return client<MessageDetailDto>('/issues/' + id, {
             method: 'GET'
         });
     }
 
-    const getBoardSummary = () => {
-        return client<CategorySummary[]>('/messages/summary', {
-            method: 'GET'
+    const getBoardSummary = (spaceId: number) => {
+        return client<CategorySummary[]>('/issues/summary', {
+            method: 'GET',
+            query: {
+                spaceId: spaceId
+            }
         });
     }
 
     return {
         loadMessages,
-        updateStatus,
-        updateCategory,
+        move,
         deleteMessage,
         createMessage,
         editMessage,

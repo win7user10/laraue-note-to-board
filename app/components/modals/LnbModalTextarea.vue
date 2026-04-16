@@ -26,11 +26,11 @@
   const isLoading = computed(() => appState.value.isLoading);
 
   const handleEnter = (e: KeyboardEvent) => {
-    if (e.ctrlKey || e.metaKey) {
+    if (e.ctrlKey || e.metaKey || e.shiftKey) {
 
       const start = textarea.value.selectionStart;
       const end = textarea.value.selectionEnd;
-      const newText = props.modelValue.substring(0, start) + '\n' + props.modelValue.substring(end)
+      const newText = props.modelValue.substring(0, start) + (e.shiftKey ? '' : '\n') + props.modelValue.substring(end)
       emits('update:modelValue', newText);
       nextTick(() => {
         textarea.value.selectionStart = textarea.value.selectionEnd = start + 1

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {type CategorySummary, useMessagesApi} from "~/composables/messagesApi";
-import type {MessageChanged} from "~/composables/boardState";
 const summaries = ref<CategorySummary[]>([]);
 const { getBoardSummary } = useMessagesApi()
 const { setCategory, currentSpace } = useBoard();

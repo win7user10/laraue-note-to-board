@@ -1,0 +1,138 @@
+<script setup lang="ts">
+  import type {MessageListDto} from "~/composables/messagesApi";
+  import LnbModal from "~/components/modals/LnbModal.vue";
+  import LnbModalLabel from "~/components/modals/LnbModalLabel.vue";
+  import LnbModalTextarea from "~/components/modals/LnbModalTextarea.vue";
+  import type {CategoryCountDto, CategoryCountResult} from "~/composables/categoriesApi";
+  import LnbSelectSpaceModal from "~/components/modals/LnbSelectSpaceModal.vue";
+  import LnbSelectEpicModal from "~/components/modals/LnbSelectEpicModal.vue";
+  import LnbSelectStatusModal from "~/components/modals/LnbSelectStatusModal.vue";
+
+  const props = defineProps<{
+    assignMsg: MessageListDto,
+  }>()
+
+  const emits = defineEmits<{
+    (e: 'close'): void,
+    (e: 'assignToCategory', categoryId: number): void,
+  }>()
+
+  const { t } = useI18n();
+  const { state, currentSpace, moveCard } = useBoard();
+
+  const spaceId = ref<number>(currentSpace.value!.id);
+  const epic = ref<CategoryCountDto>();
+  const status = ref<MessageStatusDto>();
+
+  const spaces = computed(() => state.value.spaces);
+  const getSpaceById = (id: number) => spaces.value.find(p => p.id === id);
+
+  const modals = reactive({
+    selectSpace: false,
+    selectEpic: false,
+    selectStatus: false,
+  })
+
+  const selectSpace = (id: number) => {
+    spaceId.value = id;
+    modals.selectSpace = false;
+    epic.value = undefined;
+    status.value = undefined;
+  }
+
+  const selectEpic = (value: CategoryCountDto) => {
+    epic.value = value;
+    modals.selectEpic = false;
+    status.value = undefined;
+  }
+
+  const selectStatus = (value: MessageStatusDto) => {
+    status.value = value;
+    modals.selectStatus = false;
+  }
+
+  const move = async () => {
+    await moveCard(props.assignMsg.id, spaceId.value, epic.value!.id, status.value!.id)
+    emits("close");
+  }
+</script>
+
+<template>
+  <LnbModal
+    apply-text="Move"
+    @apply="move"
+    @close="$emit('close')"
+    :disable-apply="!status"
+    :title="t('assignToBoard')">
+    <div v-if="assignMsg" style="background: var(--surface3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 11px; margin-bottom: 16px;">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px">
+        {{ assignMsg.sender }}
+      </div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">
+        {{ assignMsg.content }}
+      </div>
+    </div>
+
+    <!-- Space select row -->
+    <LnbModalLabel>Space</LnbModalLabel>
+    <div class="assign-select" @click="modals.selectSpace = true">
+      <div class="assign-select-left">
+        <div class="assign-select-dot" :style="`background:${getSpaceById(spaceId)?.color||'var(--text3)'}`"></div>
+        <div class="assign-select-val">{{getSpaceById(spaceId)?.name||'No space'}}</div>
+      </div>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:13px;height:13px;color:var(--text3)"><path d="M5 3l5 5-5 5"/></svg>
+    </div>
+
+    <!-- Board select row -->
+    <LnbModalLabel>Board</LnbModalLabel>
+    <div class="assign-select" :class="{'assign-select-empty': !epic}" @click="modals.selectEpic = true">
+      <div class="assign-select-left">
+        <div v-if="epic" class="assign-select-dot" :style="`background:${epic.color}`"></div>
+        <div class="assign-select-val" :style="!epic ? 'color:var(--text3)' : ''">
+          {{ epic?.name||'Select board…' }}
+        </div>
+      </div>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:13px;height:13px;color:var(--text3)"><path d="M5 3l5 5-5 5"/></svg>
+    </div>
+
+    <!-- Status select row -->
+    <LnbModalLabel>Status</LnbModalLabel>
+    <div class="assign-select" :class="{'assign-select-empty': !status}" @click="modals.selectStatus = true">
+      <div class="assign-select-left">
+        <div v-if="status" class="assign-select-dot" :style="`background:${status.color}`"></div>
+        <div class="assign-select-val" :style="!status ? 'color:var(--text3)' : ''">
+          {{status?.name || (status ? 'Select status…' : 'Select board first')}}
+        </div>
+      </div>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:13px;height:13px;color:var(--text3)"><path d="M5 3l5 5-5 5"/></svg>
+    </div>
+
+  </LnbModal>
+
+  <LnbSelectSpaceModal
+    v-if="modals.selectSpace"
+    @select="selectSpace"
+    @close="modals.selectSpace = false" />
+
+  <LnbSelectEpicModal
+    :spaceId="spaceId"
+    v-if="modals.selectEpic"
+    @select="selectEpic"
+    @close="modals.selectEpic = false" />
+
+  <LnbSelectStatusModal
+    :epicId="epic!.id"
+    v-if="modals.selectStatus"
+    @select="selectStatus"
+    @close="modals.selectStatus = false" />
+</template>
+
+<style scoped>
+/* ASSIGN MODAL SELECTS */
+.assign-select{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;margin-bottom: 12px;}
+.assign-select:hover{border-color:var(--accent);background:var(--accent-glow)}
+.assign-select-empty{opacity:0.7}
+.assign-select-left{display:flex;align-items:center;gap:8px;min-width:0}
+.assign-select-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.assign-select-val{font-size:13px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+</style>

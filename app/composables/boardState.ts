@@ -23,7 +23,6 @@ export const useBoard = () => {
         backlogCount: 0,
         categoryId: 0,
         currentCategory: undefined as CategoryDto | undefined,
-        currentSpace: undefined as SpaceDto | undefined,
         searchString: '',
         openedMedia: [] as MediaInfo[],
         openedMediaIndex: 0,
@@ -226,31 +225,6 @@ export const useBoard = () => {
         return id;
     }
 
-    const updateCardCategory = async (cardId: number, categoryId: number) => {
-        const messagesApi = useMessagesApi()
-        await messagesApi.updateCategory(cardId, categoryId)
-        const card = allCards.value.find(c => c.id === cardId)!;
-
-        const newCategory = state.value.categories.find(c => c.id === categoryId)
-        if (newCategory) {
-            newCategory.count += 1;
-            newCategory.touchedAt = now();
-        }
-
-        const oldCategory = state.value.categories.find(c => c.id === card.categoryId)
-        if (oldCategory)
-            oldCategory.count -= 1;
-
-        card.categoryId = categoryId;
-        const messages = getMessagesByCardId(cardId);
-        messages.items.totalCount -= 1;
-
-        const index = messages.items.data.findIndex(c => c.id === cardId)
-        messages.items.data.splice(index, 1);
-
-        showToast(t('cardAssigned'), 'success', newCategory?.name);
-    }
-
     const getMessagesByCardId = (cardId: number) => {
         const card = allCards.value.find(c => c.id === cardId)!;
         return getMessagesByStatusId(card.statusId)!
@@ -404,12 +378,12 @@ export const useBoard = () => {
             .reduce((acc, x) => acc + x, 0)
     })
 
-    const moveCard = async (cardId: number, categoryId: number, statusId: number) => {
+    const moveCard = async (cardId: number, spaceId: number, categoryId: number, statusId: number) => {
         const card = allCards.value.find(m => m.id === cardId);
         if (!card) return;
 
         const messagesApi = useMessagesApi()
-        await messagesApi.updateStatus(card.id, statusId);
+        await messagesApi.move(card.id, spaceId, categoryId, statusId);
 
         // update old column data
         const oldColumnMessages = getMessagesByStatusId(card!.statusId)!
@@ -418,18 +392,19 @@ export const useBoard = () => {
         oldColumnMessages.items.totalCount -= 1;
 
         // update new column data
-        const newColumnMessages = getMessagesByStatusId(statusId)!
-        newColumnMessages.items.data.push(card)
-        newColumnMessages.items.totalCount += 1;
-        await reloadColumn(statusId, newColumnMessages.items.offset + 1)
+        const newColumnMessages = getMessagesByStatusId(statusId)
+        if (newColumnMessages) {
+            newColumnMessages.items.data.push(card)
+            newColumnMessages.items.totalCount += 1;
+            await reloadColumn(statusId, newColumnMessages.items.offset + 1)
+        }
 
         // update card properties
         card.categoryId = categoryId!;
         card.statusId = statusId;
 
-        // raise notifications
-        const status = statuses.value.find(x => x.id === statusId);
-        showToast(t('cardMoved'), 'default', status?.name)
+        // raise notification
+        showToast(t('cardMoved'), 'default')
     };
 
     const changeColumnOrder = async (statusId: number, newSortOrder: number) => {
@@ -490,7 +465,6 @@ export const useBoard = () => {
         createCard,
         editCard,
         deleteCard,
-        updateCardCategory,
         loadNextCards,
         isColumnLoading,
         createStatus,

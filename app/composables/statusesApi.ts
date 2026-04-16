@@ -11,6 +11,13 @@ export interface EditStatusRequest {
     color: string;
 }
 
+export interface MessageStatusDto {
+    name: string;
+    color?: string;
+    id: number;
+    count: number;
+}
+
 export const useStatusesApi = () => {
     const client = useStatusesClient()
 
@@ -34,9 +41,19 @@ export const useStatusesApi = () => {
         });
     }
 
+    const getStatuses = (epicId: number) => {
+        return client<MessageStatusDto[]>('/statuses', {
+            method: 'GET',
+            query: {
+                epicId: epicId
+            }
+        });
+    }
+
     return {
         createStatus,
         deleteStatus,
         editStatus,
+        getStatuses,
     }
 }

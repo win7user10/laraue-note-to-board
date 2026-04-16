@@ -8,7 +8,7 @@ import {useBoard} from "~/composables/boardState";
 import LnbNavLoader from "~/components/LnbNavLoader.vue";
 import LnbEditCardModal from "~/components/modals/LnbEditCardModal.vue";
 import LnbSearchModal from "~/components/modals/LnbSearchModal.vue";
-import LnbAssignModal from "~/components/modals/LnbAssignModal.vue";
+import LnbMoveCardModal from "~/components/modals/LnbMoveCardModal.vue";
 import LnbCreateCardModal from "~/components/modals/LnbCreateCardModal.vue";
 import LnbDeleteCardModal from "~/components/modals/LnbDeleteCardModal.vue";
 import LnbSpacePopup from "~/components/popups/LnbSpacePopup.vue";
@@ -220,9 +220,8 @@ const currentSpace = board.currentSpace;
     @close="closeCreateCategory"
     v-if="modal.createCategory"/>
 
-  <LnbAssignModal
+  <LnbMoveCardModal
     :assign-msg="assignMsg"
-    :categories="categories"
     @close="closeAssignToCategory"
     @assignToCategory="assignToCategory"
     v-if="modal.assign" />
@@ -284,7 +283,7 @@ const currentSpace = board.currentSpace;
 .topbar {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 5px;
   padding: calc(10px + var(--safe-top)) calc(14px + var(--safe-right)) 10px calc(14px + var(--safe-left));
   background: var(--surface);
   border-bottom: 1px solid var(--border);
@@ -382,7 +381,7 @@ const currentSpace = board.currentSpace;
 .nav-ctrl-btn svg{width:13px;height:13px}
 
 /* SPACE SWITCHER */
-.space-switcher{display:flex;align-items:center;gap:5px;padding:4px 8px 4px 6px;border-radius:20px;border:1px solid var(--border);background:var(--surface3);cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;max-width:140px}
+.space-switcher{display:flex;align-items:center;gap:5px;padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--surface3);cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;max-width:140px}
 .space-switcher:hover{border-color:var(--border2);background:var(--surface2)}
 .space-switcher-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .space-switcher-name{font-size:11px;font-weight:700;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}

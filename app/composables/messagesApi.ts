@@ -111,15 +111,14 @@ export const useMessagesApi = () => {
         });
     }
 
-    const updateStatus = (messageId: number, statusId: number | null) => {
-        return client('/issues/' + messageId + '/status/' + statusId, {
-            method: 'PUT'
-        });
-    }
-
-    const updateCategory = (messageId: number, categoryId: number) => {
-        return client('/issues/' + messageId + '/epic/' + categoryId, {
-            method: 'PUT'
+    const move = (messageId: number, spaceId: number, categoryId: number, statusId: number | null) => {
+        return client('/issues/' + messageId + '/move', {
+            method: 'PUT',
+            body: {
+                spaceId: spaceId,
+                epicId: categoryId,
+                statusId: statusId,
+            }
         });
     }
 
@@ -164,8 +163,7 @@ export const useMessagesApi = () => {
 
     return {
         loadMessages,
-        updateStatus,
-        updateCategory,
+        move,
         deleteMessage,
         createMessage,
         editMessage,

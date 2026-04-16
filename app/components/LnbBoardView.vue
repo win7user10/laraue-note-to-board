@@ -96,7 +96,7 @@ const cardsByStatus = computed(() => {
 })
 
 const onCardMoved = async (cardId: string, categoryId: number, statusId: number) => {
-  await board.moveCard(Number(cardId), categoryId, statusId);
+  await board.moveCard(Number(cardId), board.currentSpace.value!.id, categoryId, statusId);
 };
 
 const onColMoved = async (statusId: string, newSortOrder: number) => {

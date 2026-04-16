@@ -399,6 +399,17 @@ export const useBoard = () => {
             await reloadColumn(statusId, newColumnMessages.items.offset + 1)
         }
 
+        // update epics
+        const newCategory = state.value.categories.find(c => c.id === categoryId)
+        if (newCategory) {
+            newCategory.count += 1;
+            newCategory.touchedAt = now();
+        }
+
+        const oldCategory = state.value.categories.find(c => c.id === card.categoryId)
+        if (oldCategory)
+            oldCategory.count -= 1;
+
         // update card properties
         card.categoryId = categoryId!;
         card.statusId = statusId;

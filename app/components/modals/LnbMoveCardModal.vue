@@ -59,7 +59,7 @@
 
 <template>
   <LnbModal
-    apply-text="Move"
+    :apply-text="t('move')"
     @apply="move"
     @close="$emit('close')"
     :disable-apply="!status"
@@ -74,34 +74,34 @@
     </div>
 
     <!-- Space select row -->
-    <LnbModalLabel>Space</LnbModalLabel>
+    <LnbModalLabel>{{ t('space') }}</LnbModalLabel>
     <div class="assign-select" @click="modals.selectSpace = true">
       <div class="assign-select-left">
         <div class="assign-select-dot" :style="`background:${getSpaceById(spaceId)?.color||'var(--text3)'}`"></div>
-        <div class="assign-select-val">{{getSpaceById(spaceId)?.name||'No space'}}</div>
+        <div class="assign-select-val">{{getSpaceById(spaceId)?.name || 'No space'}}</div>
       </div>
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:13px;height:13px;color:var(--text3)"><path d="M5 3l5 5-5 5"/></svg>
     </div>
 
     <!-- Board select row -->
-    <LnbModalLabel>Board</LnbModalLabel>
+    <LnbModalLabel>{{ t('board') }}</LnbModalLabel>
     <div class="assign-select" :class="{'assign-select-empty': !epic}" @click="modals.selectEpic = true">
       <div class="assign-select-left">
         <div v-if="epic" class="assign-select-dot" :style="`background:${epic.color}`"></div>
         <div class="assign-select-val" :style="!epic ? 'color:var(--text3)' : ''">
-          {{ epic?.name||'Select board…' }}
+          {{ epic?.name || t('selectBoard') }}
         </div>
       </div>
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:13px;height:13px;color:var(--text3)"><path d="M5 3l5 5-5 5"/></svg>
     </div>
 
     <!-- Status select row -->
-    <LnbModalLabel>Status</LnbModalLabel>
+    <LnbModalLabel>{{ t('status') }}</LnbModalLabel>
     <div class="assign-select" :class="{'assign-select-empty': !status}" @click="modals.selectStatus = true">
       <div class="assign-select-left">
         <div v-if="status" class="assign-select-dot" :style="`background:${status.color}`"></div>
         <div class="assign-select-val" :style="!status ? 'color:var(--text3)' : ''">
-          {{status?.name || (status ? 'Select status…' : 'Select board first')}}
+          {{status?.name || (epic ? t('selectStatus') : t('selectBoardFirst'))}}
         </div>
       </div>
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:13px;height:13px;color:var(--text3)"><path d="M5 3l5 5-5 5"/></svg>

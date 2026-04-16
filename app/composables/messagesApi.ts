@@ -51,7 +51,8 @@ export interface SearchRequest {
     searchString: string;
     page: number;
     perPage: number;
-    categoryId: number | null;
+    epicId: number | null;
+    spaceId: number | null;
 }
 
 export interface ColumnMessages {
@@ -155,9 +156,12 @@ export const useMessagesApi = () => {
         });
     }
 
-    const getBoardSummary = () => {
+    const getBoardSummary = (spaceId: number) => {
         return client<CategorySummary[]>('/issues/summary', {
-            method: 'GET'
+            method: 'GET',
+            query: {
+                spaceId: spaceId
+            }
         });
     }
 

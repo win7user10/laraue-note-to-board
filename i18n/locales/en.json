@@ -76,5 +76,11 @@
   "spaceName": "Space Name",
   "spaceNameExample": "e.g. Mobile App, Marketing…",
   "spaceCreated": "Space created",
-  "noSpace": "No Space"
+  "noSpace": "No Space",
+  "space": "Space",
+  "board": "Board",
+  "selectBoard": "Select board...",
+  "selectStatus": "Select status...",
+  "selectBoardFirst": "Select board first",
+  "move": "Move"
 }

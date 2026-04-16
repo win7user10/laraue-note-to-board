@@ -3,10 +3,10 @@ import {type CategorySummary, useMessagesApi} from "~/composables/messagesApi";
 import type {MessageChanged} from "~/composables/boardState";
 const summaries = ref<CategorySummary[]>([]);
 const { getBoardSummary } = useMessagesApi()
-const { setCategory } = useBoard();
+const { setCategory, currentSpace } = useBoard();
 
 onMounted(async () => {
-  summaries.value = await getBoardSummary();
+  summaries.value = await getBoardSummary(currentSpace.value!.id);
 })
 
 const { t } = useI18n()

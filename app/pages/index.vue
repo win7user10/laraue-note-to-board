@@ -381,7 +381,7 @@ const currentSpace = board.currentSpace;
 .nav-ctrl-btn svg{width:13px;height:13px}
 
 /* SPACE SWITCHER */
-.space-switcher{display:flex;align-items:center;gap:5px;padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--surface3);cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;max-width:150px}
+.space-switcher{display:flex;align-items:center;gap:5px;padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--surface3);cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;max-width: 200px;}
 .space-switcher:hover{border-color:var(--border2);background:var(--surface2)}
 .space-switcher-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .space-switcher-name{font-size:11px;font-weight:700;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}

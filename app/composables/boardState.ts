@@ -1,15 +1,7 @@
 import { DefaultPagination } from "~/composables/pagination";
 import {ref} from "vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
-const { showToast, appState } = useAppState()
-
-export interface MessageChanged {
-    id: number;
-    oldStatusId: number;
-    newStatusId: number;
-    oldCategoryId: number;
-    newCategoryId: number;
-}
+const { showToast, appState, updateSpaceId } = useAppState()
 
 export const useBoard = () => {
     const { t } = useI18n()
@@ -475,6 +467,30 @@ export const useBoard = () => {
         showToast(t('spaceEdited'), 'success', request.name);
     }
 
+    const deleteSpace = async (id: number) => {
+        const api = useSpacesApi()
+        await api.deleteSpace(id)
+
+        // Update views if that space was opened
+        if (id === currentSpace.value!.id)
+        {
+            updateSpaceId(0)
+            state.value.categoryId = 0;
+            await Promise.all([
+                reloadBoard(false),
+                reloadCategories()
+            ])
+
+            // Update preferences
+            const { updateSpace } = useUserPreferencesApi()
+            await updateSpace(0)
+        }
+
+        const index = state.value.spaces.findIndex(c => c.id === id)
+        state.value.spaces.splice(index, 1);
+        showToast(t('spaceDeleted'), 'danger');
+    }
+
     return {
         state: readonly(state),
         reloadBoard,
@@ -507,5 +523,6 @@ export const useBoard = () => {
         reloadSpaces,
         createSpace,
         editSpace,
+        deleteSpace,
     }
 }

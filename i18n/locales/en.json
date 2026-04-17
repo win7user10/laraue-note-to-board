@@ -87,5 +87,8 @@
   "editSpace": "Edit Space",
   "editSpaceTitle": "Edit Space",
   "spaceEdited": "Space edited",
-  "edit": "Edit"
+  "edit": "Edit",
+  "deleteSpaceTitle": "Delete Space?",
+  "deleteSpaceConfirm": "Cards will be moved to 'No Space'.",
+  "spaceDeleted": "Space deleted"
 }

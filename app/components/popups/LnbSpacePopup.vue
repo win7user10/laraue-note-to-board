@@ -5,6 +5,7 @@ import LnbPopupItemDivider from "~/components/popups/LnbPopupItemDivider.vue";
 import LnbCreateSpaceModal from "~/components/modals/LnbCreateSpaceModal.vue";
 import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
 import LnbEditSpaceModal from "~/components/modals/LnbEditSpaceModal.vue";
+import LnbDeleteSpaceModal from "~/components/modals/LnbDeleteSpaceModal.vue";
 
 const emits = defineEmits<{
   (e: 'close'): void,
@@ -12,12 +13,13 @@ const emits = defineEmits<{
 
 const { t } = useI18n()
 
-const { currentSpace, spaces, createSpace, reloadBoard, reloadCategories, setCategory, editSpace } = useBoard()
+const { currentSpace, spaces, createSpace, reloadBoard, reloadCategories, setCategory, editSpace, deleteSpace } = useBoard()
 const { updateSpaceId } = useAppState()
 const { updateSpace } = useUserPreferencesApi()
 const modals = reactive({
   createSpace: false,
   editSpace: false,
+  deleteSpace: false,
 })
 
 const setSpaceInternal = async (id: number) => {
@@ -50,11 +52,21 @@ const openEditSpace = (space: SpaceDto) => {
   modals.editSpace = true;
 }
 
+const openDeleteSpace = (space: SpaceDto) => {
+  editingSpace.value = space;
+  modals.deleteSpace = true;
+}
+
+const deleteSpaceInternal = async () => {
+  await deleteSpace(editingSpace.value!.id);
+  modals.deleteSpace = false;
+}
+
 </script>
 
 <template>
   <!-- Space popup -->
-  <LnbPopup @close="emits('close')" :min-width="230">
+  <LnbPopup @close="emits('close')" :min-width="260">
 
     <!-- Spaces -->
     <LnbPopupItem
@@ -68,7 +80,10 @@ const openEditSpace = (space: SpaceDto) => {
         <div class="space-popup-item-count">{{ s.epicsCount }} {{ t('boards', s.epicsCount) }}</div>
         <svg v-if="currentSpace?.id === s.id" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;color:var(--accent)"><path d="M2 7l3.5 3.5L12 3"/></svg>
       </div>
-      <LnbIconBtn v-if="s.id" @click="openEditSpace(s)" :title="t('edit')" icon="edit" icon-size="mini" btn-size="mini" />
+      <div class="space-popup-item-controls">
+        <LnbIconBtn v-if="s.id" @click="openEditSpace(s)" :title="t('edit')" icon="edit" icon-size="mini" btn-size="mini" />
+        <LnbIconBtn v-if="s.id" @click="openDeleteSpace(s)" :title="t('delete')" icon="delete" icon-size="mini" btn-size="mini" />
+      </div>
     </LnbPopupItem>
 
     <LnbPopupItemDivider />
@@ -87,6 +102,11 @@ const openEditSpace = (space: SpaceDto) => {
     :space="editingSpace!"
     @edit="editSpaceInternal"
     @close="modals.editSpace = false"/>
+  <LnbDeleteSpaceModal
+      v-if="modals.deleteSpace"
+      :space="editingSpace!"
+      @delete="deleteSpaceInternal"
+      @close="modals.deleteSpace = false"/>
 </template>
 
 <style scoped>
@@ -98,4 +118,5 @@ const openEditSpace = (space: SpaceDto) => {
 .space-popup-item-name{font-size:12px;font-weight:600;color:var(--text);flex:1}
 .space-popup-item-count{font-size:10px;color:var(--text3)}
 .space-popup-wrapper{justify-content: space-between;}
+.space-popup-item-controls{display: flex;margin-right: -5px;}
 </style>

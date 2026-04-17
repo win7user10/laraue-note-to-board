@@ -463,6 +463,18 @@ export const useBoard = () => {
         showToast(t('spaceCreated'), 'success', request.name)
     }
 
+    const editSpace = async (id: number, request: EditSpaceRequest) => {
+        const api = useSpacesApi()
+        await api.editSpace(id, request)
+        const space = state.value.spaces.find(c => c.id === id)
+        if (space) {
+            space.color = request.color;
+            space.name = request.name;
+        }
+
+        showToast(t('spaceEdited'), 'success', request.name);
+    }
+
     return {
         state: readonly(state),
         reloadBoard,
@@ -494,5 +506,6 @@ export const useBoard = () => {
         currentSpace,
         reloadSpaces,
         createSpace,
+        editSpace,
     }
 }

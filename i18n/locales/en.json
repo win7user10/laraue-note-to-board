@@ -37,6 +37,7 @@
   "editBoard": "Edit board",
   "deleteBoard": "Delete board",
   "boardCreated": "Board created",
+  "boardUpdated": "Board edited",
   "boardDeleted": "Board deleted",
   "boardEdited": "Board edited",
   "sender": "Sender Name",
@@ -82,5 +83,9 @@
   "selectBoard": "Select board...",
   "selectStatus": "Select status...",
   "selectBoardFirst": "Select board first",
-  "move": "Move"
+  "move": "Move",
+  "editSpace": "Edit Space",
+  "editSpaceTitle": "Edit Space",
+  "spaceEdited": "Space edited",
+  "edit": "Edit"
 }

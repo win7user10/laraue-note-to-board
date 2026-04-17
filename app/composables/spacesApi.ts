@@ -20,6 +20,11 @@ export interface GetSpacesResponse {
     noSpaceEpicsCount: number;
 }
 
+export interface EditSpaceRequest {
+    name: string;
+    color: string;
+}
+
 export const useSpacesApi = () => {
     const client = useSpacesClient()
 

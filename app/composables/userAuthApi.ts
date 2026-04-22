@@ -1,13 +1,15 @@
 import { useAppState } from "~/composables/appState";
+import {useLocalStorageUtils} from "~/composables/localStorageUtils";
 
-export const useAuthApi = () => {
+export const useUserAuthApi = () => {
 
     const { addLoadingKey, removeLoadingKey, showToast } = useAppState();
+    const { getUserToken } = useLocalStorageUtils();
 
     const createClient = (baseURL: string) => $fetch.create({
         baseURL: baseURL,
         headers: {
-            Authorization: `Bearer ${localStorage.getItem('bearer')}`
+            Authorization: `Bearer ${getUserToken()}`
         },
         retry: false,
         onRequest: (context) => {

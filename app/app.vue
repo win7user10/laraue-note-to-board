@@ -14,6 +14,7 @@ const { t, setLocale, locales } = useI18n();
 
 const isAppInitialized = computed(() => appState.value.isAppInitialized)
 const user = computed(() => appState.value.user)
+const organization = computed(() => appState.value.organization)
 
 onMounted(async () => {
   try {
@@ -103,6 +104,7 @@ const setupMiniAppWindow = async () => {
 <template>
   <div id="app">
     <LnbTgAuth v-if="isAppInitialized && !user && !initError" />
+    <LnbOrganizationAuth v-if="isAppInitialized && user && !organization && !initError"/>
     <div v-else-if="!isAppInitialized" class="loader-overlay">
       <div class="loader-logo">Msg<span>board</span></div>
       <div class="loader-bar"><div class="loader-bar-fill"></div></div>

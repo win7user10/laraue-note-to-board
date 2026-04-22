@@ -3,7 +3,8 @@ export const useInitUser = () => {
     const { setLocale } = useI18n()
 
     const setAppUser = async (bearerToken: string) => {
-        localStorage.setItem('bearer', bearerToken)
+        const { setUserToken } = useLocalStorageUtils()
+        await setUserToken(bearerToken)
 
         const { loadUser } = useUserApi();
 
@@ -12,7 +13,8 @@ export const useInitUser = () => {
     }
 
     const tryAuthWithStoredBearer = async () => {
-        const bearer = localStorage.getItem('bearer')
+        const { getUserToken } = useLocalStorageUtils()
+        const bearer = getUserToken()
         if (!bearer)
             return false
 

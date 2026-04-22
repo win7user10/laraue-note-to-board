@@ -90,5 +90,13 @@
   "edit": "Edit",
   "deleteSpaceTitle": "Delete Space?",
   "deleteSpaceConfirm": "Cards will be moved to 'No Space'.",
-  "spaceDeleted": "Space deleted"
+  "spaceDeleted": "Space deleted",
+  "createOrganization": "Create Organization",
+  "newOrganization": "New Organization",
+  "organizationName": "Organization Name",
+  "organizationNameExample": "e.g. Acme Corp…",
+  "editOrganization": "Edit Organization",
+  "editOrganizationTitle": "Edit Organization",
+  "deleteOrganizationTitle": "Delete Organization?",
+  "deleteOrganizationConfirm": "The organization and it Spaces, Epics, Cards will be deleted permanently."
 }

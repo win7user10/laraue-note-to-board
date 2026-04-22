@@ -1,3 +1,5 @@
+import type {OrganizationDto} from "~/composables/organizationsApi";
+
 export interface Toast {
     id: number;
     title: string;
@@ -8,6 +10,7 @@ export interface Toast {
 export const useAppState = () => {
     const appState = useState('appState', () => ({
         user: null as UserDto | null,
+        organization: null as OrganizationDto | null,
         userPreferences: null as UserPreferencesDto | null,
         isAppInitialized: false,
         isInMiniApp: false,

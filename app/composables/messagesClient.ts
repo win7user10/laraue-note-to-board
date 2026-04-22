@@ -1,7 +1,7 @@
-import {useAuthApi} from "~/composables/authApi";
+import {useOrganizationAuthApi} from "~/composables/organizationAuthApi";
 
 export const useMessagesClient = () => {
     const configuration = useRuntimeConfig();
-    const { createClient } = useAuthApi();
+    const { createClient } = useOrganizationAuthApi();
     return createClient(configuration.public.messagesBaseAddress);
 }

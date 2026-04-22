@@ -29,10 +29,10 @@ const createCategory = () => {
 
 <template>
   <LnbModal
-      :applyText="t('createBoard')"
-      :title="t('newCategoryBoard')"
-      @close="emit('close')"
-      @apply="createCategory">
+    :applyText="t('createBoard')"
+    :title="t('newCategoryBoard')"
+    @close="emit('close')"
+    @apply="createCategory">
     <LnbModalLabel>{{ t('categoryName') }}</LnbModalLabel>
     <LnbModalInput
       focus

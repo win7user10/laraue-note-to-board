@@ -109,7 +109,7 @@ const closeAssignToCategory = () => {
 }
 
 const assignToCategory = async (categoryId: number) => {
-  await board.updateCardCategory(assignMsg.value!.id, categoryId)
+  await board.moveCard(assignMsg.value!.id, board.currentSpace.value!.id, categoryId)
   modal.assign = false;
 }
 

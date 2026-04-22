@@ -1,19 +1,30 @@
 export const useLocalStorageUtils = () => {
+    const userTokenKey = 'bearer'
+    const organizationTokenKey = 'organization_bearer'
 
     const getUserToken = () => {
-        return localStorage.getItem('bearer')
+        return localStorage.getItem(userTokenKey)
     }
 
     const setUserToken = async (bearerToken: string) => {
-        localStorage.setItem('bearer', bearerToken)
+        localStorage.setItem(userTokenKey, bearerToken)
+    }
+
+    const deleteUserToken = async () => {
+        localStorage.removeItem(organizationTokenKey)
+        localStorage.removeItem(userTokenKey)
     }
 
     const getOrganizationToken = () => {
-        return localStorage.getItem('organization_bearer')
+        return localStorage.getItem(organizationTokenKey)
     }
 
     const setOrganizationToken = async (bearerToken: string) => {
-        localStorage.setItem('organization_bearer', bearerToken)
+        localStorage.setItem(organizationTokenKey, bearerToken)
+    }
+
+    const deleteOrganizationToken = async () => {
+        localStorage.removeItem(organizationTokenKey)
     }
 
     return {
@@ -21,5 +32,7 @@ export const useLocalStorageUtils = () => {
         setUserToken,
         getOrganizationToken,
         setOrganizationToken,
+        deleteUserToken,
+        deleteOrganizationToken,
     }
 }

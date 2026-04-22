@@ -9,7 +9,7 @@ let initError = ref<any>(null)
 const configuration = useRuntimeConfig();
 const testUserToken = configuration.public.testUserToken;
 const { setIsAppInitialized, appState, setIsInMiniApp } = useAppState();
-const { setAppUser, tryAuthWithStoredBearer } = useInitUser();
+const { setAppUser, tryAuthWithStoredBearer, tryAuthOrganizationWithStoredBearer } = useInitUser();
 const { t, setLocale, locales } = useI18n();
 
 const isAppInitialized = computed(() => appState.value.isAppInitialized)
@@ -27,6 +27,7 @@ onMounted(async () => {
     // If bearer exists - auth is not required
     if (await tryAuthWithStoredBearer()) {
       console.log("Auth with existing Bearer");
+      await tryAuthOrganizationWithStoredBearer();
       return;
     }
 

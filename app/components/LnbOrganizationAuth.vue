@@ -5,20 +5,18 @@ import {ref} from "vue";
 import LnbEditOrganizationModal from "~/components/modals/LnbEditOrganizationModal.vue";
 import LnbDeleteOrganizationModal from "~/components/modals/LnbDeleteOrganizationModal.vue";
 
-const { appState } = useAppState()
-const { getOrganizations, createOrganization, editOrganization, deleteOrganization } = useOrganizationsApi()
+const { appState, setOrganization } = useAppState()
+const { setOrganizationToken } = useLocalStorageUtils()
+const { getOrganizations, createOrganization, editOrganization, deleteOrganization, login } = useOrganizationsApi()
 const authUser = appState.value.user
 
-const organizationsResponse = ref(await getOrganizations());
+const organizations = ref(await getOrganizations());
 
 const modals = reactive({
   createOrganization: false,
   editOrganization: false,
   deleteOrganization: false
 })
-
-const loginPersonal = () => {
-}
 
 const editingOrganization = ref<OrganizationDto>()
 const openEditOrganization = (org: OrganizationDto) => {
@@ -37,7 +35,7 @@ const openCreateOrganization = () => {
 
 const createOrganizationInternal = async (request: CreateOrganizationRequest) => {
   const id = await createOrganization(request)
-  organizationsResponse.value.organizations.push({
+  organizations.value.push({
     id: id,
     spacesCount: 0,
     name: request.name,
@@ -57,13 +55,23 @@ const editOrganizationInternal = async (request: EditOrganizationRequest) => {
 const deleteOrganizationInternal = async () => {
   await deleteOrganization(editingOrganization.value!.id)
 
-  const index = organizationsResponse.value.organizations.findIndex(o => o.id === editingOrganization.value!.id)
-  organizationsResponse.value.organizations.splice(index, 1)
+  const index = organizations.value.findIndex(o => o.id === editingOrganization.value!.id)
+  organizations.value.splice(index, 1)
 
   modals.deleteOrganization = false;
 }
 
-const loginOrg = (id: number) => {
+const loginOrg = async (id: number) => {
+  const token = await login(id)
+  await setOrganizationToken(token)
+
+  const { getOrganization } = useOrganizationsApi()
+  const organization = await getOrganization()
+  setOrganization(organization)
+}
+
+const isPersonalOrg = (organization: OrganizationDto) => {
+  return organization.id === 0;
 }
 </script>
 
@@ -84,30 +92,22 @@ const loginOrg = (id: number) => {
         <div class="org-select-sub">Select where you want to work</div>
       </div>
       <div class="org-select-body">
-        <!-- Personal space -->
-        <div class="org-item personal" @click="loginPersonal">
-          <div class="org-item-avatar" :style="`background:${authUser?.color}`">{{authUser?.initials}}</div>
-          <div class="org-item-info">
-            <div class="org-item-name">Personal</div>
-            <div class="org-item-sub">Your private boards</div>
-          </div>
-          <div class="org-enter-btn"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></div>
-        </div>
         <!-- User's organizations -->
-        <div v-for="org in organizationsResponse.organizations" :key="org.id" class="org-item">
-          <div class="org-item-avatar" :style="`background:${org.color}`">{{org.name.toLocaleLowerCase().slice(0, 2)}}</div>
+        <div v-for="org in organizations" :key="org.id" class="org-item">
+          <div class="org-item-avatar" :style="`background:${org.color}`">
+            {{ isPersonalOrg(org) ? authUser?.initials : org.name.toLocaleLowerCase().slice(0, 3) }}
+          </div>
           <div class="org-item-info" @click="loginOrg(org.id)" style="cursor:pointer">
-            <div class="org-item-name">{{org.name}}</div>
-            <div class="org-item-sub">{{org.spacesCount}} spaces</div>
+            <div class="org-item-name">{{ isPersonalOrg(org) ? 'Personal' : org.name}}</div>
+            <div class="org-item-sub">{{ isPersonalOrg(org) ? 'Your private boards' : org.spacesCount + ' spaces' }}</div>
           </div>
           <div class="org-item-actions">
-            <div class="org-item-btn" title="Edit" @click.stop="openEditOrganization(org)">
+            <div class="org-item-btn" title="Edit" @click.stop="openEditOrganization(org)" v-if="org.accessLevel >= AccessLevel.Update">
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z"/></svg>
             </div>
-            <div class="org-item-btn danger" title="Delete" @click.stop="openDeleteOrganization(org)">
+            <div class="org-item-btn danger" title="Delete" @click.stop="openDeleteOrganization(org)" v-if="org.accessLevel >= AccessLevel.Delete">
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9"/></svg>
             </div>
-            <div class="org-enter-btn"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 8h10M9 4l4 4-4 4"/></svg></div>
           </div>
         </div>
         <!-- Create new org -->

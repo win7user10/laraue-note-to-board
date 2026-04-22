@@ -28,6 +28,10 @@ export const useAppState = () => {
         appState.value.user = user;
     }
 
+    const setOrganization = (organization: OrganizationDto | null) => {
+        appState.value.organization = organization;
+    }
+
     const setIsAppInitialized = (state: boolean) => {
         appState.value.isAppInitialized = state;
     }
@@ -85,5 +89,6 @@ export const useAppState = () => {
         setPreferences,
         updateCategoriesOrdering,
         updateSpaceId,
+        setOrganization,
     }
 }

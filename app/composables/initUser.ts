@@ -1,9 +1,9 @@
 export const useInitUser = () => {
     const appState = useAppState()
     const { setLocale } = useI18n()
+    const { setUserToken, deleteUserToken, deleteOrganizationToken } = useLocalStorageUtils()
 
     const setAppUser = async (bearerToken: string) => {
-        const { setUserToken } = useLocalStorageUtils()
         await setUserToken(bearerToken)
 
         const { loadUser } = useUserApi();
@@ -30,6 +30,24 @@ export const useInitUser = () => {
         }
     }
 
+    const tryAuthOrganizationWithStoredBearer = async () => {
+        const { getOrganizationToken } = useLocalStorageUtils()
+        const bearer = getOrganizationToken()
+        if (!bearer)
+            return false
+
+        const { getOrganization } = useOrganizationsApi();
+        try {
+            const organization = await getOrganization();
+            await setOrganization(organization);
+            return true;
+        }
+        catch (error) {
+            console.error(error);
+            return false;
+        }
+    }
+
     const setUser = async (user: UserDto) => {
         appState.setUser(user);
 
@@ -41,14 +59,25 @@ export const useInitUser = () => {
         return setLocale(user.languageCode);
     }
 
-    const logout = () => {
+    const setOrganization = async (organization: OrganizationDto) => {
+        appState.setOrganization(organization);
+    }
+
+    const logout = async () => {
         appState.setUser(null);
-        localStorage.removeItem('bearer');
+        await deleteUserToken();
+    }
+
+    const logoutOrganization = async () => {
+        appState.setOrganization(null);
+        await deleteOrganizationToken();
     }
 
     return {
         setAppUser,
         tryAuthWithStoredBearer,
+        tryAuthOrganizationWithStoredBearer,
         logout,
+        logoutOrganization,
     }
 }

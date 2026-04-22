@@ -1,7 +1,4 @@
-export interface GetOrganizationsResponse {
-    personalOrganizationSpacesCount?: number;
-    organizations: OrganizationDto[];
-}
+import {useOrganizationsOrganizationClient, useOrganizationsUserClient} from "~/composables/organizationsClient";
 
 export interface OrganizationDto {
     id: number;
@@ -22,10 +19,17 @@ export interface EditOrganizationRequest {
 }
 
 export const useOrganizationsApi = () => {
-    const client = useOrganizationsClient()
+    const client = useOrganizationsUserClient()
 
     const getOrganizations = () => {
-        return client<GetOrganizationsResponse>('/organizations', {
+        return client<OrganizationDto[]>('/organizations', {
+            method: 'GET'
+        });
+    }
+
+    const getOrganization = () => {
+        const organizationsClient = useOrganizationsOrganizationClient()
+        return organizationsClient<OrganizationDto>('/organizations/current', {
             method: 'GET'
         });
     }
@@ -50,10 +54,21 @@ export const useOrganizationsApi = () => {
         });
     }
 
+    const login = (organizationId: number) => {
+        return client<string>('/organizations/login', {
+            method: 'POST',
+            body: {
+                organizationId: organizationId
+            }
+        });
+    }
+
     return {
         getOrganizations,
         createOrganization,
         editOrganization,
         deleteOrganization,
+        login,
+        getOrganization,
     }
 }

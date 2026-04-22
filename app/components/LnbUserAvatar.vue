@@ -7,6 +7,9 @@
   const logout = () => {
     initUser.logout();
   }
+  const logoutOrganization = () => {
+    initUser.logoutOrganization()
+  }
 </script>
 
 <template>
@@ -29,6 +32,12 @@
       <div class="user-popup-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</div>
       <div class="user-popup-handle">@{{currentUser.username}}</div>
       <div class="user-popup-divider"></div>
+      <div class="user-popup-btn" style="color: var(--accent);" @click="logoutOrganization">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M6 3H3v10h3M10 5l3 3-3 3M13 8H6"/>
+        </svg>
+        Change Organization
+      </div>
       <div class="user-popup-btn" @click="logout">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M6 3H3v10h3M10 5l3 3-3 3M13 8H6"/>

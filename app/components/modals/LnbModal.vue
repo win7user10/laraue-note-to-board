@@ -7,6 +7,7 @@
     fullHeight: { type: Boolean, required: false },
     determineScroll: { type: Boolean, required: false },
     disableApply: { type: Boolean, required: false },
+    subtitle: { type: String, required: false },
   })
   const emit = defineEmits<{
     (e: 'close'): void,
@@ -52,6 +53,7 @@
         <div class="modal-head">
           <div class="modal-handle"></div>
           <div class="modal-title">{{ title }}</div>
+          <div class="modal-subtitle">{{ subtitle }}</div>
         </div>
         <div class="modal-body" ref="scrollableEl">
           <slot></slot>
@@ -129,6 +131,7 @@
   margin: 0 auto 16px;
 }
 .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
+.modal-subtitle{font-size:11px;color:var(--text3);margin-bottom:14px;margin-top:-14px;}
 .modal-btns { display: flex; gap: 8px; }
 .modal-loader { padding-top: 5px }
 .btn {

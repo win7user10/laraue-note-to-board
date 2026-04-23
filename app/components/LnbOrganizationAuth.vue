@@ -6,6 +6,7 @@ import LnbEditOrganizationModal from "~/components/modals/LnbEditOrganizationMod
 import LnbDeleteOrganizationModal from "~/components/modals/LnbDeleteOrganizationModal.vue";
 
 const { appState, setOrganization } = useAppState()
+const { isPersonalOrg } = useUtils()
 const { setOrganizationToken } = useLocalStorageUtils()
 const { getOrganizations, createOrganization, editOrganization, deleteOrganization, login } = useOrganizationsApi()
 const authUser = appState.value.user
@@ -68,10 +69,6 @@ const loginOrg = async (id: number) => {
   const { getOrganization } = useOrganizationsApi()
   const organization = await getOrganization()
   setOrganization(organization)
-}
-
-const isPersonalOrg = (organization: OrganizationDto) => {
-  return organization.id === 0;
 }
 </script>
 

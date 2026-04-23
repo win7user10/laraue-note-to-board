@@ -1,8 +1,12 @@
 <script setup lang="ts">
+  import LnbManageOrganizationModal from "~/components/modals/LnbManageOrganizationModal.vue";
+
   const { appState } = useAppState();
+  const { isPersonalOrg } = useUtils()
   const initUser = useInitUser();
   const userPopupOpen = ref(false);
   const currentUser = computed(() => appState.value.user!);
+  const currentOrganization = computed(() => appState.value.organization!);
   const isInMiniApp = computed(() => appState.value.isInMiniApp!);
   const logout = () => {
     initUser.logout();
@@ -10,28 +14,54 @@
   const logoutOrganization = () => {
     initUser.logoutOrganization()
   }
+  const avatarData = computed(() => {
+    if (isPersonalOrg(currentOrganization.value)) {
+      return {
+        color: currentUser.value.color,
+        initials: currentUser.value.initials,
+        name: currentUser.value.firstName + ' ' + currentUser.value.lastName,
+      }
+    } else {
+      return {
+        color: currentOrganization.value.color,
+        initials: currentOrganization.value.name.toLocaleUpperCase().slice(0, 2),
+        name: currentOrganization.value.name,
+      }
+    }
+  })
+  const modals = reactive({
+    manage: false
+  })
 </script>
 
 <template>
   <!-- USER AVATAR — shown on web only (hidden inside Telegram via CSS) -->
   <div class="user-avatar-btn" @click.stop="userPopupOpen = !userPopupOpen" v-if="!isInMiniApp">
     <div class="user-avatar"
-       :style="currentUser.photoUrl
-          ? ''
-          : `background:${currentUser.color}22;color:${currentUser.color}`">
-      <img v-if="currentUser.photoUrl"
-        :src="currentUser.photoUrl"
-        :alt="currentUser.firstName + ' ' + currentUser.lastName"/>
-      <span v-else>{{currentUser.initials}}</span>
+       :style="`background:${avatarData.color}22;color:${avatarData.color}`">
+      <span>{{avatarData.initials}}</span>
     </div>
   </div>
 
   <!-- User popup -->
   <transition name="fade">
     <div v-if="userPopupOpen" class="user-popup" @click.stop>
-      <div class="user-popup-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</div>
+      <div class="user-popup-name">{{ avatarData.name }}</div>
       <div class="user-popup-handle">@{{currentUser.username}}</div>
       <div class="user-popup-divider"></div>
+      <div
+        v-if="currentOrganization.accessLevel >= AccessLevel.Manage"
+        class="user-popup-btn"
+        style="color: var(--text2);"
+        @click="modals.manage = true">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="6" cy="5" r="2.5"></circle>
+          <path d="M1 14c0-3 2-5 5-5"></path>
+          <circle cx="12" cy="9" r="2"></circle>
+          <path d="M9 14c0-2 1.3-3 3-3s3 1 3 3"></path>
+        </svg>
+        My organisation
+      </div>
       <div class="user-popup-btn" style="color: var(--accent);" @click="logoutOrganization">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M6 3H3v10h3M10 5l3 3-3 3M13 8H6"/>
@@ -48,6 +78,9 @@
   </transition>
   <!-- Close popup on outside click -->
   <div v-if="userPopupOpen" style="position:fixed;inset:0;z-index:89" @click="userPopupOpen=false"></div>
+  <LnbManageOrganizationModal
+    v-if="modals.manage"
+    @close="modals.manage = false"/>
 </template>
 
 <style scoped>

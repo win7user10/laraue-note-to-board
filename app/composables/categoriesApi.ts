@@ -12,6 +12,7 @@ export interface CategoryCountDto {
     count: number;
     statusesCount: number;
     touchedAt: string;
+    isDefault: boolean;
 }
 
 export interface CreateCategoryRequest {

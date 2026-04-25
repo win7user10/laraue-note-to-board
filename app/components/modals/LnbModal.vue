@@ -53,7 +53,7 @@
         <div class="modal-head">
           <div class="modal-handle"></div>
           <div class="modal-title">{{ title }}</div>
-          <div class="modal-subtitle">{{ subtitle }}</div>
+          <div class="modal-subtitle" v-if="subtitle">{{ subtitle }}</div>
         </div>
         <div class="modal-body" ref="scrollableEl">
           <slot></slot>

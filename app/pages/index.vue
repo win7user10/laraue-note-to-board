@@ -15,30 +15,21 @@ import LnbSpacePopup from "~/components/popups/LnbSpacePopup.vue";
 import LnbNavSortPopup from "~/components/popups/LnbNavSortPopup.vue";
 
 const { setCategory, state } = useBoard()
+const isBacklog = computed(() => state.value.categories.find(c => state.value.categoryId == c.id)?.isDefault);
 const categoryId = computed(() => state.value.categoryId);
 
 const { t } = useI18n();
 const board = useBoard();
 
-onMounted(() => {
-  return Promise.all([
-    board.reloadBoard(true),
-    board.reloadCategories()
-  ]);
+onMounted(async () => {
+  await board.reloadSpaces();
+  await board.reloadCategories();
+  await board.reloadBoard(true);
 });
 
-watch(() => state.value.categoryId, () => {
-  return Promise.all([
-    board.reloadBoard(true),
-    board.reloadCategory()
-  ]);
-})
-
-onMounted(async () => {
-  return Promise.all([
-    board.reloadCategory(),
-    board.reloadSpaces(),
-  ]);
+watch(() => state.value.categoryId, async () => {
+  await board.reloadCategory();
+  await board.reloadBoard(true);
 })
 
 const modal = reactive({
@@ -202,7 +193,7 @@ const currentSpace = board.currentSpace;
     </div>
   </div>
 
-  <template v-if="categoryId === 0">
+  <template v-if="isBacklog">
     <LnbBacklogView
       @openAssignToCategory="openAssignToCategory"
       @openEdit="openEditCard"

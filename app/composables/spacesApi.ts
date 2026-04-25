@@ -15,11 +15,6 @@ export interface SpaceDto {
     epicsCount: number;
 }
 
-export interface GetSpacesResponse {
-    spaces: SpaceDto[];
-    noSpaceEpicsCount: number;
-}
-
 export interface EditSpaceRequest {
     name: string;
     color: string;
@@ -29,7 +24,7 @@ export const useSpacesApi = () => {
     const client = useSpacesClient()
 
     const getSpaces = () => {
-        return client<GetSpacesResponse>('/spaces', {
+        return client<SpaceDto[]>('/spaces', {
             method: 'GET'
         });
     }

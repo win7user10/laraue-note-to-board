@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import LnbModal from "~/components/modals/LnbModal.vue";
+import type {PermittableSpace} from "~/composables/organizationsApi";
 
 const { getRoleKey } = useUtils()
 const { getUserPermissions } = useOrganizationsApi()
@@ -9,39 +10,93 @@ const emit = defineEmits<{
 
 const props = defineProps<{
   member: OrganizationMember,
-  permittableEntities: PermittableEntities,
+  permittableEntities: PermittableSpace[],
 }>()
 
-const PERMS = ['manage','create','read','update','delete'];
-const ORG_ROWS = [
-  { id: 'org',         label: 'Organization',  level: 1, parent: null },
-  { id: 'spacesGroup', label: 'Spaces (all)',  level: 2, parent: 'org' },
+const PERMS = [
+  {
+    id: AccessLevel.None,
+    name: 'None',
+  },
+  {
+    id: AccessLevel.Read,
+    name: 'Read',
+  },
+  {
+    id: AccessLevel.Create,
+    name: 'Create',
+  },
+  {
+    id: AccessLevel.Update,
+    name: 'Update',
+  },
+  {
+    id: AccessLevel.Delete,
+    name: 'Delete',
+  },
+  {
+    id: AccessLevel.Manage,
+    name: 'Manage',
+  },
 ];
-
-const EPIC_ROWS = [
-  { id: 'epicsGroup',  label: 'Epics (all)',   level: 2, parent: 'org' },
+const ORG_ROWS = [
+  { type: 'organization', label: 'Organization', level: 1, parent: undefined, id: undefined },
+  { type: 'spaces', label: 'Spaces (all)',  level: 2, parent: 'organization', id: undefined },
 ];
 
 const permissions = ref(await getUserPermissions(props.member.organizationUserId))
-const permittedRows = computed<{id: any, label: string, level: number, parent: string | null}[]>(() => {
+const permittedRows = computed<{id: number | undefined, type: string, label: string, level: number, parent: string | undefined}[]>(() => {
   const rows = []
   rows.push(...ORG_ROWS)
 
-  for (const id of Object.keys(props.permittableEntities.spaces)) {
-    const numberId = Number(id)
-    const label = props.permittableEntities.spaces[numberId];
-    rows.push({ id: id, label: label, level: 3, parent: 'spacesGroup'})
-  }
-
-  rows.push(...EPIC_ROWS)
-  for (const id of Object.keys(props.permittableEntities.epics)) {
-    const numberId = Number(id)
-    const label = props.permittableEntities.epics[numberId];
-    rows.push({ id: numberId, label: label, level: 3, parent: 'epicsGroup'})
-  }
+  props.permittableEntities.forEach(s => {
+    rows.push({ type: 'space', id: s.id, label: s.name, level: 3, parent: 'spaces'})
+    for (const id of Object.keys(s.epics)) {
+      const numberId = Number(id)
+      const label = s.epics[numberId];
+      rows.push({ type: 'epic', id: numberId, label: label, level: 4, parent: id})
+    }
+  })
 
   return rows
 })
+
+const togglePerm = (type: string, id: number | undefined, p: AccessLevel) => {
+  // TODO - I Should use here flags. User can manage item, but be not allowed to edit smth. And new permissions can appear
+
+  if (type === 'organization')
+    permissions.value.organizationAccessLevel = p;
+
+  if (type === 'spaces')
+    permissions.value.spacesAccessLevels.accessLevel = p;
+
+  if (type === 'space') {
+    permissions.value.spacesAccessLevels.directAccess ??= {}
+    permissions.value.spacesAccessLevels.directAccess[id!] = p
+  }
+
+  if (type === 'epic') {
+    permissions.value.epicsAccessLevels.directAccess ??= {}
+    permissions.value.epicsAccessLevels.directAccess[id!] = p
+  }
+
+  console.log(permissions.value)
+}
+
+const getCheckboxValue = (type: string, id: number | undefined, p: AccessLevel) => {
+  if (type === 'organization')
+    return permissions.value.organizationAccessLevel >= p;
+  if (type === 'spaces')
+    return (permissions.value.spacesAccessLevels?.accessLevel ?? AccessLevel.None) >= p;
+
+  const directAccess = type == 'space'
+    ? permissions.value.spacesAccessLevels?.directAccess
+    : permissions.value.epicsAccessLevels?.directAccess
+
+  let accessLevel = directAccess ? directAccess[id!] : AccessLevel.None;
+  accessLevel ??= AccessLevel.None;
+  return accessLevel >= p;
+}
 
 </script>
 
@@ -68,21 +123,22 @@ const permittedRows = computed<{id: any, label: string, level: number, parent: s
       <thead>
       <tr>
         <th>Entity</th>
-        <th v-for="p in PERMS" :key="p">
-          {{p[0]!.toUpperCase() + p.slice(1)}}
+        <th v-for="p in PERMS" :key="p.id">
+          {{ p.name }}
         </th>
       </tr>
       </thead>
       <tbody>
-      <tr v-for="row in permittedRows" :key="row">
+      <tr v-for="row in permittedRows" :key="row.id">
         <td>
           <span class="perm-entity" :class="'level-'+row.level">{{row.label}}</span>
         </td>
-        <td v-for="p in PERMS" :key="p">
+        <td v-for="p in PERMS" :key="p.id">
           <input
-              type="checkbox"
-              class="perm-check"
-          />
+            type="radio"
+            class="perm-check"
+            :checked="getCheckboxValue(row.type, row.id, p.id)"
+            @click="togglePerm(row.type, row.id, p.id)" />
         </td>
       </tr>
       </tbody>
@@ -102,6 +158,7 @@ const permittedRows = computed<{id: any, label: string, level: number, parent: s
 .perm-entity.level-1{padding-left:0}
 .perm-entity.level-2{padding-left:16px;font-weight:500;color:var(--text2)}
 .perm-entity.level-3{padding-left:32px;font-weight:400;color:var(--text3);font-size:11px}
+.perm-entity.level-4{padding-left:48px;font-weight:300;color:var(--text3);font-size:11px}
 .perm-check{width:16px;height:16px;accent-color:var(--accent);cursor:pointer}
 .perm-check:disabled{opacity:0.4;cursor:not-allowed}
 .perm-inherited{color:var(--accent);font-size:11px;opacity:0.6}

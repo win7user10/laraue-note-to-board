@@ -21,19 +21,21 @@ export const useBoard = () => {
     }))
 
     const spaces = computed(() => {
-        const result = [{
-            id: 0,
-            name: t('noSpace'),
-            color: '#49a1a1',
-            epicsCount: state.value.noSpaceEpicsCount,
-        }]
-
-        result.push(...state.value.spaces.sort((a, b) => a.name.localeCompare(b.name)))
-        return result
+        return state.value.spaces.sort((a, b) => a.name.localeCompare(b.name));
     })
 
     const spaceId = computed(() => {
-        return appState.value.userPreferences?.spaceId ?? 0
+        let val = appState.value.userPreferences?.spaceId;
+        const spaces = state.value.spaces;
+        const space = spaces.find((space) => space.id === val);
+        if (space)
+            return space.id;
+
+        const firstSpace = spaces[0];
+        if (!firstSpace)
+            throw new Error("SpaceId excepted")
+
+        return firstSpace.id;
     })
 
     const currentSpace = computed(() => {
@@ -56,7 +58,6 @@ export const useBoard = () => {
             state.value.messages = [];
 
         state.value.messages = await messagesApi.loadBoard(
-            spaceId.value,
             state.value.categoryId,
             DefaultPagination.perPage,
             state.value.searchString)
@@ -104,6 +105,7 @@ export const useBoard = () => {
         })
         state.value.categories = data.categories;
         state.value.backlogCount = data.backlogCount;
+        state.value.categoryId = state.value.categories[0]!.id;
     }
 
     const categories = computed(() => {
@@ -114,16 +116,6 @@ export const useBoard = () => {
         else if (categoryOrder === EpicSortOrder.LastUpdated)
             data.sort((a, b) => b.touchedAt.localeCompare(a.touchedAt));
 
-        const result = {
-            id: 0,
-            name: t('backlog'),
-            color: '#ff0000',
-            count: state.value.backlogCount,
-            statusesCount: 0,
-            touchedAt: '0000-01-01',
-        }
-
-        data.unshift(result)
         return data
     })
 
@@ -438,9 +430,7 @@ export const useBoard = () => {
 
     const reloadSpaces = async () => {
         const spacesApi = useSpacesApi()
-        const { spaces, noSpaceEpicsCount } = await spacesApi.getSpaces()
-        state.value.spaces = spaces
-        state.value.noSpaceEpicsCount = noSpaceEpicsCount
+        state.value.spaces = await spacesApi.getSpaces()
     }
 
     const createSpace = async (request: CreateSpaceRequest) => {
@@ -476,10 +466,8 @@ export const useBoard = () => {
         {
             updateSpaceId(0)
             state.value.categoryId = 0;
-            await Promise.all([
-                reloadBoard(false),
-                reloadCategories()
-            ])
+            await reloadBoard(false)
+            await reloadCategories()
 
             // Update preferences
             const { updateSpace } = useUserPreferencesApi()

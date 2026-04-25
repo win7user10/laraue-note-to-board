@@ -97,17 +97,15 @@ export const useMessagesApi = () => {
     }
 
     const loadBoard = (
-        spaceId: number,
         categoryId: number,
         take: number,
         searchString: string) => {
         return client<ColumnMessages[]>('/issues/board', {
             method: 'GET',
             query: {
-                categoryId: categoryId ?? undefined,
+                epicId: categoryId ?? undefined,
                 take: take,
                 searchString: searchString,
-                spaceId: spaceId,
             }
         });
     }

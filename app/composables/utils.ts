@@ -42,11 +42,28 @@ export const useUtils = () => {
         return 'member'
     }
 
+    const hasFlag = (currentValue: AccessLevel, valueToCheck: AccessLevel) => {
+        return ((currentValue & valueToCheck) === valueToCheck);
+    }
+
+    const addFlag = (currentValue: AccessLevel, valueToAdd: AccessLevel) => {
+        currentValue |= valueToAdd;
+        return currentValue;
+    }
+
+    const deleteFlag = (currentValue: AccessLevel, valueToAdd: AccessLevel) => {
+        currentValue &= ~valueToAdd;
+        return currentValue;
+    }
+
     return {
         formatDate,
         getImageUrl,
         now,
         isPersonalOrg,
         getRoleKey,
+        hasFlag,
+        addFlag,
+        deleteFlag,
     }
 }

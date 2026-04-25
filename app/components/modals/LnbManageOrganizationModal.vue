@@ -2,9 +2,10 @@
 import LnbModal from "~/components/modals/LnbModal.vue";
 import LnbModalLabel from "~/components/modals/LnbModalLabel.vue";
 import LnbManagePermissionsModal from "~/components/modals/LnbManagePermissionsModal.vue";
+import type {UserPermissions} from "~/composables/organizationsApi";
 const { appState } = useAppState()
 const { getRoleKey } = useUtils()
-const { getOrganizationMembers, getPermittableEntities } = useOrganizationsApi()
+const { getOrganizationMembers, getPermittableEntities, setUserPermissions } = useOrganizationsApi()
 const organization = computed(() => appState.value.organization)
 const inviteLink = "https://invite.link/123a1fa2"
 
@@ -19,8 +20,13 @@ const revokeInviteLink = () => {
 }
 
 const editingMember = ref<OrganizationMember>()
-const editPermissions = (member: OrganizationMember) => {
+const editUserPermissions = (member: OrganizationMember) => {
   editingMember.value = member
+}
+
+const updateUserPermissions = async (value: UserPermissions) => {
+  await setUserPermissions(editingMember.value!.organizationUserId, value)
+  editingMember.value = undefined;
 }
 
 const emit = defineEmits<{
@@ -61,7 +67,7 @@ const emit = defineEmits<{
         {{ getRoleKey(m) }}
       </div>
       <div class="member-actions">
-        <div class="member-action-btn" v-if="!m.isOwner" title="Edit permissions" @click="editPermissions(m)">
+        <div class="member-action-btn" v-if="!m.isOwner" title="Edit permissions" @click="editUserPermissions(m)">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <rect x="2" y="11" width="3" height="3" rx="0.5"/>
             <rect x="6.5" y="6" width="3" height="8" rx="0.5"/>
@@ -79,6 +85,7 @@ const emit = defineEmits<{
   <LnbManagePermissionsModal
     v-if="editingMember"
     @close="editingMember = undefined"
+    @update="updateUserPermissions"
     :permittableEntities="permittableEntities"
     :member="editingMember!" />
 </template>

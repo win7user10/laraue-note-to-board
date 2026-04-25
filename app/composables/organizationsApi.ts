@@ -34,7 +34,7 @@ export interface AccessLevels {
     directAccess?: { [id: number]: AccessLevel };
 }
 
-export interface Permissions {
+export interface UserPermissions {
     organizationAccessLevel: AccessLevel
     spacesAccessLevels: AccessLevels
     epicsAccessLevels: AccessLevels
@@ -100,8 +100,18 @@ export const useOrganizationsApi = () => {
 
     const getUserPermissions = (organizationUserId: number) => {
         const organizationsClient = useOrganizationsOrganizationClient()
-        return organizationsClient<Permissions>('/organizations/permissions/' + organizationUserId, {
+        return organizationsClient<UserPermissions>('/organizations/permissions/' + organizationUserId, {
             method: 'GET'
+        });
+    }
+
+    const setUserPermissions = (organizationUserId: number, permissions: UserPermissions) => {
+        const organizationsClient = useOrganizationsOrganizationClient()
+        return organizationsClient<UserPermissions>('/organizations/permissions/' + organizationUserId, {
+            method: 'POST',
+            body: {
+                userPermissions: permissions
+            }
         });
     }
 
@@ -122,5 +132,6 @@ export const useOrganizationsApi = () => {
         getOrganizationMembers,
         getUserPermissions,
         getPermittableEntities,
+        setUserPermissions,
     }
 }

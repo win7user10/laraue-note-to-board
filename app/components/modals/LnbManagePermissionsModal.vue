@@ -1,11 +1,12 @@
 <script setup lang="ts">
 import LnbModal from "~/components/modals/LnbModal.vue";
-import type {PermittableSpace} from "~/composables/organizationsApi";
+import type {PermittableSpace, UserPermissions} from "~/composables/organizationsApi";
 
-const { getRoleKey } = useUtils()
+const { getRoleKey, hasFlag, addFlag, deleteFlag } = useUtils()
 const { getUserPermissions } = useOrganizationsApi()
 const emit = defineEmits<{
   (e: 'close'): void,
+  (e: 'update', value: UserPermissions): void,
 }>()
 
 const props = defineProps<{
@@ -15,24 +16,20 @@ const props = defineProps<{
 
 const PERMS = [
   {
-    id: AccessLevel.None,
-    name: 'None',
-  },
-  {
     id: AccessLevel.Read,
-    name: 'Read',
+    name: 'Read Items',
   },
   {
     id: AccessLevel.Create,
-    name: 'Create',
+    name: 'Create Items',
   },
   {
     id: AccessLevel.Update,
-    name: 'Update',
+    name: 'Update Items',
   },
   {
     id: AccessLevel.Delete,
-    name: 'Delete',
+    name: 'Delete Items',
   },
   {
     id: AccessLevel.Manage,
@@ -40,21 +37,21 @@ const PERMS = [
   },
 ];
 const ORG_ROWS = [
-  { type: 'organization', label: 'Organization', level: 1, parent: undefined, id: undefined },
-  { type: 'spaces', label: 'Spaces (all)',  level: 2, parent: 'organization', id: undefined },
+  { type: 'organization', label: 'Organization', level: 1 },
+  { type: 'spaces', label: 'Spaces (all)',  level: 2 },
 ];
 
 const permissions = ref(await getUserPermissions(props.member.organizationUserId))
-const permittedRows = computed<{id: number | undefined, type: string, label: string, level: number, parent: string | undefined}[]>(() => {
+const permittedRows = computed<{id: number | undefined, type: string, label: string, level: number, parentId: number | undefined}[]>(() => {
   const rows = []
   rows.push(...ORG_ROWS)
 
   props.permittableEntities.forEach(s => {
-    rows.push({ type: 'space', id: s.id, label: s.name, level: 3, parent: 'spaces'})
+    rows.push({ type: 'space', id: s.id, label: s.name, level: 3})
     for (const id of Object.keys(s.epics)) {
       const numberId = Number(id)
       const label = s.epics[numberId];
-      rows.push({ type: 'epic', id: numberId, label: label, level: 4, parent: id})
+      rows.push({ type: 'epic', id: numberId, label: label, level: 4, parentId: Number(s.id) })
     }
   })
 
@@ -62,40 +59,107 @@ const permittedRows = computed<{id: number | undefined, type: string, label: str
 })
 
 const togglePerm = (type: string, id: number | undefined, p: AccessLevel) => {
-  // TODO - I Should use here flags. User can manage item, but be not allowed to edit smth. And new permissions can appear
+  if (type === 'organization') {
+    permissions.value.organizationAccessLevel = toggleFlag(permissions.value.organizationAccessLevel, p);
+    clearGlobalSpacesPermissions()
+    clearDirectSpacesPermissions()
+    clearDirectEpicsPermissions()
+  }
 
-  if (type === 'organization')
-    permissions.value.organizationAccessLevel = p;
-
-  if (type === 'spaces')
-    permissions.value.spacesAccessLevels.accessLevel = p;
+  if (type === 'spaces') {
+    permissions.value.spacesAccessLevels.accessLevel = toggleFlag(permissions.value.spacesAccessLevels.accessLevel, p);
+    clearDirectSpacesPermissions()
+    clearDirectEpicsPermissions()
+  }
 
   if (type === 'space') {
-    permissions.value.spacesAccessLevels.directAccess ??= {}
-    permissions.value.spacesAccessLevels.directAccess[id!] = p
+    permissions.value.spacesAccessLevels.directAccess ??= { }
+    permissions.value.spacesAccessLevels.directAccess[id!] = toggleFlag(permissions.value.spacesAccessLevels.directAccess[id!] ?? AccessLevel.None, p)
+    clearDirectEpicsPermissions()
   }
 
   if (type === 'epic') {
     permissions.value.epicsAccessLevels.directAccess ??= {}
-    permissions.value.epicsAccessLevels.directAccess[id!] = p
+    permissions.value.epicsAccessLevels.directAccess[id!] = toggleFlag(permissions.value.epicsAccessLevels.directAccess[id!] ?? AccessLevel.None, p)
   }
-
-  console.log(permissions.value)
 }
 
-const getCheckboxValue = (type: string, id: number | undefined, p: AccessLevel) => {
+const toggleFlag = (currentValue: AccessLevel, valueToToggle: AccessLevel) => {
+  if (hasFlag(currentValue, valueToToggle))
+    return deleteFlag(currentValue, valueToToggle)
+
+  let value = addFlag(currentValue, valueToToggle)
+  if (value == AccessLevel.Create || value == AccessLevel.Update || value == AccessLevel.Delete) {}
+    value = addFlag(value, AccessLevel.Read)
+
+  return value
+}
+
+const clearGlobalSpacesPermissions = () => {
+  permissions.value.spacesAccessLevels.accessLevel = AccessLevel.None;
+}
+
+const clearDirectSpacesPermissions = () => {
+  permissions.value.spacesAccessLevels.directAccess = undefined;
+}
+
+const clearDirectEpicsPermissions = () => {
+  permissions.value.epicsAccessLevels.directAccess = undefined;
+}
+
+const getOrganizationCheckboxValue = (p: AccessLevel) => {
+  return hasFlag(permissions.value.organizationAccessLevel, p);
+}
+
+const getSpacesCheckboxValue = (p: AccessLevel) => {
+  return getOrganizationCheckboxValue(p) || hasFlag((permissions.value.spacesAccessLevels?.accessLevel ?? AccessLevel.None), p);
+}
+
+const getDirectSpaceCheckboxValue = (spaceId: number, p: AccessLevel) => {
+  const directAccess = permissions.value.spacesAccessLevels?.directAccess?.[spaceId]
+  if (!directAccess)
+    return false;
+  return hasFlag(directAccess, p)
+}
+
+const isChecked = (type: string, id: number | undefined, parent: number | undefined, p: AccessLevel) => {
+  if (getOrganizationCheckboxValue(p))
+    return true;
   if (type === 'organization')
-    return permissions.value.organizationAccessLevel >= p;
+    return false;
+  if (getOrganizationCheckboxValue(p) || getSpacesCheckboxValue(p))
+    return true;
   if (type === 'spaces')
-    return (permissions.value.spacesAccessLevels?.accessLevel ?? AccessLevel.None) >= p;
+    return false;
+  if (type === 'space') {
+    let directAccessLevel = permissions.value.spacesAccessLevels?.directAccess?.[id!] ?? AccessLevel.None;
+    return hasFlag(directAccessLevel, p)
+  }
 
-  const directAccess = type == 'space'
-    ? permissions.value.spacesAccessLevels?.directAccess
-    : permissions.value.epicsAccessLevels?.directAccess
+  let spaceDirectAccessLevel = permissions.value.spacesAccessLevels?.directAccess?.[parent!] ?? AccessLevel.None;
+  if (hasFlag(spaceDirectAccessLevel, p))
+    return true;
+  let epicDirectAccessLevel = permissions.value.epicsAccessLevels?.directAccess?.[id!] ?? AccessLevel.None;
+  return hasFlag(epicDirectAccessLevel, p);
+}
 
-  let accessLevel = directAccess ? directAccess[id!] : AccessLevel.None;
-  accessLevel ??= AccessLevel.None;
-  return accessLevel >= p;
+const isInherited = (type: string, parent: number | undefined, p: AccessLevel) => {
+  if (type === 'organization')
+    return false;
+
+  if (type === 'spaces' && getOrganizationCheckboxValue(p))
+    return true;
+
+  if (type === 'space' && (getOrganizationCheckboxValue(p) || getSpacesCheckboxValue(p)))
+      return true;
+
+  if (type === 'epic') {
+    if (getOrganizationCheckboxValue(p) || getSpacesCheckboxValue(p))
+      return true;
+    return getDirectSpaceCheckboxValue(parent!, p)
+  }
+
+  return false;
 }
 
 </script>
@@ -104,6 +168,7 @@ const getCheckboxValue = (type: string, id: number | undefined, p: AccessLevel) 
   <LnbModal
     title="Edit Permissions"
     @close="emit('close')"
+    @apply="emit('update', permissions)"
     apply-text="Save">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px; margin-top:14px;">
       <LnbCardAvatar :color="member.color">
@@ -131,13 +196,17 @@ const getCheckboxValue = (type: string, id: number | undefined, p: AccessLevel) 
       <tbody>
       <tr v-for="row in permittedRows" :key="row.id">
         <td>
-          <span class="perm-entity" :class="'level-'+row.level">{{row.label}}</span>
+          <span class="perm-entity" :class="'level-'+row.level">
+            {{row.label}}
+          </span>
         </td>
         <td v-for="p in PERMS" :key="p.id">
           <input
-            type="radio"
+            type="checkbox"
             class="perm-check"
-            :checked="getCheckboxValue(row.type, row.id, p.id)"
+            :checked="isChecked(row.type, row.id, row.parentId, p.id)"
+            :disabled="isInherited(row.type, row.parentId, p.id)"
+            :title="isInherited(row.type, row.parentId, p.id) ? 'Inherited from higher level' : ''"
             @click="togglePerm(row.type, row.id, p.id)" />
         </td>
       </tr>

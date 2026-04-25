@@ -32,6 +32,10 @@
   const modals = reactive({
     manage: false
   })
+  const closeManageModal = () => {
+    modals.manage = false
+    userPopupOpen.value = false
+  }
 </script>
 
 <template>
@@ -80,7 +84,7 @@
   <div v-if="userPopupOpen" style="position:fixed;inset:0;z-index:89" @click="userPopupOpen=false"></div>
   <LnbManageOrganizationModal
     v-if="modals.manage"
-    @close="modals.manage = false"/>
+    @close="closeManageModal"/>
 </template>
 
 <style scoped>

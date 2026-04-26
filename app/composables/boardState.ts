@@ -12,7 +12,6 @@ export const useBoard = () => {
         categories: [] as CategoryCountDto[],
         spaces: [] as SpaceDto[],
         noSpaceEpicsCount: 0,
-        backlogCount: 0,
         categoryId: 0,
         currentCategory: undefined as CategoryDto | undefined,
         searchString: '',
@@ -104,7 +103,6 @@ export const useBoard = () => {
             spaceId: spaceId.value
         })
         state.value.categories = data.categories;
-        state.value.backlogCount = data.backlogCount;
         state.value.categoryId = state.value.categories[0]!.id;
     }
 
@@ -134,14 +132,10 @@ export const useBoard = () => {
         await reloadColumn(value.statusId, offset ? offset + 1 : DefaultPagination.perPage);
 
         // Update top menu counters
-        if (value.categoryId === 0)
-            state.value.backlogCount++;
-        else {
-            const messageCategory = state.value.categories.find(c => c.id === value.categoryId)
-            if (messageCategory) {
-                messageCategory.count++;
-                messageCategory.touchedAt = now();
-            }
+        const messageCategory = state.value.categories.find(c => c.id === state.value.categoryId)
+        if (messageCategory) {
+            messageCategory.count++;
+            messageCategory.touchedAt = now();
         }
 
         // Update status counters
@@ -204,6 +198,7 @@ export const useBoard = () => {
             count: 0,
             statusesCount: 0,
             touchedAt: now(),
+            isDefault: false,
         })
         showToast(t('boardCreated'), 'success', value.name);
         return id;
@@ -367,7 +362,7 @@ export const useBoard = () => {
         if (!card) return;
 
         const messagesApi = useMessagesApi()
-        await messagesApi.move(card.id, spaceId, categoryId, statusId);
+        await messagesApi.move(card.id, statusId);
 
         // update old column data
         const oldColumnMessages = getMessagesByStatusId(card!.statusId)!

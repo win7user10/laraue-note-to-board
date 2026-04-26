@@ -6,6 +6,7 @@ export interface OrganizationDto {
     color: string;
     spacesCount?: number;
     accessLevel: AccessLevel;
+    isPersonal: boolean;
 }
 
 export interface CreateOrganizationRequest {

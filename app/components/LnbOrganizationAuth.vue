@@ -6,7 +6,6 @@ import LnbEditOrganizationModal from "~/components/modals/LnbEditOrganizationMod
 import LnbDeleteOrganizationModal from "~/components/modals/LnbDeleteOrganizationModal.vue";
 
 const { appState, setOrganization } = useAppState()
-const { isPersonalOrg } = useUtils()
 const { setOrganizationToken } = useLocalStorageUtils()
 const { getOrganizations, createOrganization, editOrganization, deleteOrganization, login } = useOrganizationsApi()
 const authUser = appState.value.user
@@ -38,10 +37,11 @@ const createOrganizationInternal = async (request: CreateOrganizationRequest) =>
   const id = await createOrganization(request)
   organizations.value.push({
     id: id,
-    spacesCount: 0,
+    spacesCount: 1,
     name: request.name,
     color: request.color,
-    accessLevel: AccessLevel.Manage
+    accessLevel: AccessLevel.Manage,
+    isPersonal: false,
   })
   modals.createOrganization = false;
 }
@@ -92,11 +92,11 @@ const loginOrg = async (id: number) => {
         <!-- User's organizations -->
         <div v-for="org in organizations" :key="org.id" class="org-item">
           <div class="org-item-avatar" :style="`background:${org.color}`">
-            {{ isPersonalOrg(org) ? authUser?.initials : org.name.toLocaleLowerCase().slice(0, 3) }}
+            {{ org.isPersonal ? authUser?.initials?.toLocaleUpperCase() : org.name.toLocaleUpperCase().slice(0, 2) }}
           </div>
           <div class="org-item-info" @click="loginOrg(org.id)" style="cursor:pointer">
-            <div class="org-item-name">{{ isPersonalOrg(org) ? 'Personal' : org.name}}</div>
-            <div class="org-item-sub">{{ isPersonalOrg(org) ? 'Your private boards' : org.spacesCount + ' spaces' }}</div>
+            <div class="org-item-name">{{ org.isPersonal ? 'Personal' : org.name}}</div>
+            <div class="org-item-sub">{{ org.isPersonal ? 'Your private boards' : org.spacesCount + ' spaces' }}</div>
           </div>
           <div class="org-item-actions">
             <div class="org-item-btn" title="Edit" @click.stop="openEditOrganization(org)" v-if="org.accessLevel >= AccessLevel.Update">

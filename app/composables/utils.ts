@@ -30,10 +30,6 @@ export const useUtils = () => {
 
     const getImageUrl = (id: string) => messagesFileApi + id
 
-    const isPersonalOrg = (organization: OrganizationDto) => {
-        return organization.id === 0;
-    }
-
     const getRoleKey = (member: OrganizationMember) => {
         if (member.isOwner)
             return 'owner'
@@ -60,7 +56,6 @@ export const useUtils = () => {
         formatDate,
         getImageUrl,
         now,
-        isPersonalOrg,
         getRoleKey,
         hasFlag,
         addFlag,

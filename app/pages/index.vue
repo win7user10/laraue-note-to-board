@@ -17,6 +17,8 @@ import LnbNavSortPopup from "~/components/popups/LnbNavSortPopup.vue";
 const { setCategory, state } = useBoard()
 const isBacklog = computed(() => state.value.categories.find(c => state.value.categoryId == c.id)?.isDefault);
 const categoryId = computed(() => state.value.categoryId);
+const currentCategory = computed(() => state.value.currentCategory);
+const defaultStatus = computed(() => currentCategory.value?.statuses[0]);
 
 const { t } = useI18n();
 const board = useBoard();
@@ -223,7 +225,7 @@ const currentSpace = board.currentSpace;
     v-if="modal.delete"/>
 
   <LnbCreateCardModal
-    :statusId="0"
+    :statusId="defaultStatus!.id"
     @close="closeCreateCard"
     @create="createCardInternal"
     v-if="modal.createCard"/>
@@ -235,6 +237,7 @@ const currentSpace = board.currentSpace;
 
   <LnbEditCardModal
     :id="assignMsg!.id"
+    :hide-status="(currentCategory?.statuses?.length ?? 0) < 2"
     @edit="editCardInternal"
     @close="closeEditCard"
     v-if="modal.editCard"/>

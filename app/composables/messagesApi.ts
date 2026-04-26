@@ -38,9 +38,7 @@ export interface MessageDetailDto {
 
 export interface CreateCardRequest {
     content: string;
-    categoryId: number;
     statusId: number;
-    spaceId: number;
 }
 
 export interface EditCardRequest {
@@ -110,12 +108,10 @@ export const useMessagesApi = () => {
         });
     }
 
-    const move = (messageId: number, spaceId: number, categoryId: number, statusId: number | null) => {
+    const move = (messageId: number, statusId: number | null) => {
         return client('/issues/' + messageId + '/move', {
             method: 'PUT',
             body: {
-                spaceId: spaceId,
-                epicId: categoryId,
                 statusId: statusId,
             }
         });

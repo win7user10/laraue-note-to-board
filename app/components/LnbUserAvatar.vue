@@ -2,7 +2,6 @@
   import LnbManageOrganizationModal from "~/components/modals/LnbManageOrganizationModal.vue";
 
   const { appState } = useAppState();
-  const { isPersonalOrg } = useUtils()
   const initUser = useInitUser();
   const userPopupOpen = ref(false);
   const currentUser = computed(() => appState.value.user!);
@@ -15,7 +14,7 @@
     initUser.logoutOrganization()
   }
   const avatarData = computed(() => {
-    if (isPersonalOrg(currentOrganization.value)) {
+    if (currentOrganization.value.isPersonal) {
       return {
         color: currentUser.value.color,
         initials: currentUser.value.initials,

@@ -2,6 +2,7 @@
   import LnbManageOrganizationModal from "~/components/modals/LnbManageOrganizationModal.vue";
 
   const { appState } = useAppState();
+  const { hasFlag } = useUtils();
   const initUser = useInitUser();
   const userPopupOpen = ref(false);
   const currentUser = computed(() => appState.value.user!);
@@ -17,8 +18,8 @@
     if (currentOrganization.value.isPersonal) {
       return {
         color: currentUser.value.color,
-        initials: currentUser.value.initials,
-        name: currentUser.value.firstName + ' ' + currentUser.value.lastName,
+        initials: currentUser.value.initials!.toLocaleUpperCase(),
+        name: (currentUser.value.firstName ?? '') + ' ' + (currentUser.value.lastName ?? ''),
       }
     } else {
       return {
@@ -53,7 +54,7 @@
       <div class="user-popup-handle">@{{currentUser.username}}</div>
       <div class="user-popup-divider"></div>
       <div
-        v-if="currentOrganization.accessLevel >= AccessLevel.Manage"
+        v-if="hasFlag(currentOrganization.adminAccessLevel, AdminAccessLevel.ManagePermissions)"
         class="user-popup-btn"
         style="color: var(--text2);"
         @click="modals.manage = true">

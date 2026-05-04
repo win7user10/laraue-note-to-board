@@ -13,6 +13,16 @@ export interface SpaceDto {
     name: string;
     color: string;
     epicsCount: number;
+    accessLevel: ChildrenAccessLevel;
+}
+export interface EpicCountDto {
+    id: number;
+    name: string;
+    color: string;
+    count: number;
+    statusesCount: number;
+    touchedAt: string;
+    isDefault: boolean;
 }
 
 export interface EditSpaceRequest {
@@ -49,10 +59,17 @@ export const useSpacesApi = () => {
         });
     }
 
+    const loadSpaceEpics = (spaceId: number) => {
+        return client<EpicCountDto[]>('/spaces/' + spaceId + '/epics', {
+            method: 'GET'
+        });
+    }
+
     return {
         createSpace,
         deleteSpace,
         editSpace,
         getSpaces,
+        loadSpaceEpics,
     }
 }

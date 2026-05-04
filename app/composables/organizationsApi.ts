@@ -5,7 +5,7 @@ export interface OrganizationDto {
     name: string;
     color: string;
     spacesCount?: number;
-    accessLevel: AccessLevel;
+    adminAccessLevel: AdminAccessLevel;
     isPersonal: boolean;
 }
 
@@ -27,24 +27,44 @@ export interface OrganizationMember {
     color: string;
     initials?: string;
     isOwner: boolean;
-    accessLevel: AccessLevel;
-}
-
-export interface AccessLevels {
-    accessLevel: AccessLevel;
-    directAccess?: { [id: number]: AccessLevel };
+    accessLevel: ChildrenAccessLevel;
 }
 
 export interface UserPermissions {
-    organizationAccessLevel: AccessLevel
-    spacesAccessLevels: AccessLevels
-    epicsAccessLevels: AccessLevels
+    admin: AdminAccessLevel
+    global: GlobalAccessLevel
+    direct: { [id: number]: DirectSpaceAccessLevel }
+}
+
+export interface GlobalAccessLevel {
+    spaces: ChildrenAccessLevel
+    epics: ChildrenAccessLevel
+    issues: ChildrenAccessLevel
+}
+
+export interface DirectSpaceAccessLevel {
+    epics: ChildrenAccessLevel
+    issues: ChildrenAccessLevel
+    self: EntityAccessLevel
+    directEpics: { [id: number]: DirectEpicAccessLevel };
+}
+
+export interface DirectEpicAccessLevel {
+    issues: ChildrenAccessLevel
+    self: EntityAccessLevel
 }
 
 export interface PermittableSpace {
     id: number;
     name: string;
-    epics: { [id: number]: string };
+    color: string;
+    epics: PermittableEpic[];
+}
+
+export interface PermittableEpic {
+    id: number;
+    name: string;
+    color: string;
 }
 
 export const useOrganizationsApi = () => {

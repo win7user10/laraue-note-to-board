@@ -8,6 +8,7 @@ import LnbDeleteOrganizationModal from "~/components/modals/LnbDeleteOrganizatio
 const { appState, setOrganization } = useAppState()
 const { setOrganizationToken } = useLocalStorageUtils()
 const { getOrganizations, createOrganization, editOrganization, deleteOrganization, login } = useOrganizationsApi()
+const { hasFlag } = useUtils()
 const authUser = appState.value.user
 
 const organizations = ref(await getOrganizations());
@@ -40,7 +41,7 @@ const createOrganizationInternal = async (request: CreateOrganizationRequest) =>
     spacesCount: 1,
     name: request.name,
     color: request.color,
-    accessLevel: AccessLevel.Manage,
+    adminAccessLevel: AdminAccessLevel.All,
     isPersonal: false,
   })
   modals.createOrganization = false;
@@ -99,10 +100,10 @@ const loginOrg = async (id: number) => {
             <div class="org-item-sub">{{ org.isPersonal ? 'Your private boards' : org.spacesCount + ' spaces' }}</div>
           </div>
           <div class="org-item-actions">
-            <div class="org-item-btn" title="Edit" @click.stop="openEditOrganization(org)" v-if="org.accessLevel >= AccessLevel.Update">
+            <div class="org-item-btn" title="Edit" @click.stop="openEditOrganization(org)" v-if="hasFlag(org.adminAccessLevel, AdminAccessLevel.UpdateOrganization)">
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z"/></svg>
             </div>
-            <div class="org-item-btn danger" title="Delete" @click.stop="openDeleteOrganization(org)" v-if="org.accessLevel >= AccessLevel.Delete">
+            <div class="org-item-btn danger" title="Delete" @click.stop="openDeleteOrganization(org)" v-if="hasFlag(org.adminAccessLevel, AdminAccessLevel.DeleteOrganization)">
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9"/></svg>
             </div>
           </div>

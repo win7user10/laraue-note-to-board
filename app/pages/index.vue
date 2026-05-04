@@ -268,7 +268,6 @@ const currentSpace = board.currentSpace;
     </div>
   </div>
 
-  <LnbToastStack />
   <LnbUserAvatar />
 </template>
 

@@ -33,23 +33,21 @@ export const useUtils = () => {
     const getRoleKey = (member: OrganizationMember) => {
         if (member.isOwner)
             return 'owner'
-        if (member.accessLevel === AccessLevel.Manage)
+        if (member.accessLevel === ChildrenAccessLevel.Manage)
             return 'admin'
         return 'member'
     }
 
-    const hasFlag = (currentValue: AccessLevel, valueToCheck: AccessLevel) => {
+    const hasFlag = <T extends number>(currentValue: T, valueToCheck: T) => {
         return ((currentValue & valueToCheck) === valueToCheck);
     }
 
-    const addFlag = (currentValue: AccessLevel, valueToAdd: AccessLevel) => {
-        currentValue |= valueToAdd;
-        return currentValue;
+    const addFlag = <T extends number>(currentValue: T, valueToAdd: T) => {
+        return (currentValue | valueToAdd) as T;
     }
 
-    const deleteFlag = (currentValue: AccessLevel, valueToAdd: AccessLevel) => {
-        currentValue &= ~valueToAdd;
-        return currentValue;
+    const deleteFlag = <T extends number>(currentValue: T, valueToAdd: T) => {
+        return (currentValue & ~valueToAdd) as T;
     }
 
     return {

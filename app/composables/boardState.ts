@@ -1,6 +1,7 @@
-import { DefaultPagination } from "~/composables/pagination";
+import {DefaultPagination} from "~/composables/pagination";
 import {ref} from "vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
+
 const { showToast, appState, updateSpaceId } = useAppState()
 
 export const useBoard = () => {
@@ -9,7 +10,7 @@ export const useBoard = () => {
 
     const state = useState('boardState', () => ({
         messages: [] as ColumnMessages[],
-        categories: [] as CategoryCountDto[],
+        categories: [] as EpicCountDto[],
         spaces: [] as SpaceDto[],
         noSpaceEpicsCount: 0,
         categoryId: 0,
@@ -98,11 +99,8 @@ export const useBoard = () => {
 
     const reloadCategories = async () => {
         state.value.categories = [];
-        const categoriesApi = useCategoriesApi()
-        const data = await categoriesApi.loadCategories({
-            spaceId: spaceId.value
-        })
-        state.value.categories = data.categories;
+        const spacesApi = useSpacesApi()
+        state.value.categories = await spacesApi.loadSpaceEpics(spaceId.value);
         state.value.categoryId = state.value.categories[0]!.id;
     }
 
@@ -436,6 +434,7 @@ export const useBoard = () => {
             name: request.name,
             color: request.color,
             epicsCount: 0,
+            accessLevel: ChildrenAccessLevel.All
         })
         showToast(t('spaceCreated'), 'success', request.name)
     }

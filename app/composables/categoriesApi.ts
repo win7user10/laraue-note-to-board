@@ -1,20 +1,5 @@
 import {useCategoriesClient} from "~/composables/categoriesClient";
 
-export interface CategoryCountResult {
-    categories: CategoryCountDto[];
-    backlogCount: number;
-}
-
-export interface CategoryCountDto {
-    id: number;
-    name: string;
-    color: string;
-    count: number;
-    statusesCount: number;
-    touchedAt: string;
-    isDefault: boolean;
-}
-
 export interface CreateCategoryRequest {
     name: string;
     color: string;
@@ -39,19 +24,8 @@ export interface EditCategoryRequest {
     color: string;
 }
 
-export interface GetEpicsRequest {
-    spaceId: number;
-}
-
 export const useCategoriesApi = () => {
     const client = useCategoriesClient()
-
-    const loadCategories = (request: GetEpicsRequest) => {
-        return client<CategoryCountResult>('/epics', {
-            method: 'GET',
-            query: request
-        });
-    }
 
     const loadCategory = (id: number) => {
         return client<CategoryDto>('/epics/' + id, {
@@ -87,7 +61,6 @@ export const useCategoriesApi = () => {
     }
 
     return {
-        loadCategories,
         createCategory,
         loadCategory,
         reorderStatuses,

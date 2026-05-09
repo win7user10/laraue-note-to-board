@@ -1,3 +1,5 @@
+import {useUserOrganizationPreferencesApi} from "~/composables/userOrganizationPreferencesApi";
+
 export const useInitUser = () => {
     const appState = useAppState()
     const { setLocale } = useI18n()
@@ -61,6 +63,10 @@ export const useInitUser = () => {
 
     const setOrganization = async (organization: OrganizationDto) => {
         appState.setOrganization(organization);
+
+        const { loadPreferences } = useUserOrganizationPreferencesApi()
+        const preferences = await loadPreferences();
+        appState.setUserOrganizationPreferences(preferences);
     }
 
     const logout = async () => {

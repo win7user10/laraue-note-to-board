@@ -43,6 +43,7 @@ const createOrganizationInternal = async (request: CreateOrganizationRequest) =>
     color: request.color,
     adminAccessLevel: AdminAccessLevel.All,
     isPersonal: false,
+    canCreateSpaces: true
   })
   modals.createOrganization = false;
 }

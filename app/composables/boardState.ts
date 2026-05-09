@@ -25,7 +25,7 @@ export const useBoard = () => {
     })
 
     const spaceId = computed(() => {
-        let val = appState.value.userPreferences?.spaceId;
+        let val = appState.value.userOrganizationPreferences?.selectedSpaceId;
         const spaces = state.value.spaces;
         const space = spaces.find((space) => space.id === val);
         if (space)
@@ -108,9 +108,21 @@ export const useBoard = () => {
         const categoryOrder = appState.value.userPreferences!.epicSortOrder
         let data = [...state.value.categories];
         if (categoryOrder === EpicSortOrder.Alphabetical)
-            data.sort((a, b) => a.name.localeCompare(b.name));
+            data.sort((a, b) => {
+                if (a.isDefault)
+                    return -1;
+                if (b.isDefault)
+                    return 1;
+                return a.name.localeCompare(b.name)
+            });
         else if (categoryOrder === EpicSortOrder.LastUpdated)
-            data.sort((a, b) => b.touchedAt.localeCompare(a.touchedAt));
+            data.sort((a, b) => {
+                if (a.isDefault)
+                    return -1;
+                if (b.isDefault)
+                    return 1;
+                return b.touchedAt.localeCompare(a.touchedAt)
+            });
 
         return data
     })
@@ -454,22 +466,25 @@ export const useBoard = () => {
     const deleteSpace = async (id: number) => {
         const api = useSpacesApi()
         await api.deleteSpace(id)
+        const index = state.value.spaces.findIndex(c => c.id === id)
+        state.value.spaces.splice(index, 1);
 
         // Update views if that space was opened
         if (id === currentSpace.value!.id)
         {
-            updateSpaceId(0)
-            state.value.categoryId = 0;
-            await reloadBoard(false)
-            await reloadCategories()
+            const selectedSpace = state.value.spaces[0]
+            if (selectedSpace) {
+                updateSpaceId(selectedSpace.id)
+                state.value.categoryId = selectedSpace.id;
+                await reloadBoard(false)
+                await reloadCategories()
 
-            // Update preferences
-            const { updateSpace } = useUserPreferencesApi()
-            await updateSpace(0)
+                // Update preferences
+                const { updateSpace } = useUserOrganizationPreferencesApi()
+                await updateSpace(selectedSpace.id)
+            }
         }
 
-        const index = state.value.spaces.findIndex(c => c.id === id)
-        state.value.spaces.splice(index, 1);
         showToast(t('spaceDeleted'), 'danger');
     }
 

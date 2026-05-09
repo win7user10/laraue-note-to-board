@@ -16,7 +16,7 @@ const { hasFlag } = useUtils()
 
 const { currentSpace, spaces, createSpace, reloadBoard, reloadCategories, setCategory, editSpace, deleteSpace } = useBoard()
 const { updateSpaceId } = useAppState()
-const { updateSpace } = useUserPreferencesApi()
+const { updateSpace } = useUserOrganizationPreferencesApi()
 const modals = reactive({
   createSpace: false,
   editSpace: false,

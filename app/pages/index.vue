@@ -176,7 +176,7 @@ const currentSpace = board.currentSpace;
         {{ cat.name }}
         <span class="nav-tab-count">{{ cat.issuesCount }}</span>
       </div>
-      <div class="nav-tab-add" title="Add category" @click="openCreateCategory">
+      <div class="nav-tab-add" :title="t('addEpic')" @click="openCreateCategory">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M8 3v10M3 8h10"/>
         </svg>

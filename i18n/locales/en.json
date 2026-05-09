@@ -89,7 +89,7 @@
   "spaceEdited": "Space edited",
   "edit": "Edit",
   "deleteSpaceTitle": "Delete Space?",
-  "deleteSpaceConfirm": "Cards will be moved to 'No Space'.",
+  "deleteSpaceConfirm": "Cards will be moved to 'Default Space'.",
   "spaceDeleted": "Space deleted",
   "createOrganization": "Create Organization",
   "newOrganization": "New Organization",

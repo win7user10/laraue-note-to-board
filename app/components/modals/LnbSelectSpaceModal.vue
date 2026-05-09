@@ -25,7 +25,9 @@ const emit = defineEmits<{
         :sub="space.epicsCount + ' boards'"
         @click="emit('select', space.id)">
         <template #avatar>
-          <LnbCardAvatar :color="space.color"></LnbCardAvatar>
+          <LnbCardAvatar :color="space.color">
+            {{space.name.slice(0, 1).toUpperCase()}}
+          </LnbCardAvatar>
         </template>
       </LnbModalListOpt>
     </LnbModalListOpts>

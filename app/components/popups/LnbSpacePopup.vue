@@ -82,8 +82,8 @@ const deleteSpaceInternal = async () => {
         <svg v-if="currentSpace?.id === s.id" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;color:var(--accent)"><path d="M2 7l3.5 3.5L12 3"/></svg>
       </div>
       <div class="space-popup-item-controls">
-        <LnbIconBtn v-if="hasFlag(s.accessLevel, ChildrenAccessLevel.Update)" @click="openEditSpace(s)" :title="t('edit')" icon="edit" icon-size="mini" btn-size="mini" />
-        <LnbIconBtn v-if="hasFlag(s.accessLevel, ChildrenAccessLevel.Delete)" @click="openDeleteSpace(s)" :title="t('delete')" icon="delete" icon-size="mini" btn-size="mini" />
+        <LnbIconBtn v-if="s.canUpdate" @click="openEditSpace(s)" :title="t('edit')" icon="edit" icon-size="mini" btn-size="mini" />
+        <LnbIconBtn v-if="s.canDelete" @click="openDeleteSpace(s)" :title="t('delete')" icon="delete" icon-size="mini" btn-size="mini" />
       </div>
     </LnbPopupItem>
 

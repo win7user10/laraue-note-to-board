@@ -13,7 +13,8 @@ export interface SpaceDto {
     name: string;
     color: string;
     epicsCount: number;
-    accessLevel: ChildrenAccessLevel;
+    canUpdate: boolean;
+    canDelete: boolean;
 }
 export interface EpicCountDto {
     id: number;

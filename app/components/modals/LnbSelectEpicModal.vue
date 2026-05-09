@@ -8,16 +8,13 @@ const props = defineProps<{
   spaceId: number
 }>()
 
-const { t } = useI18n();
-const { loadCategories } = useCategoriesApi()
-const result = await loadCategories({
-  spaceId: props.spaceId,
-})
-result.categories.sort((a, b) => b.touchedAt.localeCompare(a.touchedAt));
+const { loadSpaceEpics } = useSpacesApi()
+const result = await loadSpaceEpics(props.spaceId)
+result.sort((a, b) => b.touchedAt.localeCompare(a.touchedAt));
 
 const emit = defineEmits<{
   (e: 'close'): void,
-  (e: 'select', epic: CategoryCountDto): void
+  (e: 'select', epic: EpicCountDto): void
 }>()
 
 </script>
@@ -28,12 +25,14 @@ const emit = defineEmits<{
     title="Select Epic">
     <LnbModalListOpts>
       <LnbModalListOpt
-        v-for="epic in result.categories"
+        v-for="epic in result"
         :name="epic.name"
-        :sub="epic.count + ' columns'"
+        :sub="epic.statusesCount + ' columns'"
         @click="emit('select', epic)">
         <template #avatar>
-          <LnbCardAvatar :color="epic.color"></LnbCardAvatar>
+          <LnbCardAvatar :color="epic.color">
+            {{epic.name.slice(0, 1).toUpperCase()}}
+          </LnbCardAvatar>
         </template>
       </LnbModalListOpt>
     </LnbModalListOpts>

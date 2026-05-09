@@ -189,7 +189,7 @@ const getOrAddSpacePermission = (spaceId: number) => {
       epics: ChildrenAccessLevel.None,
       issues: ChildrenAccessLevel.None,
       self: EntityAccessLevel.None,
-      directEpics: []
+      directEpics: {}
     };
   return permissions.value.direct[spaceId]!
 }

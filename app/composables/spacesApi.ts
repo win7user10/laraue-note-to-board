@@ -19,7 +19,7 @@ export interface EpicCountDto {
     id: number;
     name: string;
     color: string;
-    count: number;
+    issuesCount: number;
     statusesCount: number;
     touchedAt: string;
     isDefault: boolean;

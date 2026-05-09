@@ -174,7 +174,7 @@ const currentSpace = board.currentSpace;
           @click="setCategory(cat.id)">
         <span class="dot" :style="`background:${cat.color}`"></span>
         {{ cat.name }}
-        <span class="nav-tab-count">{{ cat.count }}</span>
+        <span class="nav-tab-count">{{ cat.issuesCount }}</span>
       </div>
       <div class="nav-tab-add" title="Add category" @click="openCreateCategory">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">

@@ -5,6 +5,7 @@ export interface OrganizationDto {
     name: string;
     color: string;
     spacesCount?: number;
+    canCreateSpaces: boolean;
     adminAccessLevel: AdminAccessLevel;
     isPersonal: boolean;
 }

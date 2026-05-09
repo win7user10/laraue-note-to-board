@@ -64,7 +64,7 @@ export const useBoard = () => {
 
         const menuCategory = state.value.categories.find(c => c.id === state.value.categoryId)
         if (menuCategory)
-            menuCategory.count = dbMessagesCount.value
+            menuCategory.issuesCount = dbMessagesCount.value
     }
 
     const openMedia = (media: MediaInfo[], index: number) => {
@@ -132,7 +132,7 @@ export const useBoard = () => {
         // Update top menu counters
         const messageCategory = state.value.categories.find(c => c.id === state.value.categoryId)
         if (messageCategory) {
-            messageCategory.count++;
+            messageCategory.issuesCount++;
             messageCategory.touchedAt = now();
         }
 
@@ -193,7 +193,7 @@ export const useBoard = () => {
             id: id,
             name: value.name,
             color: value.color,
-            count: 0,
+            issuesCount: 0,
             statusesCount: 0,
             touchedAt: now(),
             isDefault: false,
@@ -230,7 +230,7 @@ export const useBoard = () => {
         // update categories counter
         const cardCategory = state.value.categories.find(c => c.id === card!.categoryId)
         if (cardCategory)
-            cardCategory.count--;
+            cardCategory.issuesCount--;
 
         // Drop from the board
         const columnMessages = getMessagesByStatusId(card!.statusId)!
@@ -379,13 +379,13 @@ export const useBoard = () => {
         // update epics
         const newCategory = state.value.categories.find(c => c.id === categoryId)
         if (newCategory) {
-            newCategory.count += 1;
+            newCategory.issuesCount += 1;
             newCategory.touchedAt = now();
         }
 
         const oldCategory = state.value.categories.find(c => c.id === card.categoryId)
         if (oldCategory)
-            oldCategory.count -= 1;
+            oldCategory.issuesCount -= 1;
 
         // update card properties
         card.categoryId = categoryId!;

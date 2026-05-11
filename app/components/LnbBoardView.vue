@@ -4,15 +4,14 @@ import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
 import type {MessageListDto} from "~/composables/messagesApi";
 import LnbEditStatusModal from "~/components/modals/LnbEditStatusModal.vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
-import LnbEditCategoryModal from "~/components/modals/LnbEditCategoryModal.vue";
 import LnbScrollArea from "~/components/LnbScrollArea.vue";
 import LnbCreateStatusModal from "~/components/modals/LnbCreateStatusModal.vue";
 import LnbDeleteColumnModal from "~/components/modals/LnbDeleteColumnModal.vue";
 import LnbCreateCardModal from "~/components/modals/LnbCreateCardModal.vue";
-import LnbDeleteCategoryModal from "~/components/modals/LnbDeleteCategoryModal.vue";
 
 const board = useBoard();
 const { t } = useI18n();
+const { appState } = useAppState();
 
 const emits = defineEmits<{
   (e: 'openDelete', message: MessageListDto): void,
@@ -65,32 +64,6 @@ const assignToBoard = async (request: CreateCardRequest) => {
   modal.addToBoard = false;
 }
 
-const openEditCategory = () => {
-  modal.editCategory = true;
-}
-
-const closeEditCategory = () => {
-  modal.editCategory = false;
-}
-
-const editCategoryInternal = async (request: EditCategoryRequest) => {
-  await board.editCategory(request);
-  closeEditCategory();
-}
-
-const openDeleteCategory = () => {
-  modal.deleteCategory = true;
-}
-
-const closeDeleteCategory = () => {
-  modal.deleteCategory = false;
-}
-
-const deleteCategoryInternal = async () => {
-  await board.deleteCategory();
-  closeDeleteCategory();
-}
-
 const cardsByStatus = computed(() => {
   return Object.fromEntries(board.state.value.messages.map(x => [x.statusId, x.items]));
 })
@@ -114,31 +87,6 @@ const searchString = computed(() => board.state.value.searchString);
   <!-- BOARD VIEW -->
   <div class="board-view">
 
-    <LnbBoardHeader>
-      <template v-if="currentCategory" #title>
-        <span :style="`color:${currentCategory.color}`">●</span>
-        {{ currentCategory.name }}
-      </template>
-      <template #subtitle>
-        {{ board.dbMessagesCount }} {{ t('cards', board.dbMessagesCount.value) }}
-      </template>
-      <template #actions>
-        <LnbIconBtn
-          :title="t('editBoard')"
-          btnSize="medium"
-          iconSize="medium"
-          icon="edit"
-          @click="openEditCategory" />
-        <LnbIconBtn
-          type="danger"
-          btnSize="medium"
-          iconSize="medium"
-          :title="t('deleteBoard')"
-          icon="delete"
-          @click="openDeleteCategory" />
-      </template>
-    </LnbBoardHeader>
-
     <div class="board-columns" v-col-sortable="{ cat: currentCategory, onColMoved }">
       <div
         v-for="status in board.statuses.value"
@@ -160,6 +108,7 @@ const searchString = computed(() => board.state.value.searchString);
           <div class="col-title">{{ status.name }}</div>
           <div class="col-count">{{ cardsByStatus[status.id]?.totalCount ?? 0 }}</div>
           <LnbIconBtn
+            v-if="board.state.value.currentCategory?.canUpdate"
             @click.stop="openEditStatus(status)"
             title=""
             icon="edit"
@@ -167,7 +116,7 @@ const searchString = computed(() => board.state.value.searchString);
             iconSize="small" />
           <LnbIconBtn
             type="danger"
-            v-if="(currentCategory?.statuses.length ?? 0) > 1"
+            v-if="(currentCategory?.statuses.length ?? 0) > 1 && board.state.value.currentCategory?.canDelete"
             @click.stop="openDeleteStatus(status)"
             title=""
             icon="delete"
@@ -222,14 +171,6 @@ const searchString = computed(() => board.state.value.searchString);
     @edit="editStatusInternal"
     @close="modal.editStatus = false"
     v-if="modal.editStatus"/>
-  <LnbEditCategoryModal
-    @close="closeEditCategory"
-    @edit="editCategoryInternal"
-    v-if="modal.editCategory"/>
-  <LnbDeleteCategoryModal
-    @close="closeDeleteCategory"
-    @delete="deleteCategoryInternal"
-    v-if="modal.deleteCategory"/>
 </template>
 
 <style scoped>

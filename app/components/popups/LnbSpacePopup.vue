@@ -14,7 +14,7 @@ const emits = defineEmits<{
 const { t } = useI18n()
 
 const { currentSpace, spaces, createSpace, reloadBoard, reloadCategories, setCategory, editSpace, deleteSpace } = useBoard()
-const { updateSpaceId } = useAppState()
+const { updateSpaceId, appState } = useAppState()
 const { updateSpace } = useUserOrganizationPreferencesApi()
 const modals = reactive({
   createSpace: false,
@@ -86,12 +86,15 @@ const deleteSpaceInternal = async () => {
       </div>
     </LnbPopupItem>
 
-    <LnbPopupItemDivider />
+    <template v-if="appState.organization?.canCreateSpaces">
+      <LnbPopupItemDivider />
 
-    <LnbPopupItem @click="modals.createSpace = true" class="space-popup-add">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v10M3 8h10"/></svg>
-      {{ t('newSpace') }}
-    </LnbPopupItem>
+      <LnbPopupItem @click="modals.createSpace = true" class="space-popup-add">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v10M3 8h10"/></svg>
+        {{ t('newSpace') }}
+      </LnbPopupItem>
+    </template>
+
   </LnbPopup>
   <LnbCreateSpaceModal
     v-if="modals.createSpace"

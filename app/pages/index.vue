@@ -14,6 +14,9 @@ import LnbDeleteCardModal from "~/components/modals/LnbDeleteCardModal.vue";
 import LnbSpacePopup from "~/components/popups/LnbSpacePopup.vue";
 import LnbNavSortPopup from "~/components/popups/LnbNavSortPopup.vue";
 import LnbEmptyState from "~/components/LnbEmptyState.vue";
+import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
+import LnbDeleteCategoryModal from "~/components/modals/LnbDeleteCategoryModal.vue";
+import LnbEditCategoryModal from "~/components/modals/LnbEditCategoryModal.vue";
 
 const { setCategory, state, anySpaceAvailable } = useBoard()
 const { getSpace } = useSpacesApi()
@@ -57,6 +60,8 @@ const modal = reactive({
   assign: false,
   delete: false,
   search: false,
+  editCategory: false,
+  deleteCategory: false,
 });
 
 const navSortPopupOpen = ref(false);
@@ -151,6 +156,34 @@ const closeFab = () => {
 const fabOpen = ref(false);
 const currentSpace = board.currentSpace;
 
+
+
+const openEditCategory = () => {
+  modal.editCategory = true;
+}
+
+const closeEditCategory = () => {
+  modal.editCategory = false;
+}
+
+const editCategoryInternal = async (request: EditCategoryRequest) => {
+  await board.editCategory(request);
+  closeEditCategory();
+}
+
+const openDeleteCategory = () => {
+  modal.deleteCategory = true;
+}
+
+const closeDeleteCategory = () => {
+  modal.deleteCategory = false;
+}
+
+const deleteCategoryInternal = async () => {
+  await board.deleteCategory();
+  closeDeleteCategory();
+}
+
 </script>
 
 <template>
@@ -207,6 +240,34 @@ const currentSpace = board.currentSpace;
   </div>
 
   <template v-if="state.categories.length > 0 && state.currentCategory?.canViewIssues">
+
+    <LnbBoardHeader>
+      <template v-if="currentCategory" #title>
+        <span :style="`color:${currentCategory.color}`">●</span>
+        {{ currentCategory.name }}
+      </template>
+      <template #subtitle>
+        {{ board.dbMessagesCount }} {{ t('cards', board.dbMessagesCount.value) }}
+      </template>
+      <template #actions>
+        <LnbIconBtn
+            v-if="currentCategory?.canUpdate"
+            :title="t('editBoard')"
+            btnSize="medium"
+            iconSize="medium"
+            icon="edit"
+            @click="openEditCategory" />
+        <LnbIconBtn
+            v-if="currentCategory?.canDelete"
+            type="danger"
+            btnSize="medium"
+            iconSize="medium"
+            :title="t('deleteBoard')"
+            icon="delete"
+            @click="openDeleteCategory" />
+      </template>
+    </LnbBoardHeader>
+
     <template v-if="isBacklog">
       <LnbBacklogView
           @openAssignToCategory="openAssignToCategory"
@@ -272,6 +333,15 @@ const currentSpace = board.currentSpace;
     @edit="editCardInternal"
     @close="closeEditCard"
     v-if="modal.editCard"/>
+
+  <LnbEditCategoryModal
+    @close="closeEditCategory"
+    @edit="editCategoryInternal"
+    v-if="modal.editCategory"/>
+  <LnbDeleteCategoryModal
+    @close="closeDeleteCategory"
+    @delete="deleteCategoryInternal"
+    v-if="modal.deleteCategory"/>
 
   <LnbMediaViewer
     v-if="board.state.value.openedMedia.length > 0" />

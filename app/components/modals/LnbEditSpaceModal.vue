@@ -7,7 +7,7 @@ import LnbModalInput from "~/components/modals/LnbModalInput.vue";
 import type {EditSpaceRequest} from "~/composables/spacesApi";
 
 const props = defineProps<{
-  space: SpaceDto
+  space: SpaceListDto
 }>()
 
 const emit = defineEmits<{

@@ -4,20 +4,43 @@ import LnbCreateOrganizationModal from "~/components/modals/LnbCreateOrganizatio
 import {ref} from "vue";
 import LnbEditOrganizationModal from "~/components/modals/LnbEditOrganizationModal.vue";
 import LnbDeleteOrganizationModal from "~/components/modals/LnbDeleteOrganizationModal.vue";
+import LnbButton from "~/components/LnbButton.vue";
+import type { FetchError } from 'ofetch';
 
 const { appState, setOrganization } = useAppState()
 const { setOrganizationToken } = useLocalStorageUtils()
-const { getOrganizations, createOrganization, editOrganization, deleteOrganization, login } = useOrganizationsApi()
+const { getOrganizations, createOrganization, editOrganization, deleteOrganization, login, join } = useOrganizationsApi()
 const { hasFlag } = useUtils()
 const authUser = appState.value.user
 
-const organizations = ref(await getOrganizations());
+const organizations = ref<OrganizationDto[]>([]);
+const updateOrganizations = async () => {
+  organizations.value = await getOrganizations();
+}
+
+await updateOrganizations()
 
 const modals = reactive({
   createOrganization: false,
   editOrganization: false,
   deleteOrganization: false
 })
+
+const joinCodeOpen = ref(false)
+const joinCode = ref('')
+const joinCodeError = ref('')
+
+const submitJoinCode = async () => {
+  try {
+    await join(joinCode.value)
+    await updateOrganizations()
+    joinCodeOpen.value = false;
+  } catch (_error) {
+    const error = _error as FetchError;
+    if (error.status === 404)
+      joinCodeError.value = "No organization with this code found";
+  }
+}
 
 const editingOrganization = ref<OrganizationDto>()
 const openEditOrganization = (org: OrganizationDto) => {
@@ -35,6 +58,7 @@ const openCreateOrganization = () => {
 }
 
 const createOrganizationInternal = async (request: CreateOrganizationRequest) => {
+  console.log(request)
   const id = await createOrganization(request)
   organizations.value.push({
     id: id,
@@ -114,6 +138,46 @@ const loginOrg = async (id: number) => {
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:15px;height:15px;color:var(--text3)"><path d="M8 3v10M3 8h10"/></svg>
           <span style="font-size:13px;font-weight:600;color:var(--text3)">New organization</span>
         </div>
+
+        <!-- Divider -->
+        <div style="display:flex;align-items:center;gap:8px;margin:4px 0">
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+          <div style="font-size:10px;color:var(--text3);font-weight:600">or</div>
+          <div style="flex:1;height:1px;background:var(--border)"></div>
+        </div>
+
+        <!-- Join by code -->
+        <template v-if="!joinCodeOpen">
+          <div class="org-item" style="border-style:dashed;justify-content:center;gap:8px" @click="joinCodeOpen=true;joinCode='';joinCodeError=''">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:15px;height:15px;color:var(--text3)"><path d="M3 6h10M3 10h10M6 3v10M10 3v10" opacity="0.5"/><rect x="2" y="2" width="12" height="12" rx="2"/></svg>
+            <span style="font-size:13px;font-weight:600;color:var(--text3)">Join with invite code</span>
+          </div>
+        </template>
+        <template v-else>
+          <div style="background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:12px;font-weight:700;color:var(--text)">Enter invite code</div>
+            <div style="font-size:11px;color:var(--text3)">Ask the organization owner to share their invite link or code</div>
+            <input
+                class="auth-input"
+                v-model="joinCode"
+                placeholder="e.g. A8F3K2P9"
+                style="text-transform:uppercase;letter-spacing:2px;font-family:'JetBrains Mono',monospace;margin-bottom:0;font-size:14px"
+                @keyup.enter="submitJoinCode"
+                @keyup.escape="joinCodeOpen=false"
+            />
+            <div v-if="joinCodeError" style="font-size:11px;color:var(--red)">{{ joinCodeError }}</div>
+            <div style="display:flex;gap:6px">
+              <LnbButton
+                name="Cancel"
+                type="ghost"
+                @click="joinCodeOpen=false"/>
+              <LnbButton
+                name="Join organization"
+                type="primary"
+                @click="submitJoinCode"/>
+            </div>
+          </div>
+        </template>
       </div>
     </div>
   </div>
@@ -155,4 +219,5 @@ const loginOrg = async (id: number) => {
 .org-item-btn svg{width:12px;height:12px}
 .org-enter-btn{width:26px;height:26px;border-radius:6px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .org-enter-btn svg{width:12px;height:12px}
+.auth-input{width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:14px;color:var(--text);outline:none;margin-bottom:10px;transition:border-color 0.15s;font-family:'Inter',sans-serif}
 </style>

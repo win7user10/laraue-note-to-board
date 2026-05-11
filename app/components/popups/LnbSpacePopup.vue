@@ -12,7 +12,6 @@ const emits = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { hasFlag } = useUtils()
 
 const { currentSpace, spaces, createSpace, reloadBoard, reloadCategories, setCategory, editSpace, deleteSpace } = useBoard()
 const { updateSpaceId } = useAppState()
@@ -47,13 +46,13 @@ const editSpaceInternal = async (request: EditSpaceRequest) => {
   modals.editSpace = false;
 }
 
-const editingSpace = ref<SpaceDto>()
-const openEditSpace = (space: SpaceDto) => {
+const editingSpace = ref<SpaceListDto>()
+const openEditSpace = (space: SpaceListDto) => {
   editingSpace.value = space;
   modals.editSpace = true;
 }
 
-const openDeleteSpace = (space: SpaceDto) => {
+const openDeleteSpace = (space: SpaceListDto) => {
   editingSpace.value = space;
   modals.deleteSpace = true;
 }

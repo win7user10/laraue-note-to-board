@@ -89,11 +89,11 @@
 
 <style scoped>
 /* USER AVATAR (bottom-left, web only) */
-.user-avatar-btn{position:fixed;top:calc(12px + var(--safe-top));right:calc(12px + var(--safe-right));z-index:90;display:flex;align-items:center;gap:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.user-avatar-btn{z-index:90;display:flex;align-items:center;gap:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
 .user-avatar{width:34px;height:34px;border-radius:50%;background:var(--surface3);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--text);transition:border-color 0.15s;overflow:hidden;flex-shrink:0}
 .user-avatar img{width:100%;height:100%;object-fit:cover}
 .user-avatar-btn:hover .user-avatar{border-color:var(--accent)}
-.user-popup{position:fixed;top:calc(62px + var(--safe-top));right:calc(8px + var(--safe-right));background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:91;animation:slide-up 0.18s cubic-bezier(0.34,1.3,0.64,1)}
+.user-popup{position:absolute;top:calc(62px + var(--safe-top));background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;min-width:200px;box-shadow:0 8px 32px rgba(0,0,0,0.5);z-index:91;animation:slide-up 0.18s cubic-bezier(0.34,1.3,0.64,1)}
 .user-popup-name{font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px}
 .user-popup-handle{font-size:11px;color:var(--text3);font-family:'JetBrains Mono',monospace;margin-bottom:12px}
 .user-popup-divider{height:1px;background:var(--border);margin-bottom:10px}

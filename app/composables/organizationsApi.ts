@@ -144,6 +144,12 @@ export const useOrganizationsApi = () => {
         });
     }
 
+    const join = (code: string) => {
+        return client('/organizations/join/' + code, {
+            method: 'POST'
+        });
+    }
+
     return {
         getOrganizations,
         createOrganization,
@@ -155,5 +161,6 @@ export const useOrganizationsApi = () => {
         getUserPermissions,
         getPermittableEntities,
         setUserPermissions,
+        join,
     }
 }

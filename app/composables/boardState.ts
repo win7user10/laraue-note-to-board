@@ -11,10 +11,10 @@ export const useBoard = () => {
     const state = useState('boardState', () => ({
         messages: [] as ColumnMessages[],
         categories: [] as EpicCountDto[],
-        spaces: [] as SpaceDto[],
+        spaces: [] as SpaceListDto[],
         noSpaceEpicsCount: 0,
-        categoryId: 0,
-        currentCategory: undefined as CategoryDto | undefined,
+        categoryId: null as number | null,
+        currentCategory: undefined as EpicDto | undefined,
         searchString: '',
         openedMedia: [] as MediaInfo[],
         openedMediaIndex: 0,
@@ -33,7 +33,7 @@ export const useBoard = () => {
 
         const firstSpace = spaces[0];
         if (!firstSpace)
-            throw new Error("SpaceId excepted")
+            return null;
 
         return firstSpace.id;
     })
@@ -56,6 +56,12 @@ export const useBoard = () => {
         const messagesApi = useMessagesApi()
         if (clearPreviousImmediately)
             state.value.messages = [];
+
+        if (!state.value.categoryId)
+            return;
+
+        if (!state.value.currentCategory?.canViewIssues)
+            return;
 
         state.value.messages = await messagesApi.loadBoard(
             state.value.categoryId,
@@ -86,7 +92,7 @@ export const useBoard = () => {
         // reload all already loaded
         const messagesApi = useMessagesApi()
         const result = await messagesApi.loadMessages(
-            spaceId.value,
+            spaceId.value!,
             statusId,
             0,
             initialItemsCount,
@@ -99,9 +105,13 @@ export const useBoard = () => {
 
     const reloadCategories = async () => {
         state.value.categories = [];
+        if (!spaceId.value)
+            return
         const spacesApi = useSpacesApi()
         state.value.categories = await spacesApi.loadSpaceEpics(spaceId.value);
-        state.value.categoryId = state.value.categories[0]!.id;
+        const firstEpic = state.value.categories[0];
+        if (firstEpic)
+            state.value.categoryId = firstEpic.id;
     }
 
     const categories = computed(() => {
@@ -171,7 +181,7 @@ export const useBoard = () => {
             const item = getMessagesByStatusId(statusId)!.items;
             const messagesApi = useMessagesApi()
             const newMessages = await messagesApi.loadMessages(
-                spaceId.value,
+                spaceId.value!,
                 statusId,
                 item.offset,
                 DefaultPagination.perPage,
@@ -258,7 +268,7 @@ export const useBoard = () => {
 
     const editCategory = async (request: EditCategoryRequest) => {
         const categoriesApi = useCategoriesApi()
-        await categoriesApi.editCategory(state.value.categoryId, request)
+        await categoriesApi.editCategory(state.value.categoryId!, request)
         const category = state.value.categories.find(c => c.id === state.value.categoryId)!
         category.color = request.color;
         category.name = request.name;
@@ -273,7 +283,7 @@ export const useBoard = () => {
 
     const deleteCategory = async () => {
         const categoriesApi = useCategoriesApi()
-        await categoriesApi.deleteCategory(state.value.categoryId)
+        await categoriesApi.deleteCategory(state.value.categoryId!)
         const index = state.value.categories.findIndex(c => c.id === state.value.categoryId)
         state.value.categories.splice(index, 1);
         state.value.currentCategory = undefined;
@@ -426,7 +436,7 @@ export const useBoard = () => {
 
         const categoriesApi = useCategoriesApi()
         await categoriesApi.reorderStatuses(
-            state.value.categoryId,
+            state.value.categoryId!,
             Object.fromEntries(newStatuses.map(item => [item.id, item.sortOrder])))
 
         cat.statuses = newStatuses;
@@ -441,12 +451,14 @@ export const useBoard = () => {
     const createSpace = async (request: CreateSpaceRequest) => {
         const spacesApi = useSpacesApi()
         const spaceId = await spacesApi.createSpace(request)
+        // TODO - We don't know can this user edit or delete space, so needs to request space from BE here
         state.value.spaces.push({
             id: spaceId,
             name: request.name,
             color: request.color,
             epicsCount: 0,
-            accessLevel: ChildrenAccessLevel.All
+            canDelete: true,
+            canUpdate: true,
         })
         showToast(t('spaceCreated'), 'success', request.name)
     }
@@ -488,6 +500,10 @@ export const useBoard = () => {
         showToast(t('spaceDeleted'), 'danger');
     }
 
+    const anySpaceAvailable = computed(() => {
+        return spaces.value.length > 0
+    })
+
     return {
         state: readonly(state),
         reloadBoard,
@@ -521,5 +537,6 @@ export const useBoard = () => {
         createSpace,
         editSpace,
         deleteSpace,
+        anySpaceAvailable,
     }
 }

@@ -6,10 +6,13 @@ export interface CreateCategoryRequest {
     spaceId: number;
 }
 
-export interface CategoryDto {
+export interface EpicDto {
     name: string;
     color: string;
     statuses: StatusDto[];
+    canViewIssues: boolean;
+    canUpdate: boolean;
+    canDelete: boolean;
 }
 
 export interface StatusDto {
@@ -28,7 +31,7 @@ export const useCategoriesApi = () => {
     const client = useCategoriesClient()
 
     const loadCategory = (id: number) => {
-        return client<CategoryDto>('/epics/' + id, {
+        return client<EpicDto>('/epics/' + id, {
             method: 'GET'
         });
     }

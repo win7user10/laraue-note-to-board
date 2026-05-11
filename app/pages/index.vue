@@ -13,8 +13,10 @@ import LnbCreateCardModal from "~/components/modals/LnbCreateCardModal.vue";
 import LnbDeleteCardModal from "~/components/modals/LnbDeleteCardModal.vue";
 import LnbSpacePopup from "~/components/popups/LnbSpacePopup.vue";
 import LnbNavSortPopup from "~/components/popups/LnbNavSortPopup.vue";
+import LnbEmptyState from "~/components/LnbEmptyState.vue";
 
-const { setCategory, state } = useBoard()
+const { setCategory, state, anySpaceAvailable } = useBoard()
+const { getSpace } = useSpacesApi()
 const isBacklog = computed(() => state.value.categories.find(c => state.value.categoryId == c.id)?.isDefault);
 const categoryId = computed(() => state.value.categoryId);
 const currentCategory = computed(() => state.value.currentCategory);
@@ -32,6 +34,20 @@ onMounted(async () => {
 watch(() => state.value.categoryId, async () => {
   await board.reloadCategory();
   await board.reloadBoard(true);
+})
+
+const spaceAdditionalData = ref<SpaceDto | null>(null)
+const loadSpaceData = async () => {
+  if (!board.currentSpace.value)
+    spaceAdditionalData.value = null;
+  else
+    spaceAdditionalData.value = await getSpace(board.currentSpace.value.id)
+}
+
+watch(() => board.currentSpace.value, (value) => loadSpaceData(), {  immediate: true })
+
+const epicTabsAvailable = computed(() => {
+  return categories.value.length > 0 || spaceAdditionalData.value?.canCreateEpics
 })
 
 const modal = reactive({
@@ -140,15 +156,10 @@ const currentSpace = board.currentSpace;
 <template>
   <!-- TOP BAR -->
   <div class="topbar">
-    <div class="topbar-logo">
-      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="36" height="36" rx="10" fill="#2f81f7"/>
-        <text x="18" y="24" font-size="14" font-weight="800" fill="white" text-anchor="middle" font-family="Inter,sans-serif" letter-spacing="-0.5">LB</text>
-      </svg>
-    </div>
+    <LnbUserAvatar />
 
     <!-- Space switcher — only visible when spaces exist -->
-    <div class="space-switcher-wrap">
+    <div class="space-switcher-wrap" v-if="anySpaceAvailable">
       <div class="space-switcher" @click.stop="spacePopupOpen =! spacePopupOpen">
         <div class="space-switcher-dot" :style="`background:${currentSpace?.color||'var(--text3)'}`"></div>
         <div class="space-switcher-name">{{currentSpace?.name}}</div>
@@ -164,7 +175,7 @@ const currentSpace = board.currentSpace;
   <LnbNavLoader />
 
   <!-- NAV TABS -->
-  <div class="nav-tabs-wrap">
+  <div class="nav-tabs-wrap" v-if="epicTabsAvailable">
     <div class="nav-tabs">
       <div
           v-for="cat in categories"
@@ -176,7 +187,7 @@ const currentSpace = board.currentSpace;
         {{ cat.name }}
         <span class="nav-tab-count">{{ cat.issuesCount }}</span>
       </div>
-      <div class="nav-tab-add" :title="t('addEpic')" @click="openCreateCategory">
+      <div v-if="spaceAdditionalData?.canCreateEpics" class="nav-tab-add" :title="t('addEpic')" @click="openCreateCategory">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M8 3v10M3 8h10"/>
         </svg>
@@ -195,17 +206,37 @@ const currentSpace = board.currentSpace;
     </div>
   </div>
 
-  <template v-if="isBacklog">
-    <LnbBacklogView
-      @openAssignToCategory="openAssignToCategory"
-      @openEdit="openEditCard"
-      @openDelete="openDelete" />
+  <template v-if="state.categories.length > 0 && state.currentCategory?.canViewIssues">
+    <template v-if="isBacklog">
+      <LnbBacklogView
+          @openAssignToCategory="openAssignToCategory"
+          @openEdit="openEditCard"
+          @openDelete="openDelete" />
+    </template>
+    <template v-else>
+      <LnbBoardView
+          @openAssignToCategory="openAssignToCategory"
+          @openEdit="openEditCard"
+          @openDelete="openDelete"/>
+    </template>
   </template>
-  <template v-else>
-    <LnbBoardView
-      @openAssignToCategory="openAssignToCategory"
-      @openEdit="openEditCard"
-      @openDelete="openDelete"/>
+
+  <template v-if="!anySpaceAvailable">
+    <LnbEmptyState
+      title="No spaces are available"
+      subtitle="Please contact organization administrator and ask for permissions"/>
+  </template>
+
+  <template v-if="anySpaceAvailable && !epicTabsAvailable">
+    <LnbEmptyState
+        title="No epics are available in Space"
+        subtitle="Please contact organization administrator and ask for permissions"/>
+  </template>
+
+  <template v-if="anySpaceAvailable && epicTabsAvailable && !state.currentCategory?.canViewIssues">
+    <LnbEmptyState
+        title="Issues are not available for view"
+        subtitle="Please contact organization administrator and ask for permissions"/>
   </template>
 
   <LnbCreateCategoryModal
@@ -268,7 +299,6 @@ const currentSpace = board.currentSpace;
     </div>
   </div>
 
-  <LnbUserAvatar />
 </template>
 
 <style scoped>
@@ -284,12 +314,6 @@ const currentSpace = board.currentSpace;
   z-index: 10;
   justify-content: center;
 }
-.topbar-logo {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-.topbar-logo span { color: var(--text2); font-weight: 400; margin-left: 10px; }
 
 /* ── NAV TABS ── */
 .nav-tabs-wrap{display:flex;align-items:center;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}

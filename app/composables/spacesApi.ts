@@ -9,6 +9,10 @@ export interface EditSpaceRequest {
 }
 
 export interface SpaceDto {
+    canCreateEpics: boolean;
+}
+
+export interface SpaceListDto {
     id: number;
     name: string;
     color: string;
@@ -35,7 +39,13 @@ export const useSpacesApi = () => {
     const client = useSpacesClient()
 
     const getSpaces = () => {
-        return client<SpaceDto[]>('/spaces', {
+        return client<SpaceListDto[]>('/spaces', {
+            method: 'GET'
+        });
+    }
+
+    const getSpace = (id: number) => {
+        return client<SpaceDto>('/spaces/' + id, {
             method: 'GET'
         });
     }
@@ -72,5 +82,6 @@ export const useSpacesApi = () => {
         editSpace,
         getSpaces,
         loadSpaceEpics,
+        getSpace,
     }
 }

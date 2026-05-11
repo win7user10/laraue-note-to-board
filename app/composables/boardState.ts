@@ -91,8 +91,7 @@ export const useBoard = () => {
 
         // reload all already loaded
         const messagesApi = useMessagesApi()
-        const result = await messagesApi.loadMessages(
-            spaceId.value!,
+        const result = await messagesApi.loadIssuesByStatus(
             statusId,
             0,
             initialItemsCount,
@@ -180,8 +179,7 @@ export const useBoard = () => {
             loadingCols.value.push(statusId);
             const item = getMessagesByStatusId(statusId)!.items;
             const messagesApi = useMessagesApi()
-            const newMessages = await messagesApi.loadMessages(
-                spaceId.value!,
+            const newMessages = await messagesApi.loadIssuesByStatus(
                 statusId,
                 item.offset,
                 DefaultPagination.perPage,

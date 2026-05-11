@@ -87,15 +87,21 @@ const searchString = computed(() => board.state.value.searchString);
   <!-- BOARD VIEW -->
   <div class="board-view">
 
-    <div class="board-columns" v-col-sortable="{ cat: currentCategory, onColMoved }">
+    <div class="board-columns"
+      v-col-sortable="{
+        onColMoved,
+        applySort: board.state.value.currentCategory?.canUpdate
+      }">
       <div
         v-for="status in board.statuses.value"
         class="board-col"
         :key="status.id"
         :data-status-id="status.id">
-        <div class="col-header">
+        <div
+          class="col-header"
+          :class="{ draggable: board.state.value.currentCategory?.canUpdate }">
           <div class="col-drag-handle">
-            <svg viewBox="0 0 16 16" fill="currentColor">
+            <svg viewBox="0 0 16 16" fill="currentColor" v-if="board.state.value.currentCategory?.canUpdate">
               <circle cx="5" cy="4" r="1.2"></circle>
               <circle cx="11" cy="4" r="1.2"></circle>
               <circle cx="5" cy="8" r="1.2"></circle>
@@ -130,14 +136,14 @@ const searchString = computed(() => board.state.value.searchString);
                 @openDelete="emits('openDelete', msg)"
                 @openEdit="emits('openEdit', $event)"
                 @openAssignToCategory="emits('openAssignToCategory', $event)"
-                :deleteButton="true"
+                :deleteButton="!!currentCategory?.canDeleteIssues"
                 :key="msg.id"
-                :assignButton="true"
+                :assignButton="!!currentCategory?.canUpdateIssues"
                 :highlightText="searchString"
                 :message="msg"/>
           </div>
         </LnbScrollArea>
-        <div class="col-add-btn" @click="openAddToBoard(status)">
+        <div v-if="board.state.value.currentCategory?.canCreateIssues" class="col-add-btn" @click="openAddToBoard(status)">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M8 3v10M3 8h10"/>
           </svg>
@@ -145,7 +151,7 @@ const searchString = computed(() => board.state.value.searchString);
         </div>
       </div>
 
-      <div class="add-col-btn" @click="modal.createStatus = true">
+      <div  v-if="board.state.value.currentCategory?.canUpdate" class="add-col-btn" @click="modal.createStatus = true">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px">
           <path d="M8 3v10M3 8h10"/>
         </svg>
@@ -203,8 +209,8 @@ const searchString = computed(() => board.state.value.searchString);
   align-items: center;
   gap: 7px;
   position: relative;
-  cursor: grab;
 }
+.col-header.draggable {cursor: grab;}
 .col-drag-handle{color:var(--text3);display:flex;align-items:center;cursor:grab;flex-shrink:0}
 .col-drag-handle svg{width:12px;height:12px}
 .col-indicator {

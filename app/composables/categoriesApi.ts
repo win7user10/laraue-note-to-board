@@ -11,6 +11,9 @@ export interface EpicDto {
     color: string;
     statuses: StatusDto[];
     canViewIssues: boolean;
+    canCreateIssues: boolean;
+    canUpdateIssues: boolean;
+    canDeleteIssues: boolean;
     canUpdate: boolean;
     canDelete: boolean;
 }

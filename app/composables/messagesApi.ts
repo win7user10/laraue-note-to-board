@@ -76,17 +76,15 @@ export interface CategorySummary {
 export const useMessagesApi = () => {
     const client = useMessagesClient()
 
-    const loadMessages = (
-        spaceId: number,
-        statusId: number | null,
+    const loadIssuesByStatus = (
+        statusId: number,
         skip: number,
         take: number,
         searchString: string) => {
-        return client<BatchResult<MessageListDto>>('/issues', {
+        return client<BatchResult<MessageListDto>>('/issues/by-status/' + statusId, {
             method: 'GET',
             query: {
-                spaceId: spaceId,
-                statusId: statusId ?? undefined,
+                statusId: statusId,
                 skip: skip,
                 take: take,
                 searchString: searchString,
@@ -160,7 +158,7 @@ export const useMessagesApi = () => {
     }
 
     return {
-        loadMessages,
+        loadIssuesByStatus,
         move,
         deleteMessage,
         createMessage,

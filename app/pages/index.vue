@@ -355,7 +355,7 @@ const deleteCategoryInternal = async () => {
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
     </div>
     <div class="fab-items" v-if="fabOpen">
-      <LnbFabItem :title="t('newBoard')" @click="openCreateCategory">
+      <LnbFabItem v-if="spaceAdditionalData?.canCreateEpics" :title="t('newCategoryBoard')" @click="openCreateCategory">
         <rect x="2" y="2" width="12" height="12" rx="2"/>
         <path d="M8 5v6M5 8h6"/>
       </LnbFabItem>
@@ -363,7 +363,7 @@ const deleteCategoryInternal = async () => {
         <circle cx="6.5" cy="6.5" r="4.5"/>
         <path d="M10.5 10.5l3 3"/>
       </LnbFabItem>
-      <LnbFabItem :title="t('createCard')" @click="openCreateCard">
+      <LnbFabItem v-if="currentCategory?.canCreateIssues" :title="t('createCard')" @click="openCreateCard">
         <path d="M8 5v6M5 8h6"/>
       </LnbFabItem>
     </div>

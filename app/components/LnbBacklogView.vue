@@ -27,15 +27,6 @@ const { t } = useI18n();
 <template>
   <div class="backlog-view">
 
-    <LnbBoardHeader style="padding:0 0 10px;border-bottom:none;margin-bottom:0">
-      <template #title>
-        {{ t('backlog') }}
-      </template>
-      <template #subtitle>
-        {{ dbMessagesCount }} {{ t('cards', { count: dbMessagesCount }) }}
-      </template>
-    </LnbBoardHeader>
-
     <template v-if="backlogMessagesResult?.data.length === 0">
       <template v-if="state.categories.length > 0 && !state.searchString">
         <LnbBoardSummaryGrid />

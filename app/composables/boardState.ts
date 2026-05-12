@@ -1,6 +1,7 @@
 import {DefaultPagination} from "~/composables/pagination";
 import {ref} from "vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
+import type {EpicListDto} from "~/composables/spacesApi";
 
 const { showToast, appState, updateSpaceId } = useAppState()
 
@@ -10,7 +11,7 @@ export const useBoard = () => {
 
     const state = useState('boardState', () => ({
         messages: [] as ColumnMessages[],
-        categories: [] as EpicCountDto[],
+        categories: [] as EpicListDto[],
         spaces: [] as SpaceListDto[],
         noSpaceEpicsCount: 0,
         categoryId: null as number | null,
@@ -67,10 +68,6 @@ export const useBoard = () => {
             state.value.categoryId,
             DefaultPagination.perPage,
             state.value.searchString)
-
-        const menuCategory = state.value.categories.find(c => c.id === state.value.categoryId)
-        if (menuCategory)
-            menuCategory.issuesCount = dbMessagesCount.value
     }
 
     const openMedia = (media: MediaInfo[], index: number) => {
@@ -152,10 +149,8 @@ export const useBoard = () => {
 
         // Update top menu counters
         const messageCategory = state.value.categories.find(c => c.id === state.value.categoryId)
-        if (messageCategory) {
-            messageCategory.issuesCount++;
+        if (messageCategory)
             messageCategory.touchedAt = now();
-        }
 
         // Update status counters
         if (messagesByCategory)
@@ -213,10 +208,8 @@ export const useBoard = () => {
             id: id,
             name: value.name,
             color: value.color,
-            issuesCount: 0,
-            statusesCount: 0,
             touchedAt: now(),
-            isDefault: false,
+            isDefault: false
         })
         showToast(t('boardCreated'), 'success', value.name);
         return id;
@@ -246,11 +239,6 @@ export const useBoard = () => {
         await messagesApi.deleteMessage(id)
 
         const card = allCards.value.find(c => c.id === id)
-
-        // update categories counter
-        const cardCategory = state.value.categories.find(c => c.id === card!.categoryId)
-        if (cardCategory)
-            cardCategory.issuesCount--;
 
         // Drop from the board
         const columnMessages = getMessagesByStatusId(card!.statusId)!
@@ -398,14 +386,8 @@ export const useBoard = () => {
 
         // update epics
         const newCategory = state.value.categories.find(c => c.id === categoryId)
-        if (newCategory) {
-            newCategory.issuesCount += 1;
+        if (newCategory)
             newCategory.touchedAt = now();
-        }
-
-        const oldCategory = state.value.categories.find(c => c.id === card.categoryId)
-        if (oldCategory)
-            oldCategory.issuesCount -= 1;
 
         // update card properties
         card.categoryId = categoryId!;

@@ -3,6 +3,7 @@
 import LnbModal from "~/components/modals/LnbModal.vue";
 import LnbModalListOpts from "~/components/modals/LnbModalListOpts.vue";
 import LnbModalListOpt from "~/components/modals/LnbModalListOpt.vue";
+import type {EpicListDto} from "~/composables/spacesApi";
 
 const props = defineProps<{
   spaceId: number
@@ -14,7 +15,7 @@ result.sort((a, b) => b.touchedAt.localeCompare(a.touchedAt));
 
 const emit = defineEmits<{
   (e: 'close'): void,
-  (e: 'select', epic: EpicCountDto): void
+  (e: 'select', epic: EpicListDto): void
 }>()
 
 </script>
@@ -27,7 +28,7 @@ const emit = defineEmits<{
       <LnbModalListOpt
         v-for="epic in result"
         :name="epic.name"
-        :sub="epic.statusesCount + ' columns'"
+        sub="''"
         @click="emit('select', epic)">
         <template #avatar>
           <LnbCardAvatar :color="epic.color">

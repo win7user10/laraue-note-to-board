@@ -218,7 +218,6 @@ const deleteCategoryInternal = async () => {
           @click="setCategory(cat.id)">
         <span class="dot" :style="`background:${cat.color}`"></span>
         {{ cat.name }}
-        <span class="nav-tab-count">{{ cat.issuesCount }}</span>
       </div>
       <div v-if="spaceAdditionalData?.canCreateEpics" class="nav-tab-add" :title="t('addEpic')" @click="openCreateCategory">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">

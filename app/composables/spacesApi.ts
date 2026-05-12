@@ -22,12 +22,11 @@ export interface SpaceListDto {
     canUpdate: boolean;
     canDelete: boolean;
 }
-export interface EpicCountDto {
+
+export interface EpicListDto {
     id: number;
     name: string;
     color: string;
-    issuesCount: number;
-    statusesCount: number;
     touchedAt: string;
     isDefault: boolean;
 }
@@ -73,7 +72,7 @@ export const useSpacesApi = () => {
     }
 
     const loadSpaceEpics = (spaceId: number) => {
-        return client<EpicCountDto[]>('/spaces/' + spaceId + '/epics', {
+        return client<EpicListDto[]>('/spaces/' + spaceId + '/epics', {
             method: 'GET'
         });
     }

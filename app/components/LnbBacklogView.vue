@@ -10,7 +10,7 @@ const emits = defineEmits<{
   (e: 'openEdit', message: MessageListDto): void,
 }>()
 
-const { state, dbMessagesCount } = useBoard()
+const { state } = useBoard()
 
 const backlogMessagesResult = computed(() => {
   return state.value.messages.length > 0
@@ -43,10 +43,10 @@ const { t } = useI18n();
       <LnbScrollArea :statusId="statusId">
         <LnbCard
             v-for="msg in backlogMessagesResult?.data"
-            :deleteButton="true"
+            :deleteButton="!!state.currentCategory?.canDeleteIssues"
             :message="msg"
             :key="msg.id"
-            :assignButton="true"
+            :assignButton="!!state.currentCategory?.canUpdateIssues"
             :highlightText="searchString"
             @openDelete="emits('openDelete', $event)"
             @openAssignToCategory="emits('openAssignToCategory', $event)"

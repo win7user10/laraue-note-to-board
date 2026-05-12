@@ -44,6 +44,7 @@ const createSpaceInternal = async (request: CreateSpaceRequest) => {
 const editSpaceInternal = async (request: EditSpaceRequest) => {
   await editSpace(editingSpace.value!.id, request);
   modals.editSpace = false;
+  emits('close')
 }
 
 const editingSpace = ref<SpaceListDto>()
@@ -106,10 +107,10 @@ const deleteSpaceInternal = async () => {
     @edit="editSpaceInternal"
     @close="modals.editSpace = false"/>
   <LnbDeleteSpaceModal
-      v-if="modals.deleteSpace"
-      :space="editingSpace!"
-      @delete="deleteSpaceInternal"
-      @close="modals.deleteSpace = false"/>
+    v-if="modals.deleteSpace"
+    :space="editingSpace!"
+    @delete="deleteSpaceInternal"
+    @close="modals.deleteSpace = false"/>
 </template>
 
 <style scoped>
@@ -117,7 +118,7 @@ const deleteSpaceInternal = async () => {
 .space-popup-add:hover{background:var(--accent-glow)}
 .space-popup-add svg{width:13px;height:13px}
 .space-switcher-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.space-popup-item{display: flex;gap:8px;align-items: center;}
+.space-popup-item{display: flex;gap:8px;align-items: center;height: 22px;}
 .space-popup-item-name{font-size:12px;font-weight:600;color:var(--text);flex:1}
 .space-popup-item-count{font-size:10px;color:var(--text3)}
 .space-popup-wrapper{justify-content: space-between;}

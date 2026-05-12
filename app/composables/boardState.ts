@@ -449,14 +449,14 @@ export const useBoard = () => {
     const createSpace = async (request: CreateSpaceRequest) => {
         const spacesApi = useSpacesApi()
         const spaceId = await spacesApi.createSpace(request)
-        // TODO - We don't know can this user edit or delete space, so needs to request space from BE here
+        const spaceInfo = await spacesApi.getSpace(spaceId)
         state.value.spaces.push({
             id: spaceId,
             name: request.name,
             color: request.color,
             epicsCount: 0,
-            canDelete: true,
-            canUpdate: true,
+            canDelete: spaceInfo.canDelete,
+            canUpdate: spaceInfo.canUpdate,
         })
         showToast(t('spaceCreated'), 'success', request.name)
     }

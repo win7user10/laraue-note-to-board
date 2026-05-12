@@ -332,6 +332,7 @@ const deleteCategoryInternal = async () => {
     :hide-status="(currentCategory?.statuses?.length ?? 0) < 2"
     @edit="editCardInternal"
     @close="closeEditCard"
+    :allowEdit="!!currentCategory?.canUpdateIssues"
     v-if="modal.editCard"/>
 
   <LnbEditCategoryModal

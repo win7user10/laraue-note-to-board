@@ -9,6 +9,7 @@ import LnbModalLabel from "~/components/modals/LnbModalLabel.vue";
 const props = defineProps<{
   id: number,
   hideStatus?: boolean,
+  allowEdit: boolean
 }>()
 
 const { t } = useI18n();
@@ -35,7 +36,7 @@ onMounted(async () => {
 
 <template>
   <LnbModal
-    :applyText="t('save')"
+    :applyText="allowEdit ? t('save') : undefined"
     :title="''"
     @apply="emit('edit', request)"
     @close="emit('close')">
@@ -68,6 +69,7 @@ onMounted(async () => {
     <LnbModalTextarea
       @enter="emit('edit', request)"
       v-model="request.content"
+      :disabled="!allowEdit"
       :placeholder="t('contentExample')"/>
   </LnbModal>
 </template>

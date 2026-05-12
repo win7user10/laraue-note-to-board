@@ -1,15 +1,22 @@
 <script setup lang="ts">
 
-defineProps<{
+const props = defineProps<{
   title: string,
   color?: string,
   columns: Array<{ id: number, name: string, type?: string }>,
   checked: (id: number, type?: string) => boolean,
   inherited: (id: number, type?: string) => boolean,
+  disabled?: (id: number, type?: string) => boolean,
 }>()
 const emits = defineEmits<{
   (e: 'change', id: number, type?: string): void,
 }>()
+
+const disabledInternal = (id: number, type?: string) => {
+  if (!props.disabled)
+    return false;
+  return props.disabled(id, type)
+}
 </script>
 
 <template>
@@ -20,9 +27,9 @@ const emits = defineEmits<{
     </div>
     <div v-for="k in columns" :key="k.id + (k.type ?? '')" class="checkbox-column">
       <input
-        :checked="checked(k.id, k.type) || inherited(k.id, k.type)"
-        :disabled="inherited(k.id, k.type)"
-        :title="inherited(k.id, k.type) ? 'Added automatically' : ''"
+        :checked="!disabledInternal(k.id, k.type) && (checked(k.id, k.type) || inherited(k.id, k.type))"
+        :disabled="disabledInternal(k.id, k.type) || inherited(k.id, k.type)"
+        :title="inherited(k.id, k.type) ? 'Inherited' : disabledInternal(k.id, k.type) ? 'Does not allowed': ''"
         @change="emits('change', k.id, k.type)"
         type="checkbox" class="perm-check"/>
     </div>

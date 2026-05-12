@@ -10,6 +10,8 @@ export interface EditSpaceRequest {
 
 export interface SpaceDto {
     canCreateEpics: boolean;
+    canUpdate: boolean;
+    canDelete: boolean;
 }
 
 export interface SpaceListDto {

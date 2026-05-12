@@ -66,6 +66,7 @@ export interface PermittableEpic {
     id: number;
     name: string;
     color: string;
+    isDefault: boolean;
 }
 
 export const useOrganizationsApi = () => {

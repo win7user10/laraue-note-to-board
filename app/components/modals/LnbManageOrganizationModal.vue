@@ -13,10 +13,9 @@ const members = await getOrganizationMembers();
 const permittableEntities = await getPermittableEntities();
 
 const copyInviteLink = () => {
-
 }
-const revokeInviteLink = () => {
 
+const revokeInviteLink = () => {
 }
 
 const editingMember = ref<OrganizationMember>()

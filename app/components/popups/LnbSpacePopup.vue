@@ -33,7 +33,7 @@ const setSpaceInternal = async (id: number) => {
 
   // update preferences
   await updateSpace(id)
-  emits('close')
+  closePopup()
 }
 
 const createSpaceInternal = async (request: CreateSpaceRequest) => {
@@ -44,7 +44,7 @@ const createSpaceInternal = async (request: CreateSpaceRequest) => {
 const editSpaceInternal = async (request: EditSpaceRequest) => {
   await editSpace(editingSpace.value!.id, request);
   modals.editSpace = false;
-  emits('close')
+  closePopup()
 }
 
 const editingSpace = ref<SpaceListDto>()
@@ -63,6 +63,20 @@ const deleteSpaceInternal = async () => {
   modals.deleteSpace = false;
 }
 
+const closeEditSpace = () => {
+  modals.editSpace = false;
+  closePopup();
+}
+
+const closeDeleteSpace = () => {
+  modals.deleteSpace = false;
+  closePopup();
+}
+
+const closePopup = () => {
+  emits('close')
+}
+
 </script>
 
 <template>
@@ -74,14 +88,14 @@ const deleteSpaceInternal = async () => {
       class="space-popup-wrapper"
       v-for="s in spaces"
       :active="currentSpace?.id === s.id"
-      :key="s.id">
-      <div class="space-popup-item" @click="setSpaceInternal(s.id)">
+      :key="s.id" @click="setSpaceInternal(s.id)">
+      <div class="space-popup-item">
         <div class="space-switcher-dot" :style="`background:${s.color}`"></div>
         <div class="space-popup-item-name">{{s.name}}</div>
       </div>
       <div class="space-popup-item-controls">
-        <LnbIconBtn v-if="s.canUpdate" @click="openEditSpace(s)" :title="t('edit')" icon="edit" icon-size="mini" btn-size="mini" />
-        <LnbIconBtn v-if="s.canDelete" @click="openDeleteSpace(s)" :title="t('delete')" icon="delete" icon-size="mini" btn-size="mini" />
+        <LnbIconBtn v-if="s.canUpdate" @click.stop="openEditSpace(s)" :title="t('edit')" icon="edit" icon-size="mini" btn-size="mini" />
+        <LnbIconBtn v-if="s.canDelete" @click.stop="openDeleteSpace(s)" :title="t('delete')" icon="delete" icon-size="mini" btn-size="mini" />
       </div>
     </LnbPopupItem>
 
@@ -103,22 +117,21 @@ const deleteSpaceInternal = async () => {
     v-if="modals.editSpace"
     :space="editingSpace!"
     @edit="editSpaceInternal"
-    @close="modals.editSpace = false"/>
+    @close="closeEditSpace"/>
   <LnbDeleteSpaceModal
     v-if="modals.deleteSpace"
     :space="editingSpace!"
     @delete="deleteSpaceInternal"
-    @close="modals.deleteSpace = false"/>
+    @close="closeDeleteSpace"/>
 </template>
 
 <style scoped>
-.space-popup-add{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;color:var(--accent);transition:background 0.12s;-webkit-tap-highlight-color:transparent}
+.space-popup-add{display:flex;align-items:center;gap:8px;padding: 8px 10px;border-radius:8px;cursor:pointer;font-size:11px;font-weight:600;color:var(--accent);transition:background 0.12s;-webkit-tap-highlight-color:transparent}
 .space-popup-add:hover{background:var(--accent-glow)}
 .space-popup-add svg{width:13px;height:13px}
 .space-switcher-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.space-popup-item{display: flex;gap:8px;align-items: center;height: 22px;}
+.space-popup-item{display: flex;gap:8px;align-items: center;height: 26px;}
 .space-popup-item-name{font-size:12px;font-weight:600;color:var(--text);flex:1}
-.space-popup-item-count{font-size:10px;color:var(--text3)}
 .space-popup-wrapper{justify-content: space-between;}
 .space-popup-item-controls{display: flex;margin-right: -5px;}
 </style>

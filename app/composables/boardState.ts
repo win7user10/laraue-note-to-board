@@ -14,7 +14,7 @@ export const useBoard = () => {
         categories: [] as EpicListDto[],
         spaces: [] as SpaceListDto[],
         noSpaceEpicsCount: 0,
-        categoryId: null as number | null,
+        epicId: null as number | null,
         currentCategory: undefined as EpicDto | undefined,
         searchString: '',
         openedMedia: [] as MediaInfo[],
@@ -45,7 +45,7 @@ export const useBoard = () => {
 
     const setCategory = (id: number) => {
         state.value.searchString = ''
-        state.value.categoryId = id
+        state.value.epicId = id
     }
 
     const search = async(searchString: string) => {
@@ -58,14 +58,14 @@ export const useBoard = () => {
         if (clearPreviousImmediately)
             state.value.messages = [];
 
-        if (!state.value.categoryId)
+        if (!state.value.epicId)
             return;
 
         if (!state.value.currentCategory?.canViewIssues)
             return;
 
         state.value.messages = await messagesApi.loadBoard(
-            state.value.categoryId,
+            state.value.epicId,
             DefaultPagination.perPage,
             state.value.searchString)
     }
@@ -107,7 +107,7 @@ export const useBoard = () => {
         state.value.categories = await spacesApi.loadSpaceEpics(spaceId.value);
         const firstEpic = state.value.categories[0];
         if (firstEpic)
-            state.value.categoryId = firstEpic.id;
+            state.value.epicId = firstEpic.id;
     }
 
     const categories = computed(() => {
@@ -148,7 +148,7 @@ export const useBoard = () => {
         await reloadColumn(value.statusId, offset ? offset + 1 : DefaultPagination.perPage);
 
         // Update top menu counters
-        const messageCategory = state.value.categories.find(c => c.id === state.value.categoryId)
+        const messageCategory = state.value.categories.find(c => c.id === state.value.epicId)
         if (messageCategory)
             messageCategory.touchedAt = now();
 
@@ -215,11 +215,6 @@ export const useBoard = () => {
         return id;
     }
 
-    const getMessagesByCardId = (cardId: number) => {
-        const card = allCards.value.find(c => c.id === cardId)!;
-        return getMessagesByStatusId(card.statusId)!
-    }
-
     const editCard = async (id: number, value: EditCardRequest) => {
         const messagesApi = useMessagesApi()
         await messagesApi.editMessage(id, value);
@@ -227,7 +222,7 @@ export const useBoard = () => {
         if (card)
             card.content = value.content;
 
-        const category = state.value.categories.find(c => c.id === card?.categoryId)
+        const category = state.value.categories.find(c => c.id === card?.epicId)
         if (category)
             category.touchedAt = now();
 
@@ -254,8 +249,8 @@ export const useBoard = () => {
 
     const editCategory = async (request: EditCategoryRequest) => {
         const categoriesApi = useCategoriesApi()
-        await categoriesApi.editCategory(state.value.categoryId!, request)
-        const category = state.value.categories.find(c => c.id === state.value.categoryId)!
+        await categoriesApi.editCategory(state.value.epicId!, request)
+        const category = state.value.categories.find(c => c.id === state.value.epicId)!
         category.color = request.color;
         category.name = request.name;
         category.touchedAt = now();
@@ -269,11 +264,11 @@ export const useBoard = () => {
 
     const deleteCategory = async () => {
         const categoriesApi = useCategoriesApi()
-        await categoriesApi.deleteCategory(state.value.categoryId!)
-        const index = state.value.categories.findIndex(c => c.id === state.value.categoryId)
+        await categoriesApi.deleteCategory(state.value.epicId!)
+        const index = state.value.categories.findIndex(c => c.id === state.value.epicId)
         state.value.categories.splice(index, 1);
         state.value.currentCategory = undefined;
-        state.value.categoryId = 0;
+        state.value.epicId = 0;
 
         showToast(t('boardDeleted'), 'danger');
     }
@@ -344,8 +339,8 @@ export const useBoard = () => {
     const reloadCategory = async () => {
         state.value.currentCategory = undefined;
         const categoriesApi = useCategoriesApi()
-        if (state.value.categoryId)
-            state.value.currentCategory = await categoriesApi.loadCategory(state.value.categoryId)
+        if (state.value.epicId)
+            state.value.currentCategory = await categoriesApi.loadCategory(state.value.epicId)
     }
 
     const statuses = computed(() => {
@@ -363,7 +358,7 @@ export const useBoard = () => {
             .reduce((acc, x) => acc + x, 0)
     })
 
-    const moveCard = async (cardId: number, spaceId: number, categoryId: number, statusId: number) => {
+    const moveCard = async (cardId: number, spaceId: number, epicId: number, statusId: number) => {
         const card = allCards.value.find(m => m.id === cardId);
         if (!card) return;
 
@@ -385,12 +380,12 @@ export const useBoard = () => {
         }
 
         // update epics
-        const newCategory = state.value.categories.find(c => c.id === categoryId)
+        const newCategory = state.value.categories.find(c => c.id === epicId)
         if (newCategory)
             newCategory.touchedAt = now();
 
         // update card properties
-        card.categoryId = categoryId!;
+        card.epicId = epicId!;
         card.statusId = statusId;
 
         // raise notification
@@ -416,7 +411,7 @@ export const useBoard = () => {
 
         const categoriesApi = useCategoriesApi()
         await categoriesApi.reorderStatuses(
-            state.value.categoryId!,
+            state.value.epicId!,
             Object.fromEntries(newStatuses.map(item => [item.id, item.sortOrder])))
 
         cat.statuses = newStatuses;
@@ -467,7 +462,7 @@ export const useBoard = () => {
             const selectedSpace = state.value.spaces[0]
             if (selectedSpace) {
                 updateSpaceId(selectedSpace.id)
-                state.value.categoryId = selectedSpace.id;
+                state.value.epicId = selectedSpace.id;
                 await reloadBoard(false)
                 await reloadCategories()
 

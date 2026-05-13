@@ -3,7 +3,7 @@ import {useStatusesClient} from "~/composables/statusesClient";
 export interface CreateStatusRequest {
     name: string;
     color: string;
-    categoryId: number;
+    epicId: number;
 }
 
 export interface EditStatusRequest {

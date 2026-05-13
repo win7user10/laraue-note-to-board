@@ -11,30 +11,34 @@ import LnbSearchModal from "~/components/modals/LnbSearchModal.vue";
 import LnbMoveCardModal from "~/components/modals/LnbMoveCardModal.vue";
 import LnbCreateCardModal from "~/components/modals/LnbCreateCardModal.vue";
 import LnbDeleteCardModal from "~/components/modals/LnbDeleteCardModal.vue";
-import LnbSpacePopup from "~/components/popups/LnbSpacePopup.vue";
 import LnbNavSortPopup from "~/components/popups/LnbNavSortPopup.vue";
 import LnbEmptyState from "~/components/LnbEmptyState.vue";
 import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
 import LnbDeleteCategoryModal from "~/components/modals/LnbDeleteCategoryModal.vue";
 import LnbEditCategoryModal from "~/components/modals/LnbEditCategoryModal.vue";
+import LnbTopbar from "~/components/LnbTopbar.vue";
 
 const { setCategory, state, anySpaceAvailable } = useBoard()
+const { appState } = useAppState()
 const { getSpace } = useSpacesApi()
-const isBacklog = computed(() => state.value.categories.find(c => state.value.categoryId == c.id)?.isDefault);
-const categoryId = computed(() => state.value.categoryId);
+const isBacklog = computed(() => state.value.categories.find(c => state.value.epicId == c.id)?.isDefault);
+const epicId = computed(() => state.value.epicId);
 const currentCategory = computed(() => state.value.currentCategory);
 const defaultStatus = computed(() => currentCategory.value?.statuses[0]);
 
 const { t } = useI18n();
 const board = useBoard();
 
-onMounted(async () => {
+onMounted(() => fullReload());
+watch(() => appState.value.organization!.id, () => fullReload())
+
+const fullReload = async () => {
   await board.reloadSpaces();
   await board.reloadCategories();
   await board.reloadBoard(true);
-});
+}
 
-watch(() => state.value.categoryId, async () => {
+watch(() => state.value.epicId, async () => {
   await board.reloadCategory();
   await board.reloadBoard(true);
 })
@@ -65,7 +69,6 @@ const modal = reactive({
 });
 
 const navSortPopupOpen = ref(false);
-const spacePopupOpen = ref(false);
 
 const openCreateCategory = () => {
   modal.createCategory = true;
@@ -122,8 +125,8 @@ const closeAssignToCategory = () => {
   modal.assign = false;
 }
 
-const assignToCategory = async (categoryId: number) => {
-  await board.moveCard(assignMsg.value!.id, board.currentSpace.value!.id, categoryId)
+const assignToCategory = async (epicId: number) => {
+  await board.moveCard(assignMsg.value!.id, board.currentSpace.value!.id, epicId)
   modal.assign = false;
 }
 
@@ -154,9 +157,6 @@ const closeFab = () => {
 }
 
 const fabOpen = ref(false);
-const currentSpace = board.currentSpace;
-
-
 
 const openEditCategory = () => {
   modal.editCategory = true;
@@ -187,24 +187,7 @@ const deleteCategoryInternal = async () => {
 </script>
 
 <template>
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <LnbUserAvatar />
-
-    <!-- Space switcher — only visible when spaces exist -->
-    <div class="space-switcher-wrap" v-if="anySpaceAvailable">
-      <div class="space-switcher" @click.stop="spacePopupOpen =! spacePopupOpen">
-        <div class="space-switcher-dot" :style="`background:${currentSpace?.color||'var(--text3)'}`"></div>
-        <div class="space-switcher-name">{{currentSpace?.name}}</div>
-        <div class="space-switcher-chevron"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3.5l3 3 3-3"/></svg></div>
-      </div>
-
-      <LnbSpacePopup
-        v-if="spacePopupOpen"
-        @close="spacePopupOpen = false"/>
-    </div>
-  </div>
-
+  <LnbTopbar />
   <LnbNavLoader />
 
   <!-- NAV TABS -->
@@ -213,8 +196,8 @@ const deleteCategoryInternal = async () => {
       <div
           v-for="cat in categories"
           class="nav-tab"
-          :class="{active: categoryId === cat.id}"
-          :style="categoryId === cat.id ? `--dot-color:${cat.color}` : ''"
+          :class="{active: epicId === cat.id}"
+          :style="epicId === cat.id ? `--dot-color:${cat.color}` : ''"
           @click="setCategory(cat.id)">
         <span class="dot" :style="`background:${cat.color}`"></span>
         {{ cat.name }}
@@ -372,18 +355,6 @@ const deleteCategoryInternal = async () => {
 </template>
 
 <style scoped>
-/* ── TOP BAR ── */
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: calc(10px + var(--safe-top)) calc(14px + var(--safe-right)) 10px calc(14px + var(--safe-left));
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  z-index: 10;
-  justify-content: center;
-}
 
 /* ── NAV TABS ── */
 .nav-tabs-wrap{display:flex;align-items:center;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
@@ -466,13 +437,4 @@ const deleteCategoryInternal = async () => {
 .nav-ctrl-btn{width:26px;height:26px;border-radius:var(--radius-sm);border:1px solid transparent;background:transparent;color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .nav-ctrl-btn:hover,.nav-ctrl-btn.active{background:var(--surface3);border-color:var(--border);color:var(--text)}
 .nav-ctrl-btn svg{width:13px;height:13px}
-
-/* SPACE SWITCHER */
-.space-switcher{display:flex;align-items:center;gap:5px;padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--surface3);cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;max-width: 200px;}
-.space-switcher:hover{border-color:var(--border2);background:var(--surface2)}
-.space-switcher-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.space-switcher-name{font-size:11px;font-weight:700;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.space-switcher-chevron{color:var(--text3);flex-shrink:0}
-.space-switcher-chevron svg{width:10px;height:10px}
-.space-switcher-wrap{position:relative;display:flex;flex-direction:column;gap:1px}
 </style>

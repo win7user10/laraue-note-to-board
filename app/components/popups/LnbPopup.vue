@@ -15,7 +15,7 @@ const emits = defineEmits<{
       <slot></slot>
     </div>
   </transition>
-  <div style="position:fixed;inset:0;z-index:89" @click="emits('close')"></div>
+  <div style="position:fixed;inset:0;z-index:89;cursor:default" @click="emits('close')"></div>
 </template>
 
 <style scoped>

@@ -85,5 +85,6 @@ export const useInitUser = () => {
         tryAuthOrganizationWithStoredBearer,
         logout,
         logoutOrganization,
+        setOrganization,
     }
 }

@@ -4,7 +4,7 @@ export interface MessageListDto {
     sender?: string;
     senderInitial?: string;
     content?: string;
-    categoryId: number;
+    epicId: number;
     statusId: number;
     color: string;
     senderColor: string;
@@ -93,13 +93,13 @@ export const useMessagesApi = () => {
     }
 
     const loadBoard = (
-        categoryId: number,
+        epicId: number,
         take: number,
         searchString: string) => {
         return client<ColumnMessages[]>('/issues/board', {
             method: 'GET',
             query: {
-                epicId: categoryId ?? undefined,
+                epicId: epicId ?? undefined,
                 take: take,
                 searchString: searchString,
             }

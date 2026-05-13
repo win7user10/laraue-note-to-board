@@ -2,8 +2,7 @@
   import type {MessageListDto} from "~/composables/messagesApi";
   import LnbModal from "~/components/modals/LnbModal.vue";
   import LnbModalLabel from "~/components/modals/LnbModalLabel.vue";
-  import LnbModalTextarea from "~/components/modals/LnbModalTextarea.vue";
-  import type {CategoryCountDto, CategoryCountResult} from "~/composables/categoriesApi";
+  import type {CategoryCountDto} from "~/composables/categoriesApi";
   import LnbSelectSpaceModal from "~/components/modals/LnbSelectSpaceModal.vue";
   import LnbSelectEpicModal from "~/components/modals/LnbSelectEpicModal.vue";
   import LnbSelectStatusModal from "~/components/modals/LnbSelectStatusModal.vue";
@@ -14,7 +13,7 @@
 
   const emits = defineEmits<{
     (e: 'close'): void,
-    (e: 'assignToCategory', categoryId: number): void,
+    (e: 'assignToCategory', epicId: number): void,
   }>()
 
   const { t } = useI18n();

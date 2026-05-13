@@ -68,8 +68,8 @@ const cardsByStatus = computed(() => {
   return Object.fromEntries(board.state.value.messages.map(x => [x.statusId, x.items]));
 })
 
-const onCardMoved = async (cardId: string, categoryId: number, statusId: number) => {
-  await board.moveCard(Number(cardId), board.currentSpace.value!.id, categoryId, statusId);
+const onCardMoved = async (cardId: string, epicId: number, statusId: number) => {
+  await board.moveCard(Number(cardId), board.currentSpace.value!.id, epicId, statusId);
 };
 
 const onColMoved = async (statusId: string, newSortOrder: number) => {
@@ -130,7 +130,7 @@ const searchString = computed(() => board.state.value.searchString);
             iconSize="small" />
         </div>
         <LnbScrollArea :statusId="status.id">
-          <div class="col-drag-inner" v-sortable="{ catId: board.state.value.categoryId, statusId: status?.id, onCardMoved }">
+          <div class="col-drag-inner" v-sortable="{ catId: board.state.value.epicId, statusId: status?.id, onCardMoved }">
             <LnbCard
                 v-for="msg in cardsByStatus[status.id]?.data"
                 @openDelete="emits('openDelete', msg)"

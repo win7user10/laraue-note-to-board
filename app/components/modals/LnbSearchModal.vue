@@ -70,16 +70,16 @@ const { t } = useI18n();
       :placeholder="t('searchPlaceholder')"/>
     <div class="search-filters">
       <div class="filter-chip"
-        :class="{active:request.categoryId === null}"
-        @click="request.categoryId = null">
+        :class="{active:request.epicId === null}"
+        @click="request.epicId = null">
         All
       </div>
       <div
         v-for="cat in categories"
         :key="'f' + cat.id"
         class="filter-chip"
-        :class="{active: request.categoryId === cat.id}"
-        @click="request.categoryId = cat.id">
+        :class="{active: request.epicId === cat.id}"
+        @click="request.epicId = cat.id">
         <span :style="`color:${cat.color}`">● </span>{{cat.name}}
       </div>
     </div>

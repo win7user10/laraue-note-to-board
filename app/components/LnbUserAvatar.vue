@@ -44,7 +44,7 @@
     <div class="user-popup-handle">@{{currentUser.username}}</div>
     <div class="user-popup-divider"></div>
     <div
-      v-if="hasFlag(currentOrganization.adminAccessLevel, AdminAccessLevel.ManagePermissions)"
+      v-if="currentOrganization.canManagePermissions"
       class="user-popup-btn"
       style="color: var(--text2);"
       @click="modals.manage = true">

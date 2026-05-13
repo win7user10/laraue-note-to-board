@@ -4,9 +4,10 @@ export interface OrganizationDto {
     id: number;
     name: string;
     color: string;
-    spacesCount?: number;
     canCreateSpaces: boolean;
-    adminAccessLevel: AdminAccessLevel;
+    canManagePermissions: boolean;
+    canUpdate: boolean;
+    canDelete: boolean;
     isPersonal: boolean;
 }
 
@@ -28,7 +29,7 @@ export interface OrganizationMember {
     color: string;
     initials?: string;
     isOwner: boolean;
-    accessLevel: ChildrenAccessLevel;
+    adminAccessLevel: AdminAccessLevel;
 }
 
 export interface UserPermissions {

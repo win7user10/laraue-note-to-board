@@ -97,5 +97,17 @@
   "editOrganization": "Edit Organization",
   "editOrganizationTitle": "Edit Organization",
   "deleteOrganizationTitle": "Delete Organization?",
-  "deleteOrganizationConfirm": "The organization and it Spaces, Epics, Cards will be deleted permanently."
+  "deleteOrganizationConfirm": "The organization and it Spaces, Epics, Cards will be deleted permanently.",
+  "noOrgWithSuchCode": "No organization with this code found",
+  "userIsAlreadyMember": "User is already a member of this organization",
+  "joinOrganization": "Join organization",
+  "askOwner": "Ask the organization owner to share their invite code",
+  "enterInviteCode": "Enter invite code",
+  "joinWithCode": "Join with invite code",
+  "chooseWorkspace": "Choose workspace",
+  "selectWhereYouWantToWork": "Select where you want to work",
+  "yourPrivateBoards": "Your private boards",
+  "spaces": "spaces",
+  "or": "or",
+  "exampleInviteCode": "e.g. A8F3K2P9"
 }

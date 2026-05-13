@@ -33,7 +33,7 @@ export const useUtils = () => {
     const getRoleKey = (member: OrganizationMember) => {
         if (member.isOwner)
             return 'owner'
-        if (member.accessLevel === ChildrenAccessLevel.Manage)
+        if (member.adminAccessLevel > AdminAccessLevel.None)
             return 'admin'
         return 'member'
     }

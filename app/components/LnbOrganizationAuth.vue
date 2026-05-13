@@ -10,7 +10,7 @@ import type { FetchError } from 'ofetch';
 const { appState, setOrganization } = useAppState()
 const { setOrganizationToken } = useLocalStorageUtils()
 const { getOrganizations, createOrganization, editOrganization, deleteOrganization, login, join } = useOrganizationsApi()
-const { hasFlag } = useUtils()
+const { t } = useI18n()
 const authUser = appState.value.user
 
 const organizations = ref<OrganizationDto[]>([]);
@@ -38,7 +38,9 @@ const submitJoinCode = async () => {
   } catch (_error) {
     const error = _error as FetchError;
     if (error.status === 404)
-      joinCodeError.value = "No organization with this code found";
+      joinCodeError.value = t('noOrgWithSuchCode');
+    if (error.status === 406)
+      joinCodeError.value = t('userIsAlreadyMember');
   }
 }
 
@@ -62,12 +64,12 @@ const createOrganizationInternal = async (request: CreateOrganizationRequest) =>
   const id = await createOrganization(request)
   organizations.value.push({
     id: id,
-    spacesCount: 1,
     name: request.name,
     color: request.color,
-    adminAccessLevel: AdminAccessLevel.All,
     isPersonal: false,
-    canCreateSpaces: true
+    canCreateSpaces: true,
+    canUpdate: true,
+    canDelete: true,
   })
   modals.createOrganization = false;
 }
@@ -111,8 +113,8 @@ const loginOrg = async (id: number) => {
             <div style="font-size:11px;color:var(--text3)">@{{authUser?.username}}</div>
           </div>
         </div>
-        <div class="org-select-title">Choose workspace</div>
-        <div class="org-select-sub">Select where you want to work</div>
+        <div class="org-select-title">{{ t('chooseWorkspace') }}</div>
+        <div class="org-select-sub">{{ t('selectWhereYouWantToWork') }}</div>
       </div>
       <div class="org-select-body">
         <!-- User's organizations -->
@@ -121,14 +123,21 @@ const loginOrg = async (id: number) => {
             {{ org.isPersonal ? authUser?.initials?.toLocaleUpperCase() : org.name.toLocaleUpperCase().slice(0, 2) }}
           </div>
           <div class="org-item-info" @click="loginOrg(org.id)" style="cursor:pointer">
-            <div class="org-item-name">{{ org.isPersonal ? 'Personal' : org.name}}</div>
-            <div class="org-item-sub">{{ org.isPersonal ? 'Your private boards' : org.spacesCount + ' spaces' }}</div>
+            <div class="org-item-name">{{ org.name }}</div>
+            <div class="org-item-sub">{{ org.isPersonal ? t('yourPrivateBoards') : '' }}</div>
           </div>
           <div class="org-item-actions">
-            <div class="org-item-btn" title="Edit" @click.stop="openEditOrganization(org)" v-if="hasFlag(org.adminAccessLevel, AdminAccessLevel.UpdateOrganization)">
+            <div class="org-item-btn"
+              title="Edit"
+              @click.stop="openEditOrganization(org)"
+              v-if="org.canUpdate">
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M11.5 2.5l2 2L5 13H3v-2L11.5 2.5z"/></svg>
             </div>
-            <div class="org-item-btn danger" title="Delete" @click.stop="openDeleteOrganization(org)" v-if="hasFlag(org.adminAccessLevel, AdminAccessLevel.DeleteOrganization)">
+            <div
+              class="org-item-btn danger"
+              title="Delete"
+              @click.stop="openDeleteOrganization(org)"
+              v-if="org.canDelete">
               <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 4h10M6 4V3h4v1M5 4l.5 9h5l.5-9"/></svg>
             </div>
           </div>
@@ -136,31 +145,42 @@ const loginOrg = async (id: number) => {
         <!-- Create new org -->
         <div class="org-item" style="border-style:dashed;justify-content:center;gap:8px" @click="openCreateOrganization">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:15px;height:15px;color:var(--text3)"><path d="M8 3v10M3 8h10"/></svg>
-          <span style="font-size:13px;font-weight:600;color:var(--text3)">New organization</span>
+          <span style="font-size:13px;font-weight:600;color:var(--text3)">{{ t('newOrganization') }}</span>
         </div>
 
         <!-- Divider -->
         <div style="display:flex;align-items:center;gap:8px;margin:4px 0">
           <div style="flex:1;height:1px;background:var(--border)"></div>
-          <div style="font-size:10px;color:var(--text3);font-weight:600">or</div>
+          <div style="font-size:10px;color:var(--text3);font-weight:600">
+            {{ t('or') }}
+          </div>
           <div style="flex:1;height:1px;background:var(--border)"></div>
         </div>
 
         <!-- Join by code -->
         <template v-if="!joinCodeOpen">
           <div class="org-item" style="border-style:dashed;justify-content:center;gap:8px" @click="joinCodeOpen=true;joinCode='';joinCodeError=''">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:15px;height:15px;color:var(--text3)"><path d="M3 6h10M3 10h10M6 3v10M10 3v10" opacity="0.5"/><rect x="2" y="2" width="12" height="12" rx="2"/></svg>
-            <span style="font-size:13px;font-weight:600;color:var(--text3)">Join with invite code</span>
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:15px;height:15px;color:var(--text3)">
+              <path d="M3 6h10M3 10h10M6 3v10M10 3v10" opacity="0.5"/>
+              <rect x="2" y="2" width="12" height="12" rx="2"/>
+            </svg>
+            <span style="font-size:13px;font-weight:600;color:var(--text3)">
+              {{ t('joinWithCode') }}
+            </span>
           </div>
         </template>
         <template v-else>
           <div style="background:var(--surface3);border:1px solid var(--border);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px">
-            <div style="font-size:12px;font-weight:700;color:var(--text)">Enter invite code</div>
-            <div style="font-size:11px;color:var(--text3)">Ask the organization owner to share their invite link or code</div>
+            <div style="font-size:12px;font-weight:700;color:var(--text)">
+              {{ t('enterInviteCode') }}
+            </div>
+            <div style="font-size:11px;color:var(--text3)">
+              {{ t('askOwner') }}
+            </div>
             <input
                 class="auth-input"
                 v-model="joinCode"
-                placeholder="e.g. A8F3K2P9"
+                :placeholder="t('exampleInviteCode')"
                 style="text-transform:uppercase;letter-spacing:2px;font-family:'JetBrains Mono',monospace;margin-bottom:0;font-size:14px"
                 @keyup.enter="submitJoinCode"
                 @keyup.escape="joinCodeOpen=false"
@@ -168,11 +188,11 @@ const loginOrg = async (id: number) => {
             <div v-if="joinCodeError" style="font-size:11px;color:var(--red)">{{ joinCodeError }}</div>
             <div style="display:flex;gap:6px">
               <LnbButton
-                name="Cancel"
+                :name="t('cancel')"
                 type="ghost"
                 @click="joinCodeOpen=false"/>
               <LnbButton
-                name="Join organization"
+                :name="t('joinOrganization')"
                 type="primary"
                 @click="submitJoinCode"/>
             </div>

@@ -37,7 +37,7 @@ const emit = defineEmits<{
 <template>
   <LnbModal
     title="My Organization"
-    :subtitle="organization?.name + ' · ' + organization?.spacesCount + ' spaces'"
+    :subtitle="organization?.name"
     @close="emit('close')">
     <!-- Invite link card -->
     <div class="invite-card">

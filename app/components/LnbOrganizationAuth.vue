@@ -6,9 +6,11 @@ import LnbEditOrganizationModal from "~/components/modals/LnbEditOrganizationMod
 import LnbDeleteOrganizationModal from "~/components/modals/LnbDeleteOrganizationModal.vue";
 import LnbButton from "~/components/LnbButton.vue";
 import type { FetchError } from 'ofetch';
+import LnbElementWithHelpLink from "~/components/modals/LnbElementWithHelpLink.vue";
 
 const { appState, setOrganization } = useAppState()
 const { setOrganizationToken } = useLocalStorageUtils()
+const { getDocumentationLink } = useUtils()
 const { getOrganizations, createOrganization, editOrganization, deleteOrganization, login, join } = useOrganizationsApi()
 const { t } = useI18n()
 const authUser = appState.value.user
@@ -70,6 +72,7 @@ const createOrganizationInternal = async (request: CreateOrganizationRequest) =>
     canCreateSpaces: true,
     canUpdate: true,
     canDelete: true,
+    canManage: true,
   })
   modals.createOrganization = false;
 }
@@ -113,16 +116,22 @@ const loginOrg = async (id: number) => {
             <div style="font-size:11px;color:var(--text3)">@{{authUser?.username}}</div>
           </div>
         </div>
-        <div class="org-select-title">{{ t('chooseWorkspace') }}</div>
+        <LnbElementWithHelpLink
+          :linkTitle="t('learnAboutOrganizations')"
+          :linkHref="getDocumentationLink('/concepts/organizations')">
+          <div class="org-select-title">
+            {{ t('chooseWorkspace') }}
+          </div>
+        </LnbElementWithHelpLink>
         <div class="org-select-sub">{{ t('selectWhereYouWantToWork') }}</div>
       </div>
       <div class="org-select-body">
         <!-- User's organizations -->
-        <div v-for="org in organizations" :key="org.id" class="org-item">
+        <div v-for="org in organizations" :key="org.id" class="org-item" @click="loginOrg(org.id)">
           <div class="org-item-avatar" :style="`background:${org.color}`">
             {{ org.isPersonal ? authUser?.initials?.toLocaleUpperCase() : org.name.toLocaleUpperCase().slice(0, 2) }}
           </div>
-          <div class="org-item-info" @click="loginOrg(org.id)" style="cursor:pointer">
+          <div class="org-item-info" style="cursor:pointer">
             <div class="org-item-name">{{ org.name }}</div>
             <div class="org-item-sub">{{ org.isPersonal ? t('yourPrivateBoards') : '' }}</div>
           </div>

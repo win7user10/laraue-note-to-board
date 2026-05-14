@@ -1,5 +1,8 @@
 export const useUtils = () => {
     const messagesFileApi = useRuntimeConfig().public.messagesBaseAddress + 'telegram-files/';
+    const laraueUrl = useRuntimeConfig().public.laraueUrl;
+    const documentationPath = useRuntimeConfig().public.documentationPath;
+
     const dateFormatter = new Intl.DateTimeFormat(undefined, {
         month: '2-digit',
         day: '2-digit',
@@ -50,6 +53,12 @@ export const useUtils = () => {
         return (currentValue & ~valueToAdd) as T;
     }
 
+    const getDocumentationLink = (relativeUrl: string) => {
+        const { locale } = useI18n();
+        const url = `${laraueUrl}${locale.value === 'ru' ? '/ru' : ''}${documentationPath}${relativeUrl}`;
+        return url;
+    }
+
     return {
         formatDate,
         getImageUrl,
@@ -58,5 +67,6 @@ export const useUtils = () => {
         hasFlag,
         addFlag,
         deleteFlag,
+        getDocumentationLink,
     }
 }

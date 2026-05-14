@@ -5,7 +5,7 @@ export interface OrganizationDto {
     name: string;
     color: string;
     canCreateSpaces: boolean;
-    canManagePermissions: boolean;
+    canManage: boolean;
     canUpdate: boolean;
     canDelete: boolean;
     isPersonal: boolean;
@@ -146,6 +146,27 @@ export const useOrganizationsApi = () => {
         });
     }
 
+    const getJoinCode = () => {
+        const organizationsClient = useOrganizationsOrganizationClient()
+        return organizationsClient<string>('/organizations/join-code', {
+            method: 'GET'
+        });
+    }
+
+    const regenerateJoinCode = () => {
+        const organizationsClient = useOrganizationsOrganizationClient()
+        return organizationsClient<string>('/organizations/regenerate-join-code', {
+            method: 'POST'
+        });
+    }
+
+    const revokeAccess = (organizationUserId: number) => {
+        const organizationsClient = useOrganizationsOrganizationClient()
+        return organizationsClient<PermittableSpace[]>('/organizations/revoke-access/' + organizationUserId, {
+            method: 'POST'
+        });
+    }
+
     const join = (code: string) => {
         return client('/organizations/join/' + code, {
             method: 'POST'
@@ -164,5 +185,8 @@ export const useOrganizationsApi = () => {
         getPermittableEntities,
         setUserPermissions,
         join,
+        getJoinCode,
+        regenerateJoinCode,
+        revokeAccess,
     }
 }

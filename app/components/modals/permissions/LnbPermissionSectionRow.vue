@@ -17,6 +17,8 @@ const disabledInternal = (id: number, type?: string) => {
     return false;
   return props.disabled(id, type)
 }
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -29,7 +31,7 @@ const disabledInternal = (id: number, type?: string) => {
       <input
         :checked="!disabledInternal(k.id, k.type) && (checked(k.id, k.type) || inherited(k.id, k.type))"
         :disabled="disabledInternal(k.id, k.type) || inherited(k.id, k.type)"
-        :title="inherited(k.id, k.type) ? 'Inherited' : disabledInternal(k.id, k.type) ? 'Does not allowed': ''"
+        :title="disabledInternal(k.id, k.type) ? t('notAllowed') : inherited(k.id, k.type) ? t('inherited') : ''"
         @change="emits('change', k.id, k.type)"
         type="checkbox" class="perm-check"/>
     </div>

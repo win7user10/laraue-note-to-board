@@ -3,57 +3,97 @@ import LnbModal from "~/components/modals/LnbModal.vue";
 import LnbModalLabel from "~/components/modals/LnbModalLabel.vue";
 import LnbManagePermissionsModal from "~/components/modals/LnbManagePermissionsModal.vue";
 import type {UserPermissions} from "~/composables/organizationsApi";
-const { appState } = useAppState()
+import LnbRevokeAccessModal from "~/components/modals/LnbRevokeAccessModal.vue";
+const { appState, showToast } = useAppState()
 const { getRoleKey } = useUtils()
-const { getOrganizationMembers, getPermittableEntities, setUserPermissions } = useOrganizationsApi()
+const { getOrganizationMembers, getPermittableEntities, setUserPermissions, getJoinCode, regenerateJoinCode, revokeAccess } = useOrganizationsApi()
 const organization = computed(() => appState.value.organization)
-const inviteLink = "https://invite.link/123a1fa2"
 
-const members = await getOrganizationMembers();
+const members = ref(await getOrganizationMembers());
 const permittableEntities = await getPermittableEntities();
+const joinCode = ref(await getJoinCode())
 
 const copyInviteLink = () => {
+  navigator.clipboard?.writeText(joinCode.value);
+  showToast(t('inviteCodeCopied'), 'success');
 }
 
-const revokeInviteLink = () => {
+const regenerateLink = async () => {
+  joinCode.value = await regenerateJoinCode();
+  showToast(t('inviteCodeRegenerated'), 'success');
 }
+
+const modals = reactive({
+  editPermissions: false,
+  revokeAccess: false,
+})
 
 const editingMember = ref<OrganizationMember>()
-const editUserPermissions = (member: OrganizationMember) => {
+const openEditPermissions = (member: OrganizationMember) => {
+  modals.editPermissions = true
   editingMember.value = member
 }
 
 const updateUserPermissions = async (value: UserPermissions) => {
   await setUserPermissions(editingMember.value!.organizationUserId, value)
+  modals.editPermissions = false
   editingMember.value = undefined;
+}
+
+const openRevokeAccess = (member: OrganizationMember) => {
+  editingMember.value = member
+  modals.revokeAccess = true
+}
+
+const revokeAccessInternal = async () => {
+  const id = editingMember.value!.organizationUserId;
+  await revokeAccess(id)
+
+  const memberIndex = members.value.findIndex(m => m.organizationUserId === id)
+  members.value.splice(memberIndex, 1)
+
+  modals.revokeAccess = false
+  showToast(t('accessRevoked'), 'danger');
 }
 
 const emit = defineEmits<{
   (e: 'close'): void,
 }>()
 
+const { t } = useI18n();
+
 </script>
 
 <template>
   <LnbModal
-    title="My Organization"
+    :title="t('manageOrganization')"
     :subtitle="organization?.name"
     @close="emit('close')">
     <!-- Invite link card -->
-    <div class="invite-card">
-      <div class="invite-card-label">Invite link</div>
+    <div class="invite-card" v-if="joinCode">
+      <div class="invite-card-label">
+        {{ t('inviteCode') }}
+      </div>
       <div class="invite-link-row">
-        <div class="invite-link-val">{{inviteLink}}</div>
-        <div class="invite-link-btn" @click="copyInviteLink">Copy</div>
+        <div class="invite-link-val">{{ joinCode }}</div>
+        <div class="invite-link-btn" @click="copyInviteLink">
+          {{ t('copy') }}
+        </div>
       </div>
       <div class="invite-link-actions">
-        <span class="invite-link-action" @click="copyInviteLink">📋 Copy link</span>
+        <span class="invite-link-action" @click="copyInviteLink">
+          📋 {{ t('copyCode') }}
+        </span>
         <span style="color:var(--border2);margin:0 4px">·</span>
-        <span class="invite-link-action danger" @click="revokeInviteLink">🔄 Regenerate</span>
+        <span class="invite-link-action danger" @click="regenerateLink">
+          🔄 {{ t('regenerate') }}
+        </span>
       </div>
     </div>
     <!-- Member list -->
-    <LnbModalLabel>Members</LnbModalLabel>
+    <LnbModalLabel>
+      {{ t('members') }}
+    </LnbModalLabel>
     <div v-for="m in members" :key="m.organizationUserId" class="member-row">
       <LnbCardAvatar :color="m.color">
         {{ m.initials?.toLocaleUpperCase() }}
@@ -66,14 +106,14 @@ const emit = defineEmits<{
         {{ getRoleKey(m) }}
       </div>
       <div class="member-actions">
-        <div class="member-action-btn" v-if="!m.isOwner" title="Edit permissions" @click="editUserPermissions(m)">
+        <div class="member-action-btn" v-if="!m.isOwner" title="Edit permissions" @click="openEditPermissions(m)">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <rect x="2" y="11" width="3" height="3" rx="0.5"/>
             <rect x="6.5" y="6" width="3" height="8" rx="0.5"/>
             <rect x="11" y="2" width="3" height="12" rx="0.5"/>
           </svg>
         </div>
-        <div class="member-action-btn danger" v-if="!m.isOwner" title="Revoke access">
+        <div class="member-action-btn danger" v-if="!m.isOwner" title="Revoke access" @click="openRevokeAccess(m)">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M3 8h10M9 4l4 4-4 4"/><path d="M6 3H3v10h3" opacity=".4"/>
           </svg>
@@ -82,11 +122,15 @@ const emit = defineEmits<{
     </div>
   </LnbModal>
   <LnbManagePermissionsModal
-    v-if="editingMember"
-    @close="editingMember = undefined"
+    v-if="modals.editPermissions"
+    @close="modals.editPermissions = false"
     @update="updateUserPermissions"
     :permittableEntities="permittableEntities"
     :member="editingMember!" />
+  <LnbRevokeAccessModal
+    v-if="modals.revokeAccess"
+    @close="modals.revokeAccess = false"
+    @revoke="revokeAccessInternal" />
 </template>
 
 <style scoped>
@@ -97,7 +141,7 @@ const emit = defineEmits<{
 .invite-link-val{flex:1;font-size:11px;font-family:'JetBrains Mono',monospace;color:var(--accent);background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:7px 10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .invite-link-btn{padding:7px 12px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);font-size:11px;font-weight:700;color:var(--text2);cursor:pointer;white-space:nowrap;transition:all 0.15s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
 .invite-link-btn:hover{border-color:var(--accent);color:var(--accent)}
-.invite-link-actions{display:flex;gap:6px;margin-top:8px}
+.invite-link-actions{display:flex;gap:6px;margin-top:8px;align-items: center;}
 .invite-link-action{font-size:11px;font-weight:600;color:var(--text3);cursor:pointer;transition:color 0.12s;-webkit-tap-highlight-color:transparent}
 .invite-link-action:hover{color:var(--text)}
 .invite-link-action.danger:hover{color:var(--red)}

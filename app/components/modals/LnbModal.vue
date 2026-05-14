@@ -74,8 +74,8 @@
               type="primary"/>
 
           </div>
-          <div class="modal-loader" v-if="isLoading">
-            <LnbNavLoader />
+          <div class="modal-loader">
+            <LnbNavLoader v-if="isLoading" />
           </div>
         </div>
       </div>

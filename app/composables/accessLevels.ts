@@ -1,9 +1,8 @@
 export enum AdminAccessLevel {
     None = 0,
-    ManagePermissions = 1,
+    Manage = 1,
     UpdateOrganization = 2,
     DeleteOrganization = 4,
-    All = ManagePermissions | DeleteOrganization | UpdateOrganization,
 }
 
 export enum ChildrenAccessLevel {
@@ -12,7 +11,6 @@ export enum ChildrenAccessLevel {
     Create = 2,
     Update = 4,
     Delete = 8,
-    All = Read | Create | Update | Delete
 }
 
 export enum EntityAccessLevel {
@@ -20,5 +18,4 @@ export enum EntityAccessLevel {
     Read = 1,
     Update = 4,
     Delete = 8,
-    All = Read | Update | Delete
 }

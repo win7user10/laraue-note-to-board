@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import LnbModal from "~/components/modals/LnbModal.vue";
-import type {DirectEpicAccessLevel, PermittableSpace, UserPermissions} from "~/composables/organizationsApi";
+import type { PermittableSpace, UserPermissions } from "~/composables/organizationsApi";
 import LnbPermissionSectionTitle from "~/components/modals/permissions/LnbPermissionSectionTitle.vue";
 import LnbPermissionSectionRow from "~/components/modals/permissions/LnbPermissionSectionRow.vue";
 
@@ -16,56 +16,58 @@ const props = defineProps<{
   permittableEntities: PermittableSpace[],
 }>()
 
+const { t } = useI18n()
+
 const GLOBAL_PERMS = [
   {
     id: ChildrenAccessLevel.Read,
-    name: 'R',
+    name: t('readAbbreviation'),
   },
   {
     id: ChildrenAccessLevel.Create,
-    name: 'C',
+    name: t('createAbbreviation'),
   },
   {
     id: ChildrenAccessLevel.Update,
-    name: 'U',
+    name: t('updateAbbreviation'),
   },
   {
     id: ChildrenAccessLevel.Delete,
-    name: 'D',
+    name: t('deleteAbbreviation'),
   }
 ];
 
 const CHILD_PERMS = [
   {
     id: ChildrenAccessLevel.Read,
-    name: 'R (Is)',
+    name: `${t('readAbbreviation')} (${t('issueAbbreviation')})`,
   },
   {
     id: ChildrenAccessLevel.Create,
-    name: 'C (Is)',
+    name: `${t('createAbbreviation')} (${t('issueAbbreviation')})`,
   },
   {
     id: ChildrenAccessLevel.Update,
-    name: 'U (Is)',
+    name: `${t('updateAbbreviation')} (${t('issueAbbreviation')})`,
   },
   {
     id: ChildrenAccessLevel.Delete,
-    name: 'D (Is)',
+    name: `${t('deleteAbbreviation')} (${t('issueAbbreviation')})`,
   }
 ];
 
 const SELF_PERMS = [
   {
     id: EntityAccessLevel.Read,
-    name: 'R',
+    name: t('readAbbreviation'),
   },
   {
     id: EntityAccessLevel.Update,
-    name: 'U',
+    name: t('updateAbbreviation'),
   },
   {
     id: EntityAccessLevel.Delete,
-    name: 'D',
+    name: t('deleteAbbreviation'),
   }
 ];
 
@@ -78,24 +80,24 @@ const CHILD_AND_SELF_PERMS = [
 
 const ADMIN_PERMS = [
   {
-    name: 'Organization',
+    name: t('organization'),
     perms: [
       {
         id: AdminAccessLevel.UpdateOrganization,
-        name: 'Update',
+        name: t('update'),
       },
       {
         id: AdminAccessLevel.DeleteOrganization,
-        name: 'Delete',
+        name: t('delete'),
       }
     ],
   },
   {
-    name: 'Permissions',
+    name: t('permissions'),
     perms: [
       {
-        id: AdminAccessLevel.ManagePermissions,
-        name: 'Manage',
+        id: AdminAccessLevel.Manage,
+        name: t('manage'),
       }
     ]
   }

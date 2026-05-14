@@ -3,7 +3,6 @@
   import LnbPopup from "~/components/popups/LnbPopup.vue";
 
   const { appState } = useAppState();
-  const { hasFlag } = useUtils();
   const initUser = useInitUser();
   const userPopupOpen = ref(false);
   const currentUser = computed(() => appState.value.user!);
@@ -29,6 +28,7 @@
     modals.manage = false
     userPopupOpen.value = false
   }
+  const { t } = useI18n();
 </script>
 
 <template>
@@ -44,7 +44,7 @@
     <div class="user-popup-handle">@{{currentUser.username}}</div>
     <div class="user-popup-divider"></div>
     <div
-      v-if="currentOrganization.canManagePermissions"
+      v-if="currentOrganization.canManage"
       class="user-popup-btn"
       style="color: var(--text2);"
       @click="modals.manage = true">
@@ -54,19 +54,19 @@
         <circle cx="12" cy="9" r="2"></circle>
         <path d="M9 14c0-2 1.3-3 3-3s3 1 3 3"></path>
       </svg>
-      My organisation
+      {{ t('manageOrganization') }}
     </div>
     <div class="user-popup-btn" style="color: var(--accent);" @click="logoutOrganization">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
         <path d="M6 3H3v10h3M10 5l3 3-3 3M13 8H6"/>
       </svg>
-      Change Organization
+      {{ t('changeOrganization') }}
     </div>
     <div class="user-popup-btn" @click="logout">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
         <path d="M6 3H3v10h3M10 5l3 3-3 3M13 8H6"/>
       </svg>
-      Sign out
+      {{ t('signOut') }}
     </div>
   </LnbPopup>
 

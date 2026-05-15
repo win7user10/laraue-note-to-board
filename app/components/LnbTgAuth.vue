@@ -9,7 +9,7 @@ const { setAppUser } = useInitUser();
 const configuration = useRuntimeConfig();
 const botName = configuration.public.botName;
 
-window.onTelegramAuth = async (user: any) => {
+(window as any).onTelegramAuth = async (user: any) => {
   try {
     setIsAppInitialized(false);
     const { authViaWebApp } = useTelegramUserApi()

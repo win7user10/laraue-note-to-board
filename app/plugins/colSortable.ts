@@ -4,7 +4,10 @@ export default defineNuxtPlugin((nuxtApp) => {
     // Register a simple directive
     nuxtApp.vueApp.directive('col-sortable', {
         mounted(el, binding) {
-            const { onColMoved } = binding.value;
+            const { onColMoved, applySort } = binding.value;
+            if (!applySort)
+                return;
+
             el._colSortable = Sortable.create(el, {
                 animation: 180,
                 delay: 150,

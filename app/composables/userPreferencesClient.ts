@@ -1,7 +1,5 @@
-import {useAuthApi} from "~/composables/authApi";
-
 export const useUserPreferencesClient = () => {
     const configuration = useRuntimeConfig();
-    const { createClient } = useAuthApi();
+    const { createClient } = useUserAuthApi();
     return createClient(configuration.public.messagesBaseAddress);
 }

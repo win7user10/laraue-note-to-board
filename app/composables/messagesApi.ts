@@ -4,7 +4,7 @@ export interface MessageListDto {
     sender?: string;
     senderInitial?: string;
     content?: string;
-    categoryId: number;
+    epicId: number;
     statusId: number;
     color: string;
     senderColor: string;
@@ -38,9 +38,7 @@ export interface MessageDetailDto {
 
 export interface CreateCardRequest {
     content: string;
-    categoryId: number;
     statusId: number;
-    spaceId: number;
 }
 
 export interface EditCardRequest {
@@ -78,17 +76,15 @@ export interface CategorySummary {
 export const useMessagesApi = () => {
     const client = useMessagesClient()
 
-    const loadMessages = (
-        spaceId: number,
-        statusId: number | null,
+    const loadIssuesByStatus = (
+        statusId: number,
         skip: number,
         take: number,
         searchString: string) => {
-        return client<BatchResult<MessageListDto>>('/issues', {
+        return client<BatchResult<MessageListDto>>('/issues/by-status/' + statusId, {
             method: 'GET',
             query: {
-                spaceId: spaceId,
-                statusId: statusId ?? undefined,
+                statusId: statusId,
                 skip: skip,
                 take: take,
                 searchString: searchString,
@@ -97,27 +93,23 @@ export const useMessagesApi = () => {
     }
 
     const loadBoard = (
-        spaceId: number,
-        categoryId: number,
+        epicId: number,
         take: number,
         searchString: string) => {
         return client<ColumnMessages[]>('/issues/board', {
             method: 'GET',
             query: {
-                categoryId: categoryId ?? undefined,
+                epicId: epicId ?? undefined,
                 take: take,
                 searchString: searchString,
-                spaceId: spaceId,
             }
         });
     }
 
-    const move = (messageId: number, spaceId: number, categoryId: number, statusId: number | null) => {
+    const move = (messageId: number, statusId: number) => {
         return client('/issues/' + messageId + '/move', {
             method: 'PUT',
             body: {
-                spaceId: spaceId,
-                epicId: categoryId,
                 statusId: statusId,
             }
         });
@@ -166,7 +158,7 @@ export const useMessagesApi = () => {
     }
 
     return {
-        loadMessages,
+        loadIssuesByStatus,
         move,
         deleteMessage,
         createMessage,

@@ -22,7 +22,7 @@ const emit = defineEmits<{
 <template>
   <LnbModal
     @close="emit('close')"
-    title="Select Epic">
+    title="Select Status">
     <LnbModalListOpts>
       <LnbModalListOpt
         v-for="status in statuses"
@@ -30,7 +30,9 @@ const emit = defineEmits<{
         :sub="status.count + ' cards'"
         @click="emit('select', status)">
         <template #avatar>
-          <LnbCardAvatar :color="status.color"></LnbCardAvatar>
+          <LnbCardAvatar :color="status.color">
+            {{status.name.slice(0, 1).toUpperCase()}}
+          </LnbCardAvatar>
         </template>
       </LnbModalListOpt>
     </LnbModalListOpts>

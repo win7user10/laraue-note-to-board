@@ -1,3 +1,6 @@
+import type {OrganizationDto} from "~/composables/organizationsApi";
+import type {UserOrganizationPreferencesDto} from "~/composables/userOrganizationPreferencesApi";
+
 export interface Toast {
     id: number;
     title: string;
@@ -8,7 +11,9 @@ export interface Toast {
 export const useAppState = () => {
     const appState = useState('appState', () => ({
         user: null as UserDto | null,
+        organization: null as OrganizationDto | null,
         userPreferences: null as UserPreferencesDto | null,
+        userOrganizationPreferences: null as UserOrganizationPreferencesDto | null,
         isAppInitialized: false,
         isInMiniApp: false,
         isLoading: false,
@@ -23,6 +28,10 @@ export const useAppState = () => {
 
     const setUser = (user: UserDto | null) => {
         appState.value.user = user;
+    }
+
+    const setOrganization = (organization: OrganizationDto | null) => {
+        appState.value.organization = organization;
     }
 
     const setIsAppInitialized = (state: boolean) => {
@@ -61,12 +70,16 @@ export const useAppState = () => {
         appState.value.userPreferences = preferences;
     }
 
-    const updateCategoriesOrdering = (sortOrder: EpicSortOrder) => {
+    const setUserOrganizationPreferences = (preferences: UserOrganizationPreferencesDto) => {
+        appState.value.userOrganizationPreferences = preferences;
+    }
+
+    const updateEpicsOrdering = (sortOrder: EpicSortOrder) => {
         appState.value.userPreferences!.epicSortOrder = sortOrder;
     }
 
     const updateSpaceId = (spaceId: number) => {
-        appState.value.userPreferences!.spaceId = spaceId;
+        appState.value.userOrganizationPreferences!.selectedSpaceId = spaceId;
     }
 
     return {
@@ -80,7 +93,9 @@ export const useAppState = () => {
         setIsInMiniApp,
         palette,
         setPreferences,
-        updateCategoriesOrdering,
+        setUserOrganizationPreferences,
+        updateEpicsOrdering,
         updateSpaceId,
+        setOrganization,
     }
 }

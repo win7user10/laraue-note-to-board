@@ -1,6 +1,9 @@
-import { DefaultPagination } from "~/composables/pagination";
+import {DefaultPagination} from "~/composables/pagination";
 import {ref} from "vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
+import type {EpicListDto} from "~/composables/spacesApi";
+import {useEpicsApi} from "~/composables/epicsApi";
+
 const { showToast, appState, updateSpaceId } = useAppState()
 
 export const useBoard = () => {
@@ -9,31 +12,32 @@ export const useBoard = () => {
 
     const state = useState('boardState', () => ({
         messages: [] as ColumnMessages[],
-        categories: [] as CategoryCountDto[],
-        spaces: [] as SpaceDto[],
+        epics: [] as EpicListDto[],
+        spaces: [] as SpaceListDto[],
         noSpaceEpicsCount: 0,
-        backlogCount: 0,
-        categoryId: 0,
-        currentCategory: undefined as CategoryDto | undefined,
+        epicId: null as number | null,
+        currentEpic: undefined as EpicDto | undefined,
         searchString: '',
         openedMedia: [] as MediaInfo[],
         openedMediaIndex: 0,
     }))
 
     const spaces = computed(() => {
-        const result = [{
-            id: 0,
-            name: t('noSpace'),
-            color: '#49a1a1',
-            epicsCount: state.value.noSpaceEpicsCount,
-        }]
-
-        result.push(...state.value.spaces.sort((a, b) => a.name.localeCompare(b.name)))
-        return result
+        return state.value.spaces.sort((a, b) => a.name.localeCompare(b.name));
     })
 
     const spaceId = computed(() => {
-        return appState.value.userPreferences?.spaceId ?? 0
+        let val = appState.value.userOrganizationPreferences?.selectedSpaceId;
+        const spaces = state.value.spaces;
+        const space = spaces.find((space) => space.id === val);
+        if (space)
+            return space.id;
+
+        const firstSpace = spaces[0];
+        if (!firstSpace)
+            return null;
+
+        return firstSpace.id;
     })
 
     const currentSpace = computed(() => {
@@ -42,7 +46,7 @@ export const useBoard = () => {
 
     const setCategory = (id: number) => {
         state.value.searchString = ''
-        state.value.categoryId = id
+        state.value.epicId = id
     }
 
     const search = async(searchString: string) => {
@@ -55,15 +59,16 @@ export const useBoard = () => {
         if (clearPreviousImmediately)
             state.value.messages = [];
 
+        if (!state.value.epicId)
+            return;
+
+        if (!state.value.currentEpic?.canViewIssues)
+            return;
+
         state.value.messages = await messagesApi.loadBoard(
-            spaceId.value,
-            state.value.categoryId,
+            state.value.epicId,
             DefaultPagination.perPage,
             state.value.searchString)
-
-        const menuCategory = state.value.categories.find(c => c.id === state.value.categoryId)
-        if (menuCategory)
-            menuCategory.count = dbMessagesCount.value
     }
 
     const openMedia = (media: MediaInfo[], index: number) => {
@@ -84,8 +89,7 @@ export const useBoard = () => {
 
         // reload all already loaded
         const messagesApi = useMessagesApi()
-        const result = await messagesApi.loadMessages(
-            spaceId.value,
+        const result = await messagesApi.loadIssuesByStatus(
             statusId,
             0,
             initialItemsCount,
@@ -96,34 +100,37 @@ export const useBoard = () => {
         messages.items.hasNext = result.hasNext;
     }
 
-    const reloadCategories = async () => {
-        state.value.categories = [];
-        const categoriesApi = useCategoriesApi()
-        const data = await categoriesApi.loadCategories({
-            spaceId: spaceId.value
-        })
-        state.value.categories = data.categories;
-        state.value.backlogCount = data.backlogCount;
+    const reloadEpics = async () => {
+        state.value.epics = [];
+        if (!spaceId.value)
+            return
+        const spacesApi = useSpacesApi()
+        state.value.epics = await spacesApi.loadSpaceEpics(spaceId.value);
+        const firstEpic = epics.value[0];
+        if (firstEpic)
+            state.value.epicId = firstEpic.id;
     }
 
-    const categories = computed(() => {
+    const epics = computed(() => {
         const categoryOrder = appState.value.userPreferences!.epicSortOrder
-        let data = [...state.value.categories];
+        let data = [...state.value.epics];
         if (categoryOrder === EpicSortOrder.Alphabetical)
-            data.sort((a, b) => a.name.localeCompare(b.name));
+            data.sort((a, b) => {
+                if (a.isDefault)
+                    return -1;
+                if (b.isDefault)
+                    return 1;
+                return a.name.localeCompare(b.name)
+            });
         else if (categoryOrder === EpicSortOrder.LastUpdated)
-            data.sort((a, b) => b.touchedAt.localeCompare(a.touchedAt));
+            data.sort((a, b) => {
+                if (a.isDefault)
+                    return -1;
+                if (b.isDefault)
+                    return 1;
+                return b.touchedAt.localeCompare(a.touchedAt)
+            });
 
-        const result = {
-            id: 0,
-            name: t('backlog'),
-            color: '#ff0000',
-            count: state.value.backlogCount,
-            statusesCount: 0,
-            touchedAt: '0000-01-01',
-        }
-
-        data.unshift(result)
         return data
     })
 
@@ -142,22 +149,16 @@ export const useBoard = () => {
         await reloadColumn(value.statusId, offset ? offset + 1 : DefaultPagination.perPage);
 
         // Update top menu counters
-        if (value.categoryId === 0)
-            state.value.backlogCount++;
-        else {
-            const messageCategory = state.value.categories.find(c => c.id === value.categoryId)
-            if (messageCategory) {
-                messageCategory.count++;
-                messageCategory.touchedAt = now();
-            }
-        }
+        const messageCategory = state.value.epics.find(c => c.id === state.value.epicId)
+        if (messageCategory)
+            messageCategory.touchedAt = now();
 
         // Update status counters
         if (messagesByCategory)
             messagesByCategory.items.totalCount++;
 
         const status = statuses.value.find(x => x.id === value.statusId);
-        const subTitle = status ? `${state.value.currentCategory?.name} · ${status?.name}` : undefined;
+        const subTitle = status ? `${state.value.currentEpic?.name} · ${status?.name}` : undefined;
         showToast(t('cardCreated'), 'success', subTitle);
     }
 
@@ -174,8 +175,7 @@ export const useBoard = () => {
             loadingCols.value.push(statusId);
             const item = getMessagesByStatusId(statusId)!.items;
             const messagesApi = useMessagesApi()
-            const newMessages = await messagesApi.loadMessages(
-                spaceId.value,
+            const newMessages = await messagesApi.loadIssuesByStatus(
                 statusId,
                 item.offset,
                 DefaultPagination.perPage,
@@ -203,23 +203,17 @@ export const useBoard = () => {
     })
 
     const createCategory = async (value: CreateCategoryRequest) => {
-        const categoriesApi = useCategoriesApi()
-        const id = await categoriesApi.createCategory(value);
-        state.value.categories.push({
+        const epicsApi = useEpicsApi()
+        const id = await epicsApi.createCategory(value);
+        state.value.epics.push({
             id: id,
             name: value.name,
             color: value.color,
-            count: 0,
-            statusesCount: 0,
             touchedAt: now(),
+            isDefault: false
         })
         showToast(t('boardCreated'), 'success', value.name);
         return id;
-    }
-
-    const getMessagesByCardId = (cardId: number) => {
-        const card = allCards.value.find(c => c.id === cardId)!;
-        return getMessagesByStatusId(card.statusId)!
     }
 
     const editCard = async (id: number, value: EditCardRequest) => {
@@ -229,7 +223,7 @@ export const useBoard = () => {
         if (card)
             card.content = value.content;
 
-        const category = state.value.categories.find(c => c.id === card?.categoryId)
+        const category = state.value.epics.find(c => c.id === card?.epicId)
         if (category)
             category.touchedAt = now();
 
@@ -241,11 +235,6 @@ export const useBoard = () => {
         await messagesApi.deleteMessage(id)
 
         const card = allCards.value.find(c => c.id === id)
-
-        // update categories counter
-        const cardCategory = state.value.categories.find(c => c.id === card!.categoryId)
-        if (cardCategory)
-            cardCategory.count--;
 
         // Drop from the board
         const columnMessages = getMessagesByStatusId(card!.statusId)!
@@ -260,27 +249,27 @@ export const useBoard = () => {
     }
 
     const editCategory = async (request: EditCategoryRequest) => {
-        const categoriesApi = useCategoriesApi()
-        await categoriesApi.editCategory(state.value.categoryId, request)
-        const category = state.value.categories.find(c => c.id === state.value.categoryId)!
+        const epicsApi = useEpicsApi()
+        await epicsApi.editCategory(state.value.epicId!, request)
+        const category = state.value.epics.find(c => c.id === state.value.epicId)!
         category.color = request.color;
         category.name = request.name;
         category.touchedAt = now();
 
-        state.value.currentCategory!.color = request.color;
-        state.value.currentCategory!.name = request.name;
-        state.value.currentCategory!.name = request.name;
+        state.value.currentEpic!.color = request.color;
+        state.value.currentEpic!.name = request.name;
+        state.value.currentEpic!.name = request.name;
 
         showToast(t('boardUpdated'), 'success', request.name);
     }
 
     const deleteCategory = async () => {
-        const categoriesApi = useCategoriesApi()
-        await categoriesApi.deleteCategory(state.value.categoryId)
-        const index = state.value.categories.findIndex(c => c.id === state.value.categoryId)
-        state.value.categories.splice(index, 1);
-        state.value.currentCategory = undefined;
-        state.value.categoryId = 0;
+        const epicsApi = useEpicsApi()
+        await epicsApi.deleteCategory(state.value.epicId!)
+        const index = state.value.epics.findIndex(c => c.id === state.value.epicId)
+        state.value.epics.splice(index, 1);
+        state.value.currentEpic = undefined;
+        state.value.epicId = 0;
 
         showToast(t('boardDeleted'), 'danger');
     }
@@ -298,8 +287,8 @@ export const useBoard = () => {
         state.value.messages.splice(removingIndex, 1)
 
         // Remove column
-        const removeIndex = state.value.currentCategory!.statuses.findIndex(c => c.id === id);
-        state.value.currentCategory!.statuses.splice(removeIndex, 1)
+        const removeIndex = state.value.currentEpic!.statuses.findIndex(c => c.id === id);
+        state.value.currentEpic!.statuses.splice(removeIndex, 1)
 
         // Reload first column, calculate new offset + total
         const firstStatus = statuses.value[0]!
@@ -314,12 +303,12 @@ export const useBoard = () => {
     const createStatus = async (value: CreateStatusRequest) => {
         const statusApi = useStatusesApi()
         const id = await statusApi.createStatus(value);
-        const statuses = state.value.currentCategory?.statuses;
+        const statuses = state.value.currentEpic?.statuses;
         if (!statuses)
             return;
 
         const lastOrder = Math.max(...statuses.map(x => x.sortOrder))
-        state.value.currentCategory!.statuses.push({
+        state.value.currentEpic!.statuses.push({
             id: id,
             name: value.name,
             color: value.color,
@@ -349,14 +338,14 @@ export const useBoard = () => {
     }
 
     const reloadCategory = async () => {
-        state.value.currentCategory = undefined;
-        const categoriesApi = useCategoriesApi()
-        if (state.value.categoryId)
-            state.value.currentCategory = await categoriesApi.loadCategory(state.value.categoryId)
+        state.value.currentEpic = undefined;
+        const epicsApi = useEpicsApi()
+        if (state.value.epicId)
+            state.value.currentEpic = await epicsApi.loadCategory(state.value.epicId)
     }
 
     const statuses = computed(() => {
-        return state.value.currentCategory?.statuses
+        return state.value.currentEpic?.statuses
             .sort((a, b) => a.sortOrder - b.sortOrder) ?? [];
     })
 
@@ -370,12 +359,12 @@ export const useBoard = () => {
             .reduce((acc, x) => acc + x, 0)
     })
 
-    const moveCard = async (cardId: number, spaceId: number, categoryId: number, statusId: number) => {
+    const moveCard = async (cardId: number, statusId: number) => {
         const card = allCards.value.find(m => m.id === cardId);
         if (!card) return;
 
         const messagesApi = useMessagesApi()
-        await messagesApi.move(card.id, spaceId, categoryId, statusId);
+        await messagesApi.move(card.id, statusId);
 
         // update old column data
         const oldColumnMessages = getMessagesByStatusId(card!.statusId)!
@@ -391,19 +380,13 @@ export const useBoard = () => {
             await reloadColumn(statusId, newColumnMessages.items.offset + 1)
         }
 
-        // update epics
-        const newCategory = state.value.categories.find(c => c.id === categoryId)
-        if (newCategory) {
-            newCategory.count += 1;
+        // As soon as card is found, card is moving to currently opened epic
+        const newCategory = state.value.epics.find(c => c.id === state.value.epicId)
+        if (newCategory)
             newCategory.touchedAt = now();
-        }
-
-        const oldCategory = state.value.categories.find(c => c.id === card.categoryId)
-        if (oldCategory)
-            oldCategory.count -= 1;
 
         // update card properties
-        card.categoryId = categoryId!;
+        card.epicId = state.value.epicId!;
         card.statusId = statusId;
 
         // raise notification
@@ -411,7 +394,7 @@ export const useBoard = () => {
     };
 
     const changeColumnOrder = async (statusId: number, newSortOrder: number) => {
-        const cat = state.value.currentCategory;
+        const cat = state.value.currentEpic;
         if (!cat) return;
 
         const idx = cat.statuses.findIndex(s => s.id === statusId);
@@ -427,9 +410,9 @@ export const useBoard = () => {
             status.sortOrder = i;
         })
 
-        const categoriesApi = useCategoriesApi()
-        await categoriesApi.reorderStatuses(
-            state.value.categoryId,
+        const epicsApi = useEpicsApi()
+        await epicsApi.reorderStatuses(
+            state.value.epicId!,
             Object.fromEntries(newStatuses.map(item => [item.id, item.sortOrder])))
 
         cat.statuses = newStatuses;
@@ -438,19 +421,20 @@ export const useBoard = () => {
 
     const reloadSpaces = async () => {
         const spacesApi = useSpacesApi()
-        const { spaces, noSpaceEpicsCount } = await spacesApi.getSpaces()
-        state.value.spaces = spaces
-        state.value.noSpaceEpicsCount = noSpaceEpicsCount
+        state.value.spaces = await spacesApi.getSpaces()
     }
 
     const createSpace = async (request: CreateSpaceRequest) => {
         const spacesApi = useSpacesApi()
         const spaceId = await spacesApi.createSpace(request)
+        const spaceInfo = await spacesApi.getSpace(spaceId)
         state.value.spaces.push({
             id: spaceId,
             name: request.name,
             color: request.color,
             epicsCount: 0,
+            canDelete: spaceInfo.canDelete,
+            canUpdate: spaceInfo.canUpdate,
         })
         showToast(t('spaceCreated'), 'success', request.name)
     }
@@ -470,37 +454,42 @@ export const useBoard = () => {
     const deleteSpace = async (id: number) => {
         const api = useSpacesApi()
         await api.deleteSpace(id)
+        const index = state.value.spaces.findIndex(c => c.id === id)
+        state.value.spaces.splice(index, 1);
 
         // Update views if that space was opened
         if (id === currentSpace.value!.id)
         {
-            updateSpaceId(0)
-            state.value.categoryId = 0;
-            await Promise.all([
-                reloadBoard(false),
-                reloadCategories()
-            ])
+            const selectedSpace = state.value.spaces[0]
+            if (selectedSpace) {
+                updateSpaceId(selectedSpace.id)
+                state.value.epicId = selectedSpace.id;
+                await reloadBoard(false)
+                await reloadEpics()
 
-            // Update preferences
-            const { updateSpace } = useUserPreferencesApi()
-            await updateSpace(0)
+                // Update preferences
+                const { updateSpace } = useUserOrganizationPreferencesApi()
+                await updateSpace(selectedSpace.id)
+            }
         }
 
-        const index = state.value.spaces.findIndex(c => c.id === id)
-        state.value.spaces.splice(index, 1);
         showToast(t('spaceDeleted'), 'danger');
     }
+
+    const anySpaceAvailable = computed(() => {
+        return spaces.value.length > 0
+    })
 
     return {
         state: readonly(state),
         reloadBoard,
-        reloadCategories,
+        reloadEpics,
         reloadCategory,
         createCategory,
         setCategory,
         editCategory,
         deleteCategory,
-        categories,
+        epics,
         createCard,
         editCard,
         deleteCard,
@@ -524,5 +513,6 @@ export const useBoard = () => {
         createSpace,
         editSpace,
         deleteSpace,
+        anySpaceAvailable,
     }
 }

@@ -75,12 +75,12 @@
 
 <template>
   <div class="msg-card"
-      :style="`--card-color: ${props.message.color}`"
+      :style="`--card-color: ${props.message.senderColor}`"
       :data-card-id="props.message.id"
       @click="emits('openEdit', props.message)">
     <div class="card-header">
       <div class="card-avatar" :style="`background:${props.message.senderColor}22; color:${props.message.senderColor}`">
-        {{ props.message.senderInitial }}
+        {{ props.message.senderInitial?.toLocaleUpperCase() }}
       </div>
       <div class="card-sender">{{ props.message.sender }}</div>
       <div class="card-time">{{ formatDate(props.message.time) }}</div>

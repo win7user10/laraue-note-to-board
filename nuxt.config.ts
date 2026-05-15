@@ -2,6 +2,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr: false,
+  typescript: {
+    typeCheck: true,
+    strict: true, // Recommended for thorough checks
+  },
 
   vite: {
     server: {
@@ -40,6 +44,8 @@ export default defineNuxtConfig({
       messagesBaseAddress: process.env.NUXT_PUBLIC_MESSAGES_BASE_ADDRESS || 'https://msgboard.laraue.com/api/notes-board/',
       testUserToken: process.env.NUXT_PUBLIC_TEST_USER_TOKEN,
       botName: process.env.NUXT_PUBLIC_BOT_NAME || 'msgboard_bot',
+      laraueUrl: 'https://laraue.com',
+      documentationPath: '/blog/documentation/laraue-boards',
     },
   },
 

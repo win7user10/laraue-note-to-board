@@ -11,34 +11,52 @@ import LnbSearchModal from "~/components/modals/LnbSearchModal.vue";
 import LnbMoveCardModal from "~/components/modals/LnbMoveCardModal.vue";
 import LnbCreateCardModal from "~/components/modals/LnbCreateCardModal.vue";
 import LnbDeleteCardModal from "~/components/modals/LnbDeleteCardModal.vue";
-import LnbSpacePopup from "~/components/popups/LnbSpacePopup.vue";
 import LnbNavSortPopup from "~/components/popups/LnbNavSortPopup.vue";
+import LnbEmptyState from "~/components/LnbEmptyState.vue";
+import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
+import LnbDeleteCategoryModal from "~/components/modals/LnbDeleteCategoryModal.vue";
+import LnbEditCategoryModal from "~/components/modals/LnbEditCategoryModal.vue";
+import LnbTopbar from "~/components/LnbTopbar.vue";
+import LnbElementWithHelpLink from "~/components/modals/LnbElementWithHelpLink.vue";
 
-const { setCategory, state } = useBoard()
-const categoryId = computed(() => state.value.categoryId);
+const { setCategory, state, anySpaceAvailable } = useBoard()
+const { getDocumentationLink } = useUtils()
+const { appState } = useAppState()
+const { getSpace } = useSpacesApi()
+const isBacklog = computed(() => state.value.epics.find(c => state.value.epicId == c.id)?.isDefault);
+const epicId = computed(() => state.value.epicId);
+const currentCategory = computed(() => state.value.currentEpic);
+const defaultStatus = computed(() => currentCategory.value?.statuses[0]);
 
 const { t } = useI18n();
 const board = useBoard();
 
-onMounted(() => {
-  return Promise.all([
-    board.reloadBoard(true),
-    board.reloadCategories()
-  ]);
-});
+onMounted(() => fullReload());
+watch(() => appState.value.organization!.id, () => fullReload())
 
-watch(() => state.value.categoryId, () => {
-  return Promise.all([
-    board.reloadBoard(true),
-    board.reloadCategory()
-  ]);
+const fullReload = async () => {
+  await board.reloadSpaces();
+  await board.reloadEpics();
+  await board.reloadBoard(true);
+}
+
+watch(() => state.value.epicId, async () => {
+  await board.reloadCategory();
+  await board.reloadBoard(true);
 })
 
-onMounted(async () => {
-  return Promise.all([
-    board.reloadCategory(),
-    board.reloadSpaces(),
-  ]);
+const spaceAdditionalData = ref<SpaceDto | null>(null)
+const loadSpaceData = async () => {
+  if (!board.currentSpace.value)
+    spaceAdditionalData.value = null;
+  else
+    spaceAdditionalData.value = await getSpace(board.currentSpace.value.id)
+}
+
+watch(() => board.currentSpace.value, (value) => loadSpaceData())
+
+const epicTabsAvailable = computed(() => {
+  return epics.value.length > 0 || spaceAdditionalData.value?.canCreateEpics
 })
 
 const modal = reactive({
@@ -48,10 +66,11 @@ const modal = reactive({
   assign: false,
   delete: false,
   search: false,
+  editCategory: false,
+  deleteCategory: false,
 });
 
 const navSortPopupOpen = ref(false);
-const spacePopupOpen = ref(false);
 
 const openCreateCategory = () => {
   modal.createCategory = true;
@@ -68,7 +87,7 @@ const createCategoryInternal = async (value: CreateCategoryRequest) => {
   setCategory(id);
 }
 
-const categories = board.categories;
+const epics = board.epics;
 
 const openCreateCard = () => {
   modal.createCard = true;
@@ -108,11 +127,6 @@ const closeAssignToCategory = () => {
   modal.assign = false;
 }
 
-const assignToCategory = async (categoryId: number) => {
-  await board.updateCardCategory(assignMsg.value!.id, categoryId)
-  modal.assign = false;
-}
-
 const openDelete = (message: MessageListDto) => {
   assignMsg.value = message;
   modal.delete = true;
@@ -140,50 +154,52 @@ const closeFab = () => {
 }
 
 const fabOpen = ref(false);
-const currentSpace = board.currentSpace;
+
+const openEditCategory = () => {
+  modal.editCategory = true;
+}
+
+const closeEditCategory = () => {
+  modal.editCategory = false;
+}
+
+const editCategoryInternal = async (request: EditCategoryRequest) => {
+  await board.editCategory(request);
+  closeEditCategory();
+}
+
+const openDeleteCategory = () => {
+  modal.deleteCategory = true;
+}
+
+const closeDeleteCategory = () => {
+  modal.deleteCategory = false;
+}
+
+const deleteCategoryInternal = async () => {
+  await board.deleteCategory();
+  closeDeleteCategory();
+}
 
 </script>
 
 <template>
-  <!-- TOP BAR -->
-  <div class="topbar">
-    <div class="topbar-logo">
-      <svg width="36" height="36" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <rect width="36" height="36" rx="10" fill="#2f81f7"/>
-        <text x="18" y="24" font-size="14" font-weight="800" fill="white" text-anchor="middle" font-family="Inter,sans-serif" letter-spacing="-0.5">LB</text>
-      </svg>
-    </div>
-
-    <!-- Space switcher — only visible when spaces exist -->
-    <div class="space-switcher-wrap">
-      <div class="space-switcher" @click.stop="spacePopupOpen =! spacePopupOpen">
-        <div class="space-switcher-dot" :style="`background:${currentSpace?.color||'var(--text3)'}`"></div>
-        <div class="space-switcher-name">{{currentSpace?.name}}</div>
-        <div class="space-switcher-chevron"><svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3.5l3 3 3-3"/></svg></div>
-      </div>
-
-      <LnbSpacePopup
-        v-if="spacePopupOpen"
-        @close="spacePopupOpen = false"/>
-    </div>
-  </div>
-
+  <LnbTopbar />
   <LnbNavLoader />
 
   <!-- NAV TABS -->
-  <div class="nav-tabs-wrap">
+  <div class="nav-tabs-wrap" v-if="epicTabsAvailable">
     <div class="nav-tabs">
       <div
-          v-for="cat in categories"
+          v-for="cat in epics"
           class="nav-tab"
-          :class="{active: categoryId === cat.id}"
-          :style="categoryId === cat.id ? `--dot-color:${cat.color}` : ''"
+          :class="{active: epicId === cat.id}"
+          :style="epicId === cat.id ? `--dot-color:${cat.color}` : ''"
           @click="setCategory(cat.id)">
         <span class="dot" :style="`background:${cat.color}`"></span>
         {{ cat.name }}
-        <span class="nav-tab-count">{{ cat.count }}</span>
       </div>
-      <div class="nav-tab-add" title="Add category" @click="openCreateCategory">
+      <div v-if="spaceAdditionalData?.canCreateEpics" class="nav-tab-add" :title="t('addEpic')" @click="openCreateCategory">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M8 3v10M3 8h10"/>
         </svg>
@@ -202,17 +218,69 @@ const currentSpace = board.currentSpace;
     </div>
   </div>
 
-  <template v-if="categoryId === 0">
-    <LnbBacklogView
-      @openAssignToCategory="openAssignToCategory"
-      @openEdit="openEditCard"
-      @openDelete="openDelete" />
+  <template v-if="state.epics.length > 0 && state.currentEpic?.canViewIssues">
+
+    <LnbBoardHeader>
+      <template v-if="currentCategory" #title>
+        <LnbElementWithHelpLink
+          :link-href="isBacklog ? getDocumentationLink('/working-alone/backlog') : getDocumentationLink('/concepts/epics')"
+          :link-title="isBacklog ? t('learnAboutBacklog') : t('learnAboutEpics')">
+          <span :style="`color:${currentCategory.color}`">●</span>
+          {{ currentCategory.name }}
+        </LnbElementWithHelpLink>
+      </template>
+      <template #subtitle>
+        {{ board.dbMessagesCount }} {{ t('cards', board.dbMessagesCount.value) }}
+      </template>
+      <template #actions>
+        <LnbIconBtn
+            v-if="currentCategory?.canUpdate"
+            :title="t('editBoard')"
+            btnSize="medium"
+            iconSize="medium"
+            icon="edit"
+            @click="openEditCategory" />
+        <LnbIconBtn
+            v-if="currentCategory?.canDelete"
+            type="danger"
+            btnSize="medium"
+            iconSize="medium"
+            :title="t('deleteBoard')"
+            icon="delete"
+            @click="openDeleteCategory" />
+      </template>
+    </LnbBoardHeader>
+
+    <template v-if="isBacklog">
+      <LnbBacklogView
+          @openAssignToCategory="openAssignToCategory"
+          @openEdit="openEditCard"
+          @openDelete="openDelete" />
+    </template>
+    <template v-else>
+      <LnbBoardView
+          @openAssignToCategory="openAssignToCategory"
+          @openEdit="openEditCard"
+          @openDelete="openDelete"/>
+    </template>
   </template>
-  <template v-else>
-    <LnbBoardView
-      @openAssignToCategory="openAssignToCategory"
-      @openEdit="openEditCard"
-      @openDelete="openDelete"/>
+
+  <template v-if="!anySpaceAvailable">
+    <LnbEmptyState
+      title="No spaces are available"
+      subtitle="Please contact organization administrator and ask for permissions"/>
+  </template>
+
+  <template v-if="anySpaceAvailable && !epicTabsAvailable">
+    <LnbEmptyState
+        title="No epics are available in Space"
+        subtitle="Please contact organization administrator and ask for permissions"/>
+  </template>
+
+  <template v-if="anySpaceAvailable && epicTabsAvailable && !state.currentEpic?.canViewIssues">
+    <LnbEmptyState
+        title="Issues are not available for view"
+        subtitle="Please contact organization administrator and ask for permissions"/>
   </template>
 
   <LnbCreateCategoryModal
@@ -221,9 +289,8 @@ const currentSpace = board.currentSpace;
     v-if="modal.createCategory"/>
 
   <LnbMoveCardModal
-    :assign-msg="assignMsg"
+    :assign-msg="assignMsg as any"
     @close="closeAssignToCategory"
-    @assignToCategory="assignToCategory"
     v-if="modal.assign" />
 
   <LnbDeleteCardModal
@@ -232,7 +299,7 @@ const currentSpace = board.currentSpace;
     v-if="modal.delete"/>
 
   <LnbCreateCardModal
-    :statusId="0"
+    :statusId="defaultStatus!.id"
     @close="closeCreateCard"
     @create="createCardInternal"
     v-if="modal.createCard"/>
@@ -244,9 +311,20 @@ const currentSpace = board.currentSpace;
 
   <LnbEditCardModal
     :id="assignMsg!.id"
+    :hide-status="(currentCategory?.statuses?.length ?? 0) < 2"
     @edit="editCardInternal"
     @close="closeEditCard"
+    :allowEdit="!!currentCategory?.canUpdateIssues"
     v-if="modal.editCard"/>
+
+  <LnbEditCategoryModal
+    @close="closeEditCategory"
+    @edit="editCategoryInternal"
+    v-if="modal.editCategory"/>
+  <LnbDeleteCategoryModal
+    @close="closeDeleteCategory"
+    @delete="deleteCategoryInternal"
+    v-if="modal.deleteCategory"/>
 
   <LnbMediaViewer
     v-if="board.state.value.openedMedia.length > 0" />
@@ -260,7 +338,7 @@ const currentSpace = board.currentSpace;
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v10M3 8h10"/></svg>
     </div>
     <div class="fab-items" v-if="fabOpen">
-      <LnbFabItem :title="t('newBoard')" @click="openCreateCategory">
+      <LnbFabItem v-if="spaceAdditionalData?.canCreateEpics" :title="t('newCategoryBoard')" @click="openCreateCategory">
         <rect x="2" y="2" width="12" height="12" rx="2"/>
         <path d="M8 5v6M5 8h6"/>
       </LnbFabItem>
@@ -268,35 +346,15 @@ const currentSpace = board.currentSpace;
         <circle cx="6.5" cy="6.5" r="4.5"/>
         <path d="M10.5 10.5l3 3"/>
       </LnbFabItem>
-      <LnbFabItem :title="t('createCard')" @click="openCreateCard">
+      <LnbFabItem v-if="currentCategory?.canCreateIssues" :title="t('createCard')" @click="openCreateCard">
         <path d="M8 5v6M5 8h6"/>
       </LnbFabItem>
     </div>
   </div>
 
-  <LnbToastStack />
-  <LnbUserAvatar />
 </template>
 
 <style scoped>
-/* ── TOP BAR ── */
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: calc(10px + var(--safe-top)) calc(14px + var(--safe-right)) 10px calc(14px + var(--safe-left));
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  flex-shrink: 0;
-  z-index: 10;
-  justify-content: center;
-}
-.topbar-logo {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-.topbar-logo span { color: var(--text2); font-weight: 400; margin-left: 10px; }
 
 /* ── NAV TABS ── */
 .nav-tabs-wrap{display:flex;align-items:center;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
@@ -379,13 +437,4 @@ const currentSpace = board.currentSpace;
 .nav-ctrl-btn{width:26px;height:26px;border-radius:var(--radius-sm);border:1px solid transparent;background:transparent;color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
 .nav-ctrl-btn:hover,.nav-ctrl-btn.active{background:var(--surface3);border-color:var(--border);color:var(--text)}
 .nav-ctrl-btn svg{width:13px;height:13px}
-
-/* SPACE SWITCHER */
-.space-switcher{display:flex;align-items:center;gap:5px;padding:8px;border-radius:10px;border:1px solid var(--border);background:var(--surface3);cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;max-width: 200px;}
-.space-switcher:hover{border-color:var(--border2);background:var(--surface2)}
-.space-switcher-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.space-switcher-name{font-size:11px;font-weight:700;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.space-switcher-chevron{color:var(--text3);flex-shrink:0}
-.space-switcher-chevron svg{width:10px;height:10px}
-.space-switcher-wrap{position:relative;display:flex;flex-direction:column;gap:1px}
 </style>

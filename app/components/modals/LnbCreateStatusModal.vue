@@ -20,7 +20,7 @@ const { t } = useI18n();
 const newStatus = ref<CreateStatusRequest>({
   name: "",
   color: getRandomColor(),
-  categoryId: state.value.categoryId,
+  epicId: state.value.epicId!,
 })
 
 const createStatus = () => {

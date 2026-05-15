@@ -2,8 +2,6 @@
   import type {MessageListDto} from "~/composables/messagesApi";
   import LnbModal from "~/components/modals/LnbModal.vue";
   import LnbModalLabel from "~/components/modals/LnbModalLabel.vue";
-  import LnbModalTextarea from "~/components/modals/LnbModalTextarea.vue";
-  import type {CategoryCountDto, CategoryCountResult} from "~/composables/categoriesApi";
   import LnbSelectSpaceModal from "~/components/modals/LnbSelectSpaceModal.vue";
   import LnbSelectEpicModal from "~/components/modals/LnbSelectEpicModal.vue";
   import LnbSelectStatusModal from "~/components/modals/LnbSelectStatusModal.vue";
@@ -14,14 +12,13 @@
 
   const emits = defineEmits<{
     (e: 'close'): void,
-    (e: 'assignToCategory', categoryId: number): void,
   }>()
 
   const { t } = useI18n();
   const { state, currentSpace, moveCard } = useBoard();
 
   const spaceId = ref<number>(currentSpace.value!.id);
-  const epic = ref<CategoryCountDto>();
+  const epic = ref<EpicListDto>();
   const status = ref<MessageStatusDto>();
 
   const spaces = computed(() => state.value.spaces);
@@ -40,7 +37,7 @@
     status.value = undefined;
   }
 
-  const selectEpic = (value: CategoryCountDto) => {
+  const selectEpic = (value: EpicListDto) => {
     epic.value = value;
     modals.selectEpic = false;
     status.value = undefined;
@@ -52,7 +49,7 @@
   }
 
   const move = async () => {
-    await moveCard(props.assignMsg.id, spaceId.value, epic.value!.id, status.value!.id)
+    await moveCard(props.assignMsg.id, status.value!.id)
     emits("close");
   }
 </script>

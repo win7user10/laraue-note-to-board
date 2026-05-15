@@ -9,11 +9,12 @@ let initError = ref<any>(null)
 const configuration = useRuntimeConfig();
 const testUserToken = configuration.public.testUserToken;
 const { setIsAppInitialized, appState, setIsInMiniApp } = useAppState();
-const { setAppUser, tryAuthWithStoredBearer } = useInitUser();
+const { setAppUser, tryAuthWithStoredBearer, tryAuthOrganizationWithStoredBearer } = useInitUser();
 const { t, setLocale, locales } = useI18n();
 
 const isAppInitialized = computed(() => appState.value.isAppInitialized)
 const user = computed(() => appState.value.user)
+const organization = computed(() => appState.value.organization)
 
 onMounted(async () => {
   try {
@@ -26,6 +27,7 @@ onMounted(async () => {
     // If bearer exists - auth is not required
     if (await tryAuthWithStoredBearer()) {
       console.log("Auth with existing Bearer");
+      await tryAuthOrganizationWithStoredBearer();
       return;
     }
 
@@ -103,6 +105,7 @@ const setupMiniAppWindow = async () => {
 <template>
   <div id="app">
     <LnbTgAuth v-if="isAppInitialized && !user && !initError" />
+    <LnbOrganizationAuth v-if="isAppInitialized && user && !organization && !initError"/>
     <div v-else-if="!isAppInitialized" class="loader-overlay">
       <div class="loader-logo">Msg<span>board</span></div>
       <div class="loader-bar"><div class="loader-bar-fill"></div></div>
@@ -111,6 +114,7 @@ const setupMiniAppWindow = async () => {
     <span v-else-if="initError">{{initError}}</span>
     <NuxtPage v-else-if="user" />
     <span v-else>App is initializing</span>
+    <LnbToastStack />
   </div>
 </template>
 

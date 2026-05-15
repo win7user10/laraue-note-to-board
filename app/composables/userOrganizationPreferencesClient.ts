@@ -1,6 +1,4 @@
-import {useOrganizationAuthApi} from "~/composables/organizationAuthApi";
-
-export const useSpacesClient = () => {
+export const useUserOrganizationPreferencesClient = () => {
     const configuration = useRuntimeConfig();
     const { createClient } = useOrganizationAuthApi();
     return createClient(configuration.public.messagesBaseAddress);

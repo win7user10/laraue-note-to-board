@@ -1,5 +1,8 @@
 export const useUtils = () => {
     const messagesFileApi = useRuntimeConfig().public.messagesBaseAddress + 'telegram-files/';
+    const laraueUrl = useRuntimeConfig().public.laraueUrl;
+    const documentationPath = useRuntimeConfig().public.documentationPath;
+
     const dateFormatter = new Intl.DateTimeFormat(undefined, {
         month: '2-digit',
         day: '2-digit',
@@ -30,9 +33,40 @@ export const useUtils = () => {
 
     const getImageUrl = (id: string) => messagesFileApi + id
 
+    const getRoleKey = (member: OrganizationMember) => {
+        if (member.isOwner)
+            return 'owner'
+        if (member.adminAccessLevel > AdminAccessLevel.None)
+            return 'admin'
+        return 'member'
+    }
+
+    const hasFlag = <T extends number>(currentValue: T, valueToCheck: T) => {
+        return ((currentValue & valueToCheck) === valueToCheck);
+    }
+
+    const addFlag = <T extends number>(currentValue: T, valueToAdd: T) => {
+        return (currentValue | valueToAdd) as T;
+    }
+
+    const deleteFlag = <T extends number>(currentValue: T, valueToAdd: T) => {
+        return (currentValue & ~valueToAdd) as T;
+    }
+
+    const getDocumentationLink = (relativeUrl: string) => {
+        const { locale } = useI18n();
+        const url = `${laraueUrl}${locale.value === 'ru' ? '/ru' : ''}${documentationPath}${relativeUrl}`;
+        return url;
+    }
+
     return {
         formatDate,
         getImageUrl,
         now,
+        getRoleKey,
+        hasFlag,
+        addFlag,
+        deleteFlag,
+        getDocumentationLink,
     }
 }

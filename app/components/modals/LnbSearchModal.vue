@@ -15,7 +15,7 @@ const request = ref({
 })
 
 const { state, currentSpace } = useBoard()
-const categories = computed(() => state.value.categories)
+const epics = computed(() => state.value.epics)
 
 const pagination = ref(DefaultPagination);
 const searchResults = ref<FullPaginatedResult<MessageListDto> | null>()
@@ -70,16 +70,16 @@ const { t } = useI18n();
       :placeholder="t('searchPlaceholder')"/>
     <div class="search-filters">
       <div class="filter-chip"
-        :class="{active:request.categoryId === null}"
-        @click="request.categoryId = null">
+        :class="{active:request.epicId === null}"
+        @click="request.epicId = null">
         All
       </div>
       <div
-        v-for="cat in categories"
+        v-for="cat in epics"
         :key="'f' + cat.id"
         class="filter-chip"
-        :class="{active: request.categoryId === cat.id}"
-        @click="request.categoryId = cat.id">
+        :class="{active: request.epicId === cat.id}"
+        @click="request.epicId = cat.id">
         <span :style="`color:${cat.color}`">● </span>{{cat.name}}
       </div>
     </div>

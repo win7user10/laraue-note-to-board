@@ -10,24 +10,15 @@ const emit = defineEmits<{
   (e: 'create', value: CreateCardRequest): void
 }>()
 
-const { state, currentSpace } = useBoard()
 const { t } = useI18n();
-
-const newCard = ref<CreateCardRequest>({
-  content: "",
-  categoryId: 0,
-  statusId: 0,
-  spaceId: 0
-})
 
 const props = defineProps<{
   statusId: number,
 }>()
 
-onMounted(async () => {
-  newCard.value.categoryId = state.value.categoryId;
-  newCard.value.spaceId = currentSpace.value!.id;
-  newCard.value.statusId = props.statusId;
+const newCard = ref<CreateCardRequest>({
+  content: "",
+  statusId: props.statusId,
 })
 
 const createCard = () => {

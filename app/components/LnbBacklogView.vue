@@ -10,7 +10,7 @@ const emits = defineEmits<{
   (e: 'openEdit', message: MessageListDto): void,
 }>()
 
-const { state, dbMessagesCount } = useBoard()
+const { state } = useBoard()
 
 const backlogMessagesResult = computed(() => {
   return state.value.messages.length > 0
@@ -27,17 +27,8 @@ const { t } = useI18n();
 <template>
   <div class="backlog-view">
 
-    <LnbBoardHeader style="padding:0 0 10px;border-bottom:none;margin-bottom:0">
-      <template #title>
-        {{ t('backlog') }}
-      </template>
-      <template #subtitle>
-        {{ dbMessagesCount }} {{ t('cards', { count: dbMessagesCount }) }}
-      </template>
-    </LnbBoardHeader>
-
     <template v-if="backlogMessagesResult?.data.length === 0">
-      <template v-if="state.categories.length > 0 && !state.searchString">
+      <template v-if="state.epics.length > 0 && !state.searchString">
         <LnbBoardSummaryGrid />
       </template>
       <template v-else>
@@ -52,10 +43,10 @@ const { t } = useI18n();
       <LnbScrollArea :statusId="statusId">
         <LnbCard
             v-for="msg in backlogMessagesResult?.data"
-            :deleteButton="true"
-            :message="msg"
+            :deleteButton="!!state.currentEpic?.canDeleteIssues"
+            :message="msg as any"
             :key="msg.id"
-            :assignButton="true"
+            :assignButton="!!state.currentEpic?.canUpdateIssues"
             :highlightText="searchString"
             @openDelete="emits('openDelete', $event)"
             @openAssignToCategory="emits('openAssignToCategory', $event)"

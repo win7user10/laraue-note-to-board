@@ -4,6 +4,7 @@
     modelValue: { type: String, required: true },
     placeholder: { type: String, required: true },
     focus: { type: Boolean, required: false },
+    disabled: { type: Boolean, required: false },
   })
 
   const emits = defineEmits<{
@@ -48,12 +49,12 @@
     ref="textarea"
     class="modal-textarea"
     :class="{
-      disabled: isLoading,
+      disabled: disabled || isLoading,
     }"
     :value="modelValue"
     @input="emits('update:modelValue', ($event.target as any).value)"
     @keydown.enter="handleEnter"
-    :disabled="isLoading"
+    :disabled="disabled || isLoading"
     :placeholder="placeholder">
   </textarea>
 </template>
@@ -61,5 +62,5 @@
 <style scoped>
 .modal-textarea{width:100%;background:var(--surface3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;color:var(--text);font-family:'Syne',sans-serif;outline:none;margin-bottom:12px;resize:vertical;min-height:80px;transition:border-color 0.15s;line-height:1.5;field-sizing: content;}
 .modal-textarea:focus{border-color:var(--accent)}
-.modal-textarea.disabled{background:var(--surface2);cursor:not-allowed;}
+.modal-textarea.disabled{background:var(--surface2);cursor:text;}
 </style>

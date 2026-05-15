@@ -1,9 +1,12 @@
+import {useUserOrganizationPreferencesApi} from "~/composables/userOrganizationPreferencesApi";
+
 export const useInitUser = () => {
     const appState = useAppState()
     const { setLocale } = useI18n()
+    const { setUserToken, deleteUserToken, deleteOrganizationToken } = useLocalStorageUtils()
 
     const setAppUser = async (bearerToken: string) => {
-        localStorage.setItem('bearer', bearerToken)
+        await setUserToken(bearerToken)
 
         const { loadUser } = useUserApi();
 
@@ -12,7 +15,8 @@ export const useInitUser = () => {
     }
 
     const tryAuthWithStoredBearer = async () => {
-        const bearer = localStorage.getItem('bearer')
+        const { getUserToken } = useLocalStorageUtils()
+        const bearer = getUserToken()
         if (!bearer)
             return false
 
@@ -20,6 +24,24 @@ export const useInitUser = () => {
         try {
             const user = await loadUser();
             await setUser(user);
+            return true;
+        }
+        catch (error) {
+            console.error(error);
+            return false;
+        }
+    }
+
+    const tryAuthOrganizationWithStoredBearer = async () => {
+        const { getOrganizationToken } = useLocalStorageUtils()
+        const bearer = getOrganizationToken()
+        if (!bearer)
+            return false
+
+        const { getOrganization } = useOrganizationsApi();
+        try {
+            const organization = await getOrganization();
+            await setOrganization(organization);
             return true;
         }
         catch (error) {
@@ -39,14 +61,30 @@ export const useInitUser = () => {
         return setLocale(user.languageCode);
     }
 
-    const logout = () => {
+    const setOrganization = async (organization: OrganizationDto) => {
+        appState.setOrganization(organization);
+
+        const { loadPreferences } = useUserOrganizationPreferencesApi()
+        const preferences = await loadPreferences();
+        appState.setUserOrganizationPreferences(preferences);
+    }
+
+    const logout = async () => {
         appState.setUser(null);
-        localStorage.removeItem('bearer');
+        await deleteUserToken();
+    }
+
+    const logoutOrganization = async () => {
+        appState.setOrganization(null);
+        await deleteOrganizationToken();
     }
 
     return {
         setAppUser,
         tryAuthWithStoredBearer,
+        tryAuthOrganizationWithStoredBearer,
         logout,
+        logoutOrganization,
+        setOrganization,
     }
 }

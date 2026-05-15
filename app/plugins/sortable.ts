@@ -4,7 +4,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     // Register a simple directive
     nuxtApp.vueApp.directive('sortable', {
         mounted(el, binding) {
-            const { catId, statusId, onCardMoved } = binding.value;
+            const { statusId, onCardMoved } = binding.value;
             el._sortableInstance = Sortable.create(el, {
                 group: 'cards',
                 sort: false,                  // no reordering within column
@@ -16,20 +16,20 @@ export default defineNuxtPlugin((nuxtApp) => {
                 chosenClass: 'sortable-chosen',
                 onAdd(evt) {
                     const cardId = evt.item.dataset.cardId;
-                    onCardMoved(cardId, catId, statusId);
+                    onCardMoved(cardId, statusId);
                     evt.item.remove();          // Vue re-renders from state
                 }
             });
-            el._sortableMeta = { catId, statusId, onCardMoved };
+            el._sortableMeta = { statusId, onCardMoved };
         },
         updated(el, binding) {
             // Keep metadata fresh when Vue re-renders (e.g. board switch)
             el._sortableMeta = binding.value;
             if (el._sortableInstance) {
-                const { onCardMoved, catId, statusId } = binding.value;
+                const { onCardMoved, statusId } = binding.value;
                 el._sortableInstance.option('onAdd', (evt: { item: { dataset: { cardId: any; }; remove: () => void; }; }) => {
                     const cardId = evt.item.dataset.cardId;
-                    onCardMoved(cardId, catId, statusId);
+                    onCardMoved(cardId, statusId);
                     evt.item.remove();
                 });
             }

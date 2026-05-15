@@ -13,7 +13,7 @@ const emits = defineEmits<{
 
 const { t } = useI18n()
 
-const { currentSpace, spaces, createSpace, reloadBoard, reloadCategories, setCategory, editSpace, deleteSpace } = useBoard()
+const { currentSpace, spaces, createSpace, reloadBoard, reloadEpics, setCategory, editSpace, deleteSpace } = useBoard()
 const { updateSpaceId, appState } = useAppState()
 const { updateSpace } = useUserOrganizationPreferencesApi()
 const modals = reactive({
@@ -28,7 +28,7 @@ const setSpaceInternal = async (id: number) => {
   setCategory(0)
 
   // reload data
-  await reloadCategories()
+  await reloadEpics()
   await reloadBoard(true)
 
   // update preferences

@@ -68,8 +68,8 @@ const cardsByStatus = computed(() => {
   return Object.fromEntries(board.state.value.messages.map(x => [x.statusId, x.items]));
 })
 
-const onCardMoved = async (cardId: string, epicId: number, statusId: number) => {
-  await board.moveCard(Number(cardId), board.currentSpace.value!.id, epicId, statusId);
+const onCardMoved = async (cardId: string, statusId: number) => {
+  await board.moveCard(Number(cardId), statusId);
 };
 
 const onColMoved = async (statusId: string, newSortOrder: number) => {
@@ -77,7 +77,7 @@ const onColMoved = async (statusId: string, newSortOrder: number) => {
 };
 
 const currentCategory = computed(() => {
-  return board.state.value.currentCategory;
+  return board.state.value.currentEpic;
 })
 
 const searchString = computed(() => board.state.value.searchString);
@@ -90,7 +90,7 @@ const searchString = computed(() => board.state.value.searchString);
     <div class="board-columns"
       v-col-sortable="{
         onColMoved,
-        applySort: board.state.value.currentCategory?.canUpdate
+        applySort: board.state.value.currentEpic?.canUpdate
       }">
       <div
         v-for="status in board.statuses.value"
@@ -99,9 +99,9 @@ const searchString = computed(() => board.state.value.searchString);
         :data-status-id="status.id">
         <div
           class="col-header"
-          :class="{ draggable: board.state.value.currentCategory?.canUpdate }">
+          :class="{ draggable: board.state.value.currentEpic?.canUpdate }">
           <div class="col-drag-handle">
-            <svg viewBox="0 0 16 16" fill="currentColor" v-if="board.state.value.currentCategory?.canUpdate">
+            <svg viewBox="0 0 16 16" fill="currentColor" v-if="board.state.value.currentEpic?.canUpdate">
               <circle cx="5" cy="4" r="1.2"></circle>
               <circle cx="11" cy="4" r="1.2"></circle>
               <circle cx="5" cy="8" r="1.2"></circle>
@@ -114,7 +114,7 @@ const searchString = computed(() => board.state.value.searchString);
           <div class="col-title">{{ status.name }}</div>
           <div class="col-count">{{ cardsByStatus[status.id]?.totalCount ?? 0 }}</div>
           <LnbIconBtn
-            v-if="board.state.value.currentCategory?.canUpdate"
+            v-if="board.state.value.currentEpic?.canUpdate"
             @click.stop="openEditStatus(status)"
             title=""
             icon="edit"
@@ -122,7 +122,7 @@ const searchString = computed(() => board.state.value.searchString);
             iconSize="small" />
           <LnbIconBtn
             type="danger"
-            v-if="(currentCategory?.statuses.length ?? 0) > 1 && board.state.value.currentCategory?.canDelete"
+            v-if="(currentCategory?.statuses.length ?? 0) > 1 && board.state.value.currentEpic?.canDelete"
             @click.stop="openDeleteStatus(status)"
             title=""
             icon="delete"
@@ -130,20 +130,20 @@ const searchString = computed(() => board.state.value.searchString);
             iconSize="small" />
         </div>
         <LnbScrollArea :statusId="status.id">
-          <div class="col-drag-inner" v-sortable="{ catId: board.state.value.epicId, statusId: status?.id, onCardMoved }">
+          <div class="col-drag-inner" v-sortable="{ statusId: status.id, onCardMoved }">
             <LnbCard
-                v-for="msg in cardsByStatus[status.id]?.data"
-                @openDelete="emits('openDelete', msg)"
-                @openEdit="emits('openEdit', $event)"
-                @openAssignToCategory="emits('openAssignToCategory', $event)"
-                :deleteButton="!!currentCategory?.canDeleteIssues"
-                :key="msg.id"
-                :assignButton="!!currentCategory?.canUpdateIssues"
-                :highlightText="searchString"
-                :message="msg"/>
+              v-for="msg in cardsByStatus[status.id]?.data"
+              @openDelete="emits('openDelete', $event)"
+              @openEdit="emits('openEdit', $event)"
+              @openAssignToCategory="emits('openAssignToCategory', $event)"
+              :deleteButton="!!currentCategory?.canDeleteIssues"
+              :key="msg.id"
+              :assignButton="!!currentCategory?.canUpdateIssues"
+              :highlightText="searchString"
+              :message="msg as any"/>
           </div>
         </LnbScrollArea>
-        <div v-if="board.state.value.currentCategory?.canCreateIssues" class="col-add-btn" @click="openAddToBoard(status)">
+        <div v-if="board.state.value.currentEpic?.canCreateIssues" class="col-add-btn" @click="openAddToBoard(status)">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M8 3v10M3 8h10"/>
           </svg>
@@ -151,7 +151,7 @@ const searchString = computed(() => board.state.value.searchString);
         </div>
       </div>
 
-      <div  v-if="board.state.value.currentCategory?.canUpdate" class="add-col-btn" @click="modal.createStatus = true">
+      <div  v-if="board.state.value.currentEpic?.canUpdate" class="add-col-btn" @click="modal.createStatus = true">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:14px;height:14px">
           <path d="M8 3v10M3 8h10"/>
         </svg>

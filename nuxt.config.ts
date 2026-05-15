@@ -2,6 +2,10 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
   ssr: false,
+  typescript: {
+    typeCheck: true,
+    strict: true, // Recommended for thorough checks
+  },
 
   vite: {
     server: {

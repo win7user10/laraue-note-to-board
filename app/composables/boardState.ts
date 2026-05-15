@@ -2,6 +2,7 @@ import {DefaultPagination} from "~/composables/pagination";
 import {ref} from "vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
 import type {EpicListDto} from "~/composables/spacesApi";
+import {useEpicsApi} from "~/composables/epicsApi";
 
 const { showToast, appState, updateSpaceId } = useAppState()
 
@@ -11,11 +12,11 @@ export const useBoard = () => {
 
     const state = useState('boardState', () => ({
         messages: [] as ColumnMessages[],
-        categories: [] as EpicListDto[],
+        epics: [] as EpicListDto[],
         spaces: [] as SpaceListDto[],
         noSpaceEpicsCount: 0,
         epicId: null as number | null,
-        currentCategory: undefined as EpicDto | undefined,
+        currentEpic: undefined as EpicDto | undefined,
         searchString: '',
         openedMedia: [] as MediaInfo[],
         openedMediaIndex: 0,
@@ -61,7 +62,7 @@ export const useBoard = () => {
         if (!state.value.epicId)
             return;
 
-        if (!state.value.currentCategory?.canViewIssues)
+        if (!state.value.currentEpic?.canViewIssues)
             return;
 
         state.value.messages = await messagesApi.loadBoard(
@@ -99,20 +100,20 @@ export const useBoard = () => {
         messages.items.hasNext = result.hasNext;
     }
 
-    const reloadCategories = async () => {
-        state.value.categories = [];
+    const reloadEpics = async () => {
+        state.value.epics = [];
         if (!spaceId.value)
             return
         const spacesApi = useSpacesApi()
-        state.value.categories = await spacesApi.loadSpaceEpics(spaceId.value);
-        const firstEpic = state.value.categories[0];
+        state.value.epics = await spacesApi.loadSpaceEpics(spaceId.value);
+        const firstEpic = epics.value[0];
         if (firstEpic)
             state.value.epicId = firstEpic.id;
     }
 
-    const categories = computed(() => {
+    const epics = computed(() => {
         const categoryOrder = appState.value.userPreferences!.epicSortOrder
-        let data = [...state.value.categories];
+        let data = [...state.value.epics];
         if (categoryOrder === EpicSortOrder.Alphabetical)
             data.sort((a, b) => {
                 if (a.isDefault)
@@ -148,7 +149,7 @@ export const useBoard = () => {
         await reloadColumn(value.statusId, offset ? offset + 1 : DefaultPagination.perPage);
 
         // Update top menu counters
-        const messageCategory = state.value.categories.find(c => c.id === state.value.epicId)
+        const messageCategory = state.value.epics.find(c => c.id === state.value.epicId)
         if (messageCategory)
             messageCategory.touchedAt = now();
 
@@ -157,7 +158,7 @@ export const useBoard = () => {
             messagesByCategory.items.totalCount++;
 
         const status = statuses.value.find(x => x.id === value.statusId);
-        const subTitle = status ? `${state.value.currentCategory?.name} · ${status?.name}` : undefined;
+        const subTitle = status ? `${state.value.currentEpic?.name} · ${status?.name}` : undefined;
         showToast(t('cardCreated'), 'success', subTitle);
     }
 
@@ -202,9 +203,9 @@ export const useBoard = () => {
     })
 
     const createCategory = async (value: CreateCategoryRequest) => {
-        const categoriesApi = useCategoriesApi()
-        const id = await categoriesApi.createCategory(value);
-        state.value.categories.push({
+        const epicsApi = useEpicsApi()
+        const id = await epicsApi.createCategory(value);
+        state.value.epics.push({
             id: id,
             name: value.name,
             color: value.color,
@@ -222,7 +223,7 @@ export const useBoard = () => {
         if (card)
             card.content = value.content;
 
-        const category = state.value.categories.find(c => c.id === card?.epicId)
+        const category = state.value.epics.find(c => c.id === card?.epicId)
         if (category)
             category.touchedAt = now();
 
@@ -248,26 +249,26 @@ export const useBoard = () => {
     }
 
     const editCategory = async (request: EditCategoryRequest) => {
-        const categoriesApi = useCategoriesApi()
-        await categoriesApi.editCategory(state.value.epicId!, request)
-        const category = state.value.categories.find(c => c.id === state.value.epicId)!
+        const epicsApi = useEpicsApi()
+        await epicsApi.editCategory(state.value.epicId!, request)
+        const category = state.value.epics.find(c => c.id === state.value.epicId)!
         category.color = request.color;
         category.name = request.name;
         category.touchedAt = now();
 
-        state.value.currentCategory!.color = request.color;
-        state.value.currentCategory!.name = request.name;
-        state.value.currentCategory!.name = request.name;
+        state.value.currentEpic!.color = request.color;
+        state.value.currentEpic!.name = request.name;
+        state.value.currentEpic!.name = request.name;
 
         showToast(t('boardUpdated'), 'success', request.name);
     }
 
     const deleteCategory = async () => {
-        const categoriesApi = useCategoriesApi()
-        await categoriesApi.deleteCategory(state.value.epicId!)
-        const index = state.value.categories.findIndex(c => c.id === state.value.epicId)
-        state.value.categories.splice(index, 1);
-        state.value.currentCategory = undefined;
+        const epicsApi = useEpicsApi()
+        await epicsApi.deleteCategory(state.value.epicId!)
+        const index = state.value.epics.findIndex(c => c.id === state.value.epicId)
+        state.value.epics.splice(index, 1);
+        state.value.currentEpic = undefined;
         state.value.epicId = 0;
 
         showToast(t('boardDeleted'), 'danger');
@@ -286,8 +287,8 @@ export const useBoard = () => {
         state.value.messages.splice(removingIndex, 1)
 
         // Remove column
-        const removeIndex = state.value.currentCategory!.statuses.findIndex(c => c.id === id);
-        state.value.currentCategory!.statuses.splice(removeIndex, 1)
+        const removeIndex = state.value.currentEpic!.statuses.findIndex(c => c.id === id);
+        state.value.currentEpic!.statuses.splice(removeIndex, 1)
 
         // Reload first column, calculate new offset + total
         const firstStatus = statuses.value[0]!
@@ -302,12 +303,12 @@ export const useBoard = () => {
     const createStatus = async (value: CreateStatusRequest) => {
         const statusApi = useStatusesApi()
         const id = await statusApi.createStatus(value);
-        const statuses = state.value.currentCategory?.statuses;
+        const statuses = state.value.currentEpic?.statuses;
         if (!statuses)
             return;
 
         const lastOrder = Math.max(...statuses.map(x => x.sortOrder))
-        state.value.currentCategory!.statuses.push({
+        state.value.currentEpic!.statuses.push({
             id: id,
             name: value.name,
             color: value.color,
@@ -337,14 +338,14 @@ export const useBoard = () => {
     }
 
     const reloadCategory = async () => {
-        state.value.currentCategory = undefined;
-        const categoriesApi = useCategoriesApi()
+        state.value.currentEpic = undefined;
+        const epicsApi = useEpicsApi()
         if (state.value.epicId)
-            state.value.currentCategory = await categoriesApi.loadCategory(state.value.epicId)
+            state.value.currentEpic = await epicsApi.loadCategory(state.value.epicId)
     }
 
     const statuses = computed(() => {
-        return state.value.currentCategory?.statuses
+        return state.value.currentEpic?.statuses
             .sort((a, b) => a.sortOrder - b.sortOrder) ?? [];
     })
 
@@ -358,7 +359,7 @@ export const useBoard = () => {
             .reduce((acc, x) => acc + x, 0)
     })
 
-    const moveCard = async (cardId: number, spaceId: number, epicId: number, statusId: number) => {
+    const moveCard = async (cardId: number, statusId: number) => {
         const card = allCards.value.find(m => m.id === cardId);
         if (!card) return;
 
@@ -379,13 +380,13 @@ export const useBoard = () => {
             await reloadColumn(statusId, newColumnMessages.items.offset + 1)
         }
 
-        // update epics
-        const newCategory = state.value.categories.find(c => c.id === epicId)
+        // As soon as card is found, card is moving to currently opened epic
+        const newCategory = state.value.epics.find(c => c.id === state.value.epicId)
         if (newCategory)
             newCategory.touchedAt = now();
 
         // update card properties
-        card.epicId = epicId!;
+        card.epicId = state.value.epicId!;
         card.statusId = statusId;
 
         // raise notification
@@ -393,7 +394,7 @@ export const useBoard = () => {
     };
 
     const changeColumnOrder = async (statusId: number, newSortOrder: number) => {
-        const cat = state.value.currentCategory;
+        const cat = state.value.currentEpic;
         if (!cat) return;
 
         const idx = cat.statuses.findIndex(s => s.id === statusId);
@@ -409,8 +410,8 @@ export const useBoard = () => {
             status.sortOrder = i;
         })
 
-        const categoriesApi = useCategoriesApi()
-        await categoriesApi.reorderStatuses(
+        const epicsApi = useEpicsApi()
+        await epicsApi.reorderStatuses(
             state.value.epicId!,
             Object.fromEntries(newStatuses.map(item => [item.id, item.sortOrder])))
 
@@ -464,7 +465,7 @@ export const useBoard = () => {
                 updateSpaceId(selectedSpace.id)
                 state.value.epicId = selectedSpace.id;
                 await reloadBoard(false)
-                await reloadCategories()
+                await reloadEpics()
 
                 // Update preferences
                 const { updateSpace } = useUserOrganizationPreferencesApi()
@@ -482,13 +483,13 @@ export const useBoard = () => {
     return {
         state: readonly(state),
         reloadBoard,
-        reloadCategories,
+        reloadEpics,
         reloadCategory,
         createCategory,
         setCategory,
         editCategory,
         deleteCategory,
-        categories,
+        epics,
         createCard,
         editCard,
         deleteCard,

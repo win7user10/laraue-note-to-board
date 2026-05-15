@@ -23,9 +23,9 @@ const { setCategory, state, anySpaceAvailable } = useBoard()
 const { getDocumentationLink } = useUtils()
 const { appState } = useAppState()
 const { getSpace } = useSpacesApi()
-const isBacklog = computed(() => state.value.categories.find(c => state.value.epicId == c.id)?.isDefault);
+const isBacklog = computed(() => state.value.epics.find(c => state.value.epicId == c.id)?.isDefault);
 const epicId = computed(() => state.value.epicId);
-const currentCategory = computed(() => state.value.currentCategory);
+const currentCategory = computed(() => state.value.currentEpic);
 const defaultStatus = computed(() => currentCategory.value?.statuses[0]);
 
 const { t } = useI18n();
@@ -36,7 +36,7 @@ watch(() => appState.value.organization!.id, () => fullReload())
 
 const fullReload = async () => {
   await board.reloadSpaces();
-  await board.reloadCategories();
+  await board.reloadEpics();
   await board.reloadBoard(true);
 }
 
@@ -56,7 +56,7 @@ const loadSpaceData = async () => {
 watch(() => board.currentSpace.value, (value) => loadSpaceData())
 
 const epicTabsAvailable = computed(() => {
-  return categories.value.length > 0 || spaceAdditionalData.value?.canCreateEpics
+  return epics.value.length > 0 || spaceAdditionalData.value?.canCreateEpics
 })
 
 const modal = reactive({
@@ -87,7 +87,7 @@ const createCategoryInternal = async (value: CreateCategoryRequest) => {
   setCategory(id);
 }
 
-const categories = board.categories;
+const epics = board.epics;
 
 const openCreateCard = () => {
   modal.createCard = true;
@@ -124,11 +124,6 @@ const openAssignToCategory = (message: MessageListDto) => {
 }
 
 const closeAssignToCategory = () => {
-  modal.assign = false;
-}
-
-const assignToCategory = async (epicId: number) => {
-  await board.moveCard(assignMsg.value!.id, board.currentSpace.value!.id, epicId)
   modal.assign = false;
 }
 
@@ -196,7 +191,7 @@ const deleteCategoryInternal = async () => {
   <div class="nav-tabs-wrap" v-if="epicTabsAvailable">
     <div class="nav-tabs">
       <div
-          v-for="cat in categories"
+          v-for="cat in epics"
           class="nav-tab"
           :class="{active: epicId === cat.id}"
           :style="epicId === cat.id ? `--dot-color:${cat.color}` : ''"
@@ -223,7 +218,7 @@ const deleteCategoryInternal = async () => {
     </div>
   </div>
 
-  <template v-if="state.categories.length > 0 && state.currentCategory?.canViewIssues">
+  <template v-if="state.epics.length > 0 && state.currentEpic?.canViewIssues">
 
     <LnbBoardHeader>
       <template v-if="currentCategory" #title>
@@ -282,7 +277,7 @@ const deleteCategoryInternal = async () => {
         subtitle="Please contact organization administrator and ask for permissions"/>
   </template>
 
-  <template v-if="anySpaceAvailable && epicTabsAvailable && !state.currentCategory?.canViewIssues">
+  <template v-if="anySpaceAvailable && epicTabsAvailable && !state.currentEpic?.canViewIssues">
     <LnbEmptyState
         title="Issues are not available for view"
         subtitle="Please contact organization administrator and ask for permissions"/>
@@ -294,9 +289,8 @@ const deleteCategoryInternal = async () => {
     v-if="modal.createCategory"/>
 
   <LnbMoveCardModal
-    :assign-msg="assignMsg"
+    :assign-msg="assignMsg as any"
     @close="closeAssignToCategory"
-    @assignToCategory="assignToCategory"
     v-if="modal.assign" />
 
   <LnbDeleteCardModal

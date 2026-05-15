@@ -15,7 +15,7 @@ const request = ref({
 })
 
 const { state, currentSpace } = useBoard()
-const categories = computed(() => state.value.categories)
+const epics = computed(() => state.value.epics)
 
 const pagination = ref(DefaultPagination);
 const searchResults = ref<FullPaginatedResult<MessageListDto> | null>()
@@ -75,7 +75,7 @@ const { t } = useI18n();
         All
       </div>
       <div
-        v-for="cat in categories"
+        v-for="cat in epics"
         :key="'f' + cat.id"
         class="filter-chip"
         :class="{active: request.epicId === cat.id}"

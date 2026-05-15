@@ -12,7 +12,7 @@
   "noBoards": "No boards yet. Create a category first.",
   "backlogEmpty": "Backlog is clear",
   "backlogEmptySubtitle": "All messages have been assigned to boards",
-  "unassignedTitle": "Unassigned · Move to categories",
+  "unassignedTitle": "Unassigned · Move to epics",
   "addEpic": "Add epic",
   "addColumn": "Add column",
   "editStatusColumn": "Edit Status Column",
@@ -135,5 +135,6 @@
   "accessRevoked": "Access revoked",
   "learnAboutOrganizations": "Learn about organizations",
   "learnAboutEpics": "Learn about epics",
-  "learnAboutBacklog": "Learn about backlog"
+  "learnAboutBacklog": "Learn about backlog",
+  "selectEpic": "Select Epic"
 }

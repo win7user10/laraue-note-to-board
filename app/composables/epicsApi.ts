@@ -1,4 +1,4 @@
-import {useCategoriesClient} from "~/composables/categoriesClient";
+import {useEpicsClient} from "~/composables/epicsClient";
 
 export interface CreateCategoryRequest {
     name: string;
@@ -30,8 +30,8 @@ export interface EditCategoryRequest {
     color: string;
 }
 
-export const useCategoriesApi = () => {
-    const client = useCategoriesClient()
+export const useEpicsApi = () => {
+    const client = useEpicsClient()
 
     const loadCategory = (id: number) => {
         return client<EpicDto>('/epics/' + id, {

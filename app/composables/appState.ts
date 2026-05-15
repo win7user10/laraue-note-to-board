@@ -74,7 +74,7 @@ export const useAppState = () => {
         appState.value.userOrganizationPreferences = preferences;
     }
 
-    const updateCategoriesOrdering = (sortOrder: EpicSortOrder) => {
+    const updateEpicsOrdering = (sortOrder: EpicSortOrder) => {
         appState.value.userPreferences!.epicSortOrder = sortOrder;
     }
 
@@ -94,7 +94,7 @@ export const useAppState = () => {
         palette,
         setPreferences,
         setUserOrganizationPreferences,
-        updateCategoriesOrdering,
+        updateEpicsOrdering,
         updateSpaceId,
         setOrganization,
     }

@@ -9,11 +9,11 @@
   const { t } = useI18n();
 
   const { updateEpicSortOrder } = useUserPreferencesApi()
-  const { appState, updateCategoriesOrdering } = useAppState()
+  const { appState, updateEpicsOrdering } = useAppState()
   const sortOrder = computed(() => appState.value.userPreferences!.epicSortOrder);
 
   const updateSortOrder = async (sortOrder: EpicSortOrder) => {
-    updateCategoriesOrdering(sortOrder)
+    updateEpicsOrdering(sortOrder)
     await updateEpicSortOrder(sortOrder)
   }
 </script>

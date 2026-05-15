@@ -1,7 +1,7 @@
 <script setup lang="ts">
 
 import LnbColorPicker from "~/components/LnbColorPicker.vue";
-import type {EditCategoryRequest} from "~/composables/categoriesApi";
+import type {EditCategoryRequest} from "~/composables/epicsApi";
 import {useAppState} from "~/composables/appState";
 import LnbModal from "~/components/modals/LnbModal.vue";
 import LnbModalLabel from "~/components/modals/LnbModalLabel.vue";
@@ -21,8 +21,8 @@ const request = ref<EditCategoryRequest>({
 })
 
 onMounted(() => {
-  request.value.color = state.value.currentCategory?.color ?? getRandomColor();
-  request.value.name = state.value.currentCategory?.name ?? '';
+  request.value.color = state.value.currentEpic?.color ?? getRandomColor();
+  request.value.name = state.value.currentEpic?.name ?? '';
 })
 
 const { t } = useI18n();

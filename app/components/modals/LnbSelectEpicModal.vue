@@ -18,17 +18,18 @@ const emit = defineEmits<{
   (e: 'select', epic: EpicListDto): void
 }>()
 
+const { t } = useI18n()
 </script>
 
 <template>
   <LnbModal
     @close="emit('close')"
-    title="Select Epic">
+    :title="t('selectEpic')">
     <LnbModalListOpts>
       <LnbModalListOpt
         v-for="epic in result"
         :name="epic.name"
-        sub="''"
+        sub=""
         @click="emit('select', epic)">
         <template #avatar>
           <LnbCardAvatar :color="epic.color">

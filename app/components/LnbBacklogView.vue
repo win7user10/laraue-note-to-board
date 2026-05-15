@@ -28,7 +28,7 @@ const { t } = useI18n();
   <div class="backlog-view">
 
     <template v-if="backlogMessagesResult?.data.length === 0">
-      <template v-if="state.categories.length > 0 && !state.searchString">
+      <template v-if="state.epics.length > 0 && !state.searchString">
         <LnbBoardSummaryGrid />
       </template>
       <template v-else>
@@ -43,10 +43,10 @@ const { t } = useI18n();
       <LnbScrollArea :statusId="statusId">
         <LnbCard
             v-for="msg in backlogMessagesResult?.data"
-            :deleteButton="!!state.currentCategory?.canDeleteIssues"
-            :message="msg"
+            :deleteButton="!!state.currentEpic?.canDeleteIssues"
+            :message="msg as any"
             :key="msg.id"
-            :assignButton="!!state.currentCategory?.canUpdateIssues"
+            :assignButton="!!state.currentEpic?.canUpdateIssues"
             :highlightText="searchString"
             @openDelete="emits('openDelete', $event)"
             @openAssignToCategory="emits('openAssignToCategory', $event)"

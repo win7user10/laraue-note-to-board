@@ -106,7 +106,7 @@ export const useMessagesApi = () => {
         });
     }
 
-    const move = (messageId: number, statusId: number | null) => {
+    const move = (messageId: number, statusId: number) => {
         return client('/issues/' + messageId + '/move', {
             method: 'PUT',
             body: {

@@ -8,9 +8,10 @@ import LnbButton from "~/components/LnbButton.vue";
 import type { FetchError } from 'ofetch';
 import LnbElementWithHelpLink from "~/components/modals/LnbElementWithHelpLink.vue";
 
-const { appState, setOrganization } = useAppState()
+const { appState } = useAppState()
 const { setOrganizationToken } = useLocalStorageUtils()
 const { getDocumentationLink } = useUtils()
+const { setOrganization } = useInitUser()
 const { getOrganizations, createOrganization, editOrganization, deleteOrganization, login, join } = useOrganizationsApi()
 const { t } = useI18n()
 const authUser = appState.value.user
@@ -62,7 +63,6 @@ const openCreateOrganization = () => {
 }
 
 const createOrganizationInternal = async (request: CreateOrganizationRequest) => {
-  console.log(request)
   const id = await createOrganization(request)
   organizations.value.push({
     id: id,
@@ -99,7 +99,7 @@ const loginOrg = async (id: number) => {
 
   const { getOrganization } = useOrganizationsApi()
   const organization = await getOrganization()
-  setOrganization(organization)
+  await setOrganization(organization)
 }
 </script>
 

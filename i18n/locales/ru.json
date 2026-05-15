@@ -133,5 +133,8 @@
   "regenerate": "Обновить",
   "inviteCodeCopied": "Код для присоединения скопирован",
   "inviteCodeRegenerated": "Код для присоединения обновлен",
-  "accessRevoked": "Доступ отозван"
+  "accessRevoked": "Доступ отозван",
+  "learnAboutOrganizations": "Узнайте больше об организациях",
+  "learnAboutEpics": "Узнайте больше об эпиках",
+  "learnAboutBacklog": "Узнайте больше о бэклоге"
 }

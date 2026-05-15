@@ -17,8 +17,10 @@ import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
 import LnbDeleteCategoryModal from "~/components/modals/LnbDeleteCategoryModal.vue";
 import LnbEditCategoryModal from "~/components/modals/LnbEditCategoryModal.vue";
 import LnbTopbar from "~/components/LnbTopbar.vue";
+import LnbElementWithHelpLink from "~/components/modals/LnbElementWithHelpLink.vue";
 
 const { setCategory, state, anySpaceAvailable } = useBoard()
+const { getDocumentationLink } = useUtils()
 const { appState } = useAppState()
 const { getSpace } = useSpacesApi()
 const isBacklog = computed(() => state.value.categories.find(c => state.value.epicId == c.id)?.isDefault);
@@ -51,7 +53,7 @@ const loadSpaceData = async () => {
     spaceAdditionalData.value = await getSpace(board.currentSpace.value.id)
 }
 
-watch(() => board.currentSpace.value, (value) => loadSpaceData(), {  immediate: true })
+watch(() => board.currentSpace.value, (value) => loadSpaceData())
 
 const epicTabsAvailable = computed(() => {
   return categories.value.length > 0 || spaceAdditionalData.value?.canCreateEpics
@@ -225,8 +227,12 @@ const deleteCategoryInternal = async () => {
 
     <LnbBoardHeader>
       <template v-if="currentCategory" #title>
-        <span :style="`color:${currentCategory.color}`">●</span>
-        {{ currentCategory.name }}
+        <LnbElementWithHelpLink
+          :link-href="isBacklog ? getDocumentationLink('/working-alone/backlog') : getDocumentationLink('/concepts/epics')"
+          :link-title="isBacklog ? t('learnAboutBacklog') : t('learnAboutEpics')">
+          <span :style="`color:${currentCategory.color}`">●</span>
+          {{ currentCategory.name }}
+        </LnbElementWithHelpLink>
       </template>
       <template #subtitle>
         {{ board.dbMessagesCount }} {{ t('cards', board.dbMessagesCount.value) }}

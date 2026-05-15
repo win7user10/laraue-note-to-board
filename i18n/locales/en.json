@@ -133,5 +133,7 @@
   "inviteCodeCopied": "Invite code copied",
   "inviteCodeRegenerated": "Invite code regenerated",
   "accessRevoked": "Access revoked",
-  "learnAboutOrganizations": "Learn about organizations"
+  "learnAboutOrganizations": "Learn about organizations",
+  "learnAboutEpics": "Learn about epics",
+  "learnAboutBacklog": "Learn about backlog"
 }

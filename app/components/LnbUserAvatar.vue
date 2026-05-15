@@ -34,7 +34,7 @@
 <template>
 
   <!-- USER AVATAR — shown on web only (hidden inside Telegram via CSS) -->
-  <LnbCardAvatar :color="avatarData.color" @click.stop="userPopupOpen = !userPopupOpen" v-if="!isInMiniApp" class="user-avatar">
+  <LnbCardAvatar :color="avatarData.color" @click.stop="userPopupOpen = !userPopupOpen" class="user-avatar">
     {{avatarData.initials}}
   </LnbCardAvatar>
 
@@ -62,7 +62,7 @@
       </svg>
       {{ t('changeOrganization') }}
     </div>
-    <div class="user-popup-btn" @click="logout">
+    <div class="user-popup-btn" @click="logout" v-if="!isInMiniApp">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
         <path d="M6 3H3v10h3M10 5l3 3-3 3M13 8H6"/>
       </svg>

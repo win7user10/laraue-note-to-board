@@ -68,6 +68,7 @@ const { t } = useI18n();
   <LnbModal
     :title="t('manageOrganization')"
     :subtitle="organization?.name"
+    @cancel="emit('close')"
     @close="emit('close')">
     <!-- Invite link card -->
     <div class="invite-card" v-if="joinCode">

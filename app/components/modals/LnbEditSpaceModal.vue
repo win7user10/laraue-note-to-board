@@ -31,10 +31,11 @@ const { t } = useI18n();
 
 <template>
   <LnbModal
-      :applyText="t('editSpace')"
-      :title="t('editSpaceTitle')"
-      @close="emit('close')"
-      @apply="emit('edit', request)">
+    :applyText="t('editSpace')"
+    :title="t('editSpaceTitle')"
+    @close="emit('close')"
+    @cancel="emit('close')"
+    @apply="emit('edit', request)">
     <LnbModalLabel>{{ t('spaceName') }}</LnbModalLabel>
     <LnbModalInput
         focus

@@ -11,6 +11,7 @@ const { t } = useI18n();
 <template>
   <LnbModal
     @close="emit('close')"
+    @cancel="emit('close')"
     @apply="emit('delete')"
     :applyText="t('delete')"
     :title="t('deleteCardTitle')">

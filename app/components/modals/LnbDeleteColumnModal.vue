@@ -11,10 +11,11 @@ const { t } = useI18n();
 
 <template>
   <LnbModal
-      @close="emit('close')"
-      @apply="emit('delete')"
-      :applyText="t('delete')"
-      :title="t('deleteColumnTitle')">
+    @close="emit('close')"
+    @apply="emit('delete')"
+    @cancel="emit('close')"
+    :applyText="t('delete')"
+    :title="t('deleteColumnTitle')">
     <LnbConfirmBody>
       {{ t('deleteColumnConfirm') }}
     </LnbConfirmBody>

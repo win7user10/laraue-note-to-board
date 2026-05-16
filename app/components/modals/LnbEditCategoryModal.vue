@@ -34,6 +34,7 @@ const { t } = useI18n();
       :applyText="t('editCategory')"
       :title="t('editBoardTitle')"
       @close="emit('close')"
+      @cancel="emit('close')"
       @apply="emit('edit', request)">
     <LnbModalLabel>{{ t('categoryName') }}</LnbModalLabel>
     <LnbModalInput

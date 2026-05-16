@@ -24,6 +24,7 @@ const { t } = useI18n()
 <template>
   <LnbModal
     @close="emit('close')"
+    @cancel="emit('close')"
     :title="t('selectEpic')">
     <LnbModalListOpts>
       <LnbModalListOpt

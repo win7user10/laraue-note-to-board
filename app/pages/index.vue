@@ -18,6 +18,7 @@ import LnbDeleteCategoryModal from "~/components/modals/LnbDeleteCategoryModal.v
 import LnbEditCategoryModal from "~/components/modals/LnbEditCategoryModal.vue";
 import LnbTopbar from "~/components/LnbTopbar.vue";
 import LnbElementWithHelpLink from "~/components/modals/LnbElementWithHelpLink.vue";
+import LnbMassMoveModal from "~/components/modals/LnbMassMoveModal.vue";
 
 const { setCategory, state, anySpaceAvailable } = useBoard()
 const { getDocumentationLink } = useUtils()
@@ -32,18 +33,19 @@ const { t } = useI18n();
 const board = useBoard();
 
 onMounted(() => fullReload());
+
 watch(() => appState.value.organization!.id, () => fullReload())
+watch(() => state.value.epicId, async () => {
+  await board.reloadCategory();
+  await board.reloadBoard(true);
+})
+watch(() => board.currentSpace.value, () => loadSpaceData())
 
 const fullReload = async () => {
   await board.reloadSpaces();
   await board.reloadEpics();
   await board.reloadBoard(true);
 }
-
-watch(() => state.value.epicId, async () => {
-  await board.reloadCategory();
-  await board.reloadBoard(true);
-})
 
 const spaceAdditionalData = ref<SpaceDto | null>(null)
 const loadSpaceData = async () => {
@@ -52,8 +54,6 @@ const loadSpaceData = async () => {
   else
     spaceAdditionalData.value = await getSpace(board.currentSpace.value.id)
 }
-
-watch(() => board.currentSpace.value, (value) => loadSpaceData())
 
 const epicTabsAvailable = computed(() => {
   return epics.value.length > 0 || spaceAdditionalData.value?.canCreateEpics
@@ -68,6 +68,7 @@ const modal = reactive({
   search: false,
   editCategory: false,
   deleteCategory: false,
+  massMove: false,
 });
 
 const navSortPopupOpen = ref(false);
@@ -179,6 +180,15 @@ const closeDeleteCategory = () => {
 const deleteCategoryInternal = async () => {
   await board.deleteCategory();
   closeDeleteCategory();
+}
+
+const openMassMove = () => {
+  modal.massMove = true;
+}
+
+const closeMassMove = () => {
+  modal.massMove = false;
+  closeFab()
 }
 
 </script>
@@ -321,10 +331,15 @@ const deleteCategoryInternal = async () => {
     @close="closeEditCategory"
     @edit="editCategoryInternal"
     v-if="modal.editCategory"/>
+
   <LnbDeleteCategoryModal
     @close="closeDeleteCategory"
     @delete="deleteCategoryInternal"
     v-if="modal.deleteCategory"/>
+
+  <LnbMassMoveModal
+    v-if="modal.massMove"
+    @close="closeMassMove"/>
 
   <LnbMediaViewer
     v-if="board.state.value.openedMedia.length > 0" />
@@ -348,6 +363,9 @@ const deleteCategoryInternal = async () => {
       </LnbFabItem>
       <LnbFabItem v-if="currentCategory?.canCreateIssues" :title="t('createCard')" @click="openCreateCard">
         <path d="M8 5v6M5 8h6"/>
+      </LnbFabItem>
+      <LnbFabItem title="Mass move" @click="openMassMove"> <!--TODO - separated permission to move?? With at start allow only on personal?? -->
+        <path d="M2 4h8M2 8h8M2 12h8"></path><path d="M12 3l3 3-3 3"></path>
       </LnbFabItem>
     </div>
   </div>

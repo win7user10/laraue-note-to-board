@@ -32,6 +32,7 @@ const createCard = () => {
     :applyText="t('create')"
     :title="t('createCard')"
     @apply="createCard"
+    @cancel="emit('close')"
     @close="emit('close')">
     <LnbModalLabel>{{ t('text') }}</LnbModalLabel>
     <LnbModalTextarea

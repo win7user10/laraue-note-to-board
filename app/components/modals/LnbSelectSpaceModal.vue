@@ -17,6 +17,7 @@ const emit = defineEmits<{
 <template>
   <LnbModal
     @close="emit('close')"
+    @cancel="emit('close')"
     title="Select Space">
     <LnbModalListOpts>
       <LnbModalListOpt

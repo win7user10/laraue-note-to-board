@@ -31,6 +31,7 @@ const createSpace = () => {
       :applyText="t('createSpace')"
       :title="t('newSpace')"
       @close="emit('close')"
+      @cancel="emit('close')"
       @apply="createSpace">
     <LnbModalLabel>{{ t('spaceName') }}</LnbModalLabel>
     <LnbModalInput

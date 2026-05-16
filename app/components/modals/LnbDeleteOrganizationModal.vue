@@ -12,6 +12,7 @@ const { t } = useI18n();
   <LnbModal
     @close="emit('close')"
     @apply="emit('delete')"
+    @cancel="emit('close')"
     :applyText="t('delete')"
     :title="t('deleteOrganizationTitle')">
       <LnbConfirmBody>

@@ -37,6 +37,7 @@ const { t } = useI18n();
       :applyText="t('editColumn')"
       :title="t('editStatusColumn')"
       @close="emit('close')"
+      @cancel="emit('close')"
       @apply="emit('edit', newStatus)">
     <LnbModalLabel>{{ t('statusName') }}</LnbModalLabel>
     <LnbModalInput

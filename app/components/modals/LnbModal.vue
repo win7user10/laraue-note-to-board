@@ -5,6 +5,7 @@
   const props = defineProps({
     title: { type: String, required: true },
     applyText: { type: String, required: false },
+    cancelText: { type: String, required: false },
     fullHeight: { type: Boolean, required: false },
     determineScroll: { type: Boolean, required: false },
     disableApply: { type: Boolean, required: false },
@@ -12,6 +13,7 @@
   })
   const emit = defineEmits<{
     (e: 'close'): void,
+    (e: 'cancel'): void,
     (e: 'apply'): Promise<void>,
     (e: 'scroll'): void,
   }>()
@@ -21,6 +23,10 @@
 
   const close = () => {
     emit('close')
+  }
+
+  const cancel = () => {
+    emit('cancel')
   }
 
   const apply = async () => {
@@ -55,14 +61,15 @@
           <div class="modal-handle"></div>
           <div class="modal-title">{{ title }}</div>
           <div class="modal-subtitle" v-if="subtitle">{{ subtitle }}</div>
+          <slot name="head"></slot>
         </div>
         <div class="modal-body" ref="scrollableEl">
           <slot></slot>
           <div class="modal-btns">
 
             <LnbButton
-              :name="t('cancel')"
-              @click="close"
+              :name="cancelText ?? t('cancel')"
+              @click="cancel"
               :disabled="isLoading"
               type="ghost"/>
 

@@ -5,7 +5,7 @@ import LnbModalInput from "~/components/modals/LnbModalInput.vue";
 import type {EditOrganizationRequest} from "~/composables/organizationsApi";
 
 const props = defineProps<{
-  organization: OrganizationDto
+  organization: OrganizationListDto
 }>()
 
 const emit = defineEmits<{
@@ -32,6 +32,7 @@ const { t } = useI18n();
     :applyText="t('editOrganization')"
     :title="t('editOrganizationTitle')"
     @close="emit('close')"
+    @cancel="emit('close')"
     @apply="emit('edit', request)">
     <LnbModalLabel>{{ t('organizationName') }}</LnbModalLabel>
     <LnbModalInput

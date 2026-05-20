@@ -29,6 +29,7 @@ const create = () => {
     :applyText="t('createOrganization')"
     :title="t('newOrganization')"
     @close="emit('close')"
+    @cancel="emit('close')"
     @apply="create">
     <LnbModalLabel>{{ t('organizationName') }}</LnbModalLabel>
     <LnbModalInput

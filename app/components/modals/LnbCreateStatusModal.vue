@@ -31,10 +31,11 @@ const createStatus = () => {
 
 <template>
   <LnbModal
-      :apply-text="t('addColumn')"
-      :title="t('addStatusColumn')"
-      @close="emit('close')"
-      @apply="createStatus">
+    :apply-text="t('addColumn')"
+    :title="t('addStatusColumn')"
+    @close="emit('close')"
+    @cancel="emit('close')"
+    @apply="createStatus">
     <LnbModalLabel>{{ t('statusName') }}</LnbModalLabel>
     <LnbModalInput
         focus

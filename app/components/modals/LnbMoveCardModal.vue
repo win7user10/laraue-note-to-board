@@ -59,6 +59,7 @@
     :apply-text="t('move')"
     @apply="move"
     @close="$emit('close')"
+    @cancel="$emit('close')"
     :disable-apply="!status"
     :title="t('assignToBoard')">
     <div v-if="assignMsg" style="background: var(--surface3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 8px 11px; margin-bottom: 16px;">

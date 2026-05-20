@@ -292,6 +292,7 @@ const toggleDirectSpace = (id: number) => {
   <LnbModal
     title="Edit Permissions"
     @close="emit('close')"
+    @cancel="emit('close')"
     @apply="emit('update', permissions)"
     apply-text="Save">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px; margin-top:14px;">

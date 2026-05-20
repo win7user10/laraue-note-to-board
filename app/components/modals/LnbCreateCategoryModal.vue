@@ -32,6 +32,7 @@ const createCategory = () => {
     :applyText="t('createBoard')"
     :title="t('newCategoryBoard')"
     @close="emit('close')"
+    @cancel="emit('close')"
     @apply="createCategory">
     <LnbModalLabel>{{ t('categoryName') }}</LnbModalLabel>
     <LnbModalInput

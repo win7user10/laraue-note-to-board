@@ -2,16 +2,20 @@
   import LnbNavLoader from "~/components/LnbNavLoader.vue";
   import LnbButton from "~/components/LnbButton.vue";
 
-  const props = defineProps({
-    title: { type: String, required: true },
-    applyText: { type: String, required: false },
-    fullHeight: { type: Boolean, required: false },
-    determineScroll: { type: Boolean, required: false },
-    disableApply: { type: Boolean, required: false },
-    subtitle: { type: String, required: false },
-  })
+  const props = defineProps<{
+    title: string,
+    applyText?: string,
+    cancelText?: string,
+    fullHeight?: boolean,
+    determineScroll?: boolean,
+    disableApply?: boolean,
+    subtitle?: string,
+    confirmButton?: "ghost" | "primary" | "warn",
+  }>()
+
   const emit = defineEmits<{
     (e: 'close'): void,
+    (e: 'cancel'): void,
     (e: 'apply'): Promise<void>,
     (e: 'scroll'): void,
   }>()
@@ -21,6 +25,10 @@
 
   const close = () => {
     emit('close')
+  }
+
+  const cancel = () => {
+    emit('cancel')
   }
 
   const apply = async () => {
@@ -55,14 +63,15 @@
           <div class="modal-handle"></div>
           <div class="modal-title">{{ title }}</div>
           <div class="modal-subtitle" v-if="subtitle">{{ subtitle }}</div>
+          <slot name="head"></slot>
         </div>
         <div class="modal-body" ref="scrollableEl">
           <slot></slot>
           <div class="modal-btns">
 
             <LnbButton
-              :name="t('cancel')"
-              @click="close"
+              :name="cancelText ?? t('cancel')"
+              @click="cancel"
               :disabled="isLoading"
               type="ghost"/>
 
@@ -71,7 +80,7 @@
               :name="applyText"
               @click="apply"
               :disabled="isLoading || disableApply"
-              type="primary"/>
+              :type="confirmButton ?? 'primary'"/>
 
           </div>
           <div class="modal-loader">

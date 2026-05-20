@@ -6,6 +6,7 @@ import LnbModalInput from "~/components/modals/LnbModalInput.vue";
 
 const emits = defineEmits<{
   (e: 'openCard', card: MessageListDto): void,
+  (e: 'close'): void,
 }>()
 
 const { searchMessages } = useMessagesApi();
@@ -61,6 +62,7 @@ const { t } = useI18n();
 <template>
   <LnbModal
       @scroll="loadMore"
+      @cancel="emits('close')"
       :title="t('search')"
       :fullHeight="true"
       :determineScroll="true">

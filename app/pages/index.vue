@@ -18,6 +18,7 @@ import LnbDeleteCategoryModal from "~/components/modals/LnbDeleteCategoryModal.v
 import LnbEditCategoryModal from "~/components/modals/LnbEditCategoryModal.vue";
 import LnbTopbar from "~/components/LnbTopbar.vue";
 import LnbElementWithHelpLink from "~/components/modals/LnbElementWithHelpLink.vue";
+import LnbMassMoveModal from "~/components/modals/movement/LnbMassMoveModal.vue";
 
 const { setCategory, state, anySpaceAvailable } = useBoard()
 const { getDocumentationLink } = useUtils()
@@ -31,19 +32,14 @@ const defaultStatus = computed(() => currentCategory.value?.statuses[0]);
 const { t } = useI18n();
 const board = useBoard();
 
-onMounted(() => fullReload());
-watch(() => appState.value.organization!.id, () => fullReload())
+onMounted(() => board.fullReload());
 
-const fullReload = async () => {
-  await board.reloadSpaces();
-  await board.reloadEpics();
-  await board.reloadBoard(true);
-}
-
+watch(() => appState.value.organization!.id, () => board.fullReload())
 watch(() => state.value.epicId, async () => {
   await board.reloadCategory();
   await board.reloadBoard(true);
 })
+watch(() => board.currentSpace.value, () => loadSpaceData())
 
 const spaceAdditionalData = ref<SpaceDto | null>(null)
 const loadSpaceData = async () => {
@@ -52,8 +48,6 @@ const loadSpaceData = async () => {
   else
     spaceAdditionalData.value = await getSpace(board.currentSpace.value.id)
 }
-
-watch(() => board.currentSpace.value, (value) => loadSpaceData())
 
 const epicTabsAvailable = computed(() => {
   return epics.value.length > 0 || spaceAdditionalData.value?.canCreateEpics
@@ -68,6 +62,7 @@ const modal = reactive({
   search: false,
   editCategory: false,
   deleteCategory: false,
+  massMove: false,
 });
 
 const navSortPopupOpen = ref(false);
@@ -181,6 +176,15 @@ const deleteCategoryInternal = async () => {
   closeDeleteCategory();
 }
 
+const openMassMove = () => {
+  modal.massMove = true;
+}
+
+const closeMassMove = () => {
+  modal.massMove = false;
+  closeFab()
+}
+
 </script>
 
 <template>
@@ -267,20 +271,20 @@ const deleteCategoryInternal = async () => {
 
   <template v-if="!anySpaceAvailable">
     <LnbEmptyState
-      title="No spaces are available"
-      subtitle="Please contact organization administrator and ask for permissions"/>
+      :title="t('noAvailableSpaces')"
+      :subtitle="t('contactAdminForPermissions')"/>
   </template>
 
   <template v-if="anySpaceAvailable && !epicTabsAvailable">
     <LnbEmptyState
-        title="No epics are available in Space"
-        subtitle="Please contact organization administrator and ask for permissions"/>
+      :title="t('noAvailableEpicsInSpace')"
+      :subtitle="t('contactAdminForPermissions')"/>
   </template>
 
   <template v-if="anySpaceAvailable && epicTabsAvailable && !state.currentEpic?.canViewIssues">
     <LnbEmptyState
-        title="Issues are not available for view"
-        subtitle="Please contact organization administrator and ask for permissions"/>
+      :title="t('issuesNotAvailableForView')"
+      :subtitle="t('contactAdminForPermissions')"/>
   </template>
 
   <LnbCreateCategoryModal
@@ -321,10 +325,15 @@ const deleteCategoryInternal = async () => {
     @close="closeEditCategory"
     @edit="editCategoryInternal"
     v-if="modal.editCategory"/>
+
   <LnbDeleteCategoryModal
     @close="closeDeleteCategory"
     @delete="deleteCategoryInternal"
     v-if="modal.deleteCategory"/>
+
+  <LnbMassMoveModal
+    v-if="modal.massMove"
+    @close="closeMassMove"/>
 
   <LnbMediaViewer
     v-if="board.state.value.openedMedia.length > 0" />
@@ -348,6 +357,9 @@ const deleteCategoryInternal = async () => {
       </LnbFabItem>
       <LnbFabItem v-if="currentCategory?.canCreateIssues" :title="t('createCard')" @click="openCreateCard">
         <path d="M8 5v6M5 8h6"/>
+      </LnbFabItem>
+      <LnbFabItem v-if="appState.organization?.canMassMove" :title="t('massMoveTitle')" @click="openMassMove">
+        <path d="M2 4h8M2 8h8M2 12h8"></path><path d="M12 3l3 3-3 3"></path>
       </LnbFabItem>
     </div>
   </div>

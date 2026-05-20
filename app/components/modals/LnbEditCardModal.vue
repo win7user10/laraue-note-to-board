@@ -39,6 +39,7 @@ onMounted(async () => {
     :applyText="allowEdit ? t('save') : undefined"
     :title="''"
     @apply="emit('edit', request)"
+    @cancel="emit('close')"
     @close="emit('close')">
 
     <LnbDetailMeta>

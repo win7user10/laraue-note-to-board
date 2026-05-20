@@ -12,6 +12,7 @@ const { t } = useI18n();
   <LnbModal
       @close="emit('close')"
       @apply="emit('revoke')"
+      @cancel="emit('close')"
       :applyText="t('revoke')"
       :title="t('revokeAccessTitle')">
     <LnbConfirmBody>

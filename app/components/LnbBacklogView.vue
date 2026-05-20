@@ -12,15 +12,19 @@ const emits = defineEmits<{
 
 const { state } = useBoard()
 
-const backlogMessagesResult = computed(() => {
+const backlog = computed(() => {
   return state.value.messages.length > 0
-    ? state.value.messages[0]!.items
-    : undefined
+      ? state.value.messages[0]
+      : undefined
+})
+
+const backlogMessagesResult = computed(() => {
+  return backlog.value?.items
 })
 
 const searchString = computed(() => state.value.searchString)
 
-const statusId = 0;
+const statusId = computed(() => backlog.value?.statusId);
 const { t } = useI18n();
 </script>
 
@@ -38,20 +42,20 @@ const { t } = useI18n();
             :subtitle="t('backlogEmptySubtitle')"/>
       </template>
     </template>
-    <template v-else>
+    <template v-else-if="statusId">
       <div class="section-label">{{ t('unassignedTitle') }}</div>
       <LnbScrollArea :statusId="statusId">
         <LnbCard
-            v-for="msg in backlogMessagesResult?.data"
-            :deleteButton="!!state.currentEpic?.canDeleteIssues"
-            :message="msg as any"
-            :key="msg.id"
-            :assignButton="!!state.currentEpic?.canUpdateIssues"
-            :highlightText="searchString"
-            @openDelete="emits('openDelete', $event)"
-            @openAssignToCategory="emits('openAssignToCategory', $event)"
-            @openEdit="emits('openEdit', $event)"
-            sender-color="#3fb950"/>
+          v-for="msg in backlogMessagesResult?.data"
+          :deleteButton="!!state.currentEpic?.canDeleteIssues"
+          :message="msg as any"
+          :key="msg.id"
+          :assignButton="!!state.currentEpic?.canUpdateIssues"
+          :highlightText="searchString"
+          @openDelete="emits('openDelete', $event)"
+          @openAssignToCategory="emits('openAssignToCategory', $event)"
+          @openEdit="emits('openEdit', $event)"
+          :sender-color="msg.senderColor"/>
       </LnbScrollArea>
     </template>
   </div>

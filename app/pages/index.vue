@@ -257,15 +257,15 @@ const closeMassMove = () => {
 
     <template v-if="isBacklog">
       <LnbBacklogView
-          @openAssignToCategory="openAssignToCategory"
-          @openEdit="openEditCard"
-          @openDelete="openDelete" />
+        @openAssignToCategory="openAssignToCategory"
+        @openEdit="openEditCard"
+        @openDelete="openDelete" />
     </template>
     <template v-else>
       <LnbBoardView
-          @openAssignToCategory="openAssignToCategory"
-          @openEdit="openEditCard"
-          @openDelete="openDelete"/>
+        @openAssignToCategory="openAssignToCategory"
+        @openEdit="openEditCard"
+        @openDelete="openDelete"/>
     </template>
   </template>
 

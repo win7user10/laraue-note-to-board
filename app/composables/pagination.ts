@@ -30,5 +30,5 @@ export interface ShortPaginatedResult<T> {
 
 export const DefaultPagination: PaginationData = {
     page: 0,
-    perPage: 10,
+    perPage: 15,
 }

@@ -62,6 +62,7 @@ const { t } = useI18n();
 <template>
   <LnbModal
       @scroll="loadMore"
+      @close="emits('close')"
       @cancel="emits('close')"
       :title="t('search')"
       :fullHeight="true"

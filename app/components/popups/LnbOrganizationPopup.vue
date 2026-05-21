@@ -11,7 +11,7 @@ const { login } = useOrganizationsApi()
 const { setOrganizationToken } = useLocalStorageUtils()
 const { appState } = useAppState()
 const { getOrganizations } = useBoard()
-const { setOrganization } = useInitUser()
+const { initOrganizationWithOrganizationData } = useAuth()
 const organizations = ref<OrganizationListDto[]>([]);
 const updateOrganizations = async () => {
   organizations.value = await getOrganizations();
@@ -26,7 +26,7 @@ const loginOrg = async (id: number) => {
 
   const { getOrganization } = useOrganizationsApi()
   const organization = await getOrganization()
-  await setOrganization(organization)
+  await initOrganizationWithOrganizationData(organization)
 
   emits('close')
 }

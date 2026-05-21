@@ -1,17 +1,18 @@
 import {useUserOrganizationPreferencesApi} from "~/composables/userOrganizationPreferencesApi";
+import {useOrganizationsApi} from "~/composables/organizationsApi";
 
-export const useInitUser = () => {
+export const useAuth = () => {
     const appState = useAppState()
     const { setLocale } = useI18n()
-    const { setUserToken, deleteUserToken, deleteOrganizationToken } = useLocalStorageUtils()
+    const { setUserToken, deleteUserToken, deleteOrganizationToken, setOrganizationToken } = useLocalStorageUtils()
 
-    const setAppUser = async (bearerToken: string) => {
+    const initUserWithBearer = async (bearerToken: string) => {
         await setUserToken(bearerToken)
 
         const { loadUser } = useUserApi();
 
         const user = await loadUser();
-        await setUser(user);
+        await initUserWithUserData(user);
     }
 
     const tryAuthWithStoredBearer = async () => {
@@ -23,7 +24,7 @@ export const useInitUser = () => {
         const { loadUser } = useUserApi();
         try {
             const user = await loadUser();
-            await setUser(user);
+            await initUserWithUserData(user);
             return true;
         }
         catch (error) {
@@ -41,7 +42,7 @@ export const useInitUser = () => {
         const { getOrganization } = useOrganizationsApi();
         try {
             const organization = await getOrganization();
-            await setOrganization(organization);
+            await initOrganizationWithOrganizationData(organization);
             return true;
         }
         catch (error) {
@@ -50,7 +51,7 @@ export const useInitUser = () => {
         }
     }
 
-    const setUser = async (user: UserDto) => {
+    const initUserWithUserData = async (user: UserDto) => {
         appState.setUser(user);
 
         const { loadPreferences } = useUserPreferencesApi()
@@ -61,7 +62,15 @@ export const useInitUser = () => {
         return setLocale(user.languageCode);
     }
 
-    const setOrganization = async (organization: OrganizationDto) => {
+    const initOrganizationWithBearer = async (bearer: string) => {
+        await setOrganizationToken(bearer)
+
+        const { getOrganization } = useOrganizationsApi()
+        const organization = await getOrganization()
+        await initOrganizationWithOrganizationData(organization)
+    }
+
+    const initOrganizationWithOrganizationData = async (organization: OrganizationDto) => {
         appState.setOrganization(organization);
 
         const { loadPreferences } = useUserOrganizationPreferencesApi()
@@ -80,11 +89,13 @@ export const useInitUser = () => {
     }
 
     return {
-        setAppUser,
+        initUserWithBearer,
         tryAuthWithStoredBearer,
         tryAuthOrganizationWithStoredBearer,
+        initUserWithUserData,
+        initOrganizationWithOrganizationData,
         logout,
         logoutOrganization,
-        setOrganization,
+        initOrganizationWithBearer,
     }
 }

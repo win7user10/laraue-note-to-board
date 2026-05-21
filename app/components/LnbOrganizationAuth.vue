@@ -9,9 +9,8 @@ import type { FetchError } from 'ofetch';
 import LnbElementWithHelpLink from "~/components/modals/LnbElementWithHelpLink.vue";
 
 const { appState } = useAppState()
-const { setOrganizationToken } = useLocalStorageUtils()
 const { getDocumentationLink } = useUtils()
-const { setOrganization } = useInitUser()
+const { initOrganizationWithBearer } = useAuth()
 const { getOrganizations, createOrganization, editOrganization, deleteOrganization, login, join } = useOrganizationsApi()
 const { t } = useI18n()
 const authUser = appState.value.user
@@ -94,11 +93,7 @@ const deleteOrganizationInternal = async () => {
 
 const loginOrg = async (id: number) => {
   const token = await login(id)
-  await setOrganizationToken(token)
-
-  const { getOrganization } = useOrganizationsApi()
-  const organization = await getOrganization()
-  await setOrganization(organization)
+  await initOrganizationWithBearer(token)
 }
 </script>
 

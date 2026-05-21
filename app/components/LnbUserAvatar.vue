@@ -3,16 +3,16 @@
   import LnbPopup from "~/components/popups/LnbPopup.vue";
 
   const { appState } = useAppState();
-  const initUser = useInitUser();
+  const auth = useAuth();
   const userPopupOpen = ref(false);
   const currentUser = computed(() => appState.value.user!);
   const currentOrganization = computed(() => appState.value.organization!);
   const isInMiniApp = computed(() => appState.value.isInMiniApp!);
   const logout = () => {
-    initUser.logout();
+    auth.logout();
   }
   const logoutOrganization = () => {
-    initUser.logoutOrganization()
+    auth.logoutOrganization()
   }
   const avatarData = computed(() => {
     return {

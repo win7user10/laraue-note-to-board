@@ -9,7 +9,7 @@ let initError = ref<any>(null)
 const configuration = useRuntimeConfig();
 const testUserToken = configuration.public.testUserToken;
 const { setIsAppInitialized, appState, setIsInMiniApp } = useAppState();
-const { setAppUser, tryAuthWithStoredBearer, tryAuthOrganizationWithStoredBearer } = useInitUser();
+const { initUserWithBearer, tryAuthWithStoredBearer, tryAuthOrganizationWithStoredBearer } = useAuth();
 const { t, setLocale, locales } = useI18n();
 
 const isAppInitialized = computed(() => appState.value.isAppInitialized)
@@ -44,7 +44,7 @@ onMounted(async () => {
 
       const { authViaMiniApp } = useTelegramUserApi()
       const bearer = await authViaMiniApp(token)
-      await setAppUser(bearer)
+      await initUserWithBearer(bearer)
     }
 
   } catch (err) {
@@ -112,7 +112,7 @@ const setupMiniAppWindow = async () => {
       <div class="loader-text">{{ t('appInitializing') }}</div>
     </div>
     <span v-else-if="initError">{{initError}}</span>
-    <NuxtPage v-else-if="user" />
+    <NuxtPage v-else-if="user" /> <!-- TODO - change condition. Or may be change condition on org Auth component?? -->
     <span v-else>App is initializing</span>
     <LnbToastStack />
   </div>

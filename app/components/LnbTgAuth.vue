@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import {useInitUser} from "~/composables/initUser";
 
 const widgetContainer = ref<HTMLElement | null>(null);
 
 const { setIsAppInitialized } = useAppState();
 const { setLocale, locales, t } = useI18n();
-const { setAppUser } = useInitUser();
+const { initUserWithBearer } = useAuth();
 const configuration = useRuntimeConfig();
 const botName = configuration.public.botName;
 
@@ -14,7 +13,7 @@ const botName = configuration.public.botName;
     setIsAppInitialized(false);
     const { authViaWebApp } = useTelegramUserApi()
     const bearer = await authViaWebApp(user)
-    await setAppUser(bearer)
+    await initUserWithBearer(bearer)
   } finally {
     setIsAppInitialized(true);
   }

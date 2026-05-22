@@ -17,6 +17,13 @@ const { join } = useOrganizationsApi()
 const joinCode = ref('')
 const joinCodeError = ref('')
 
+const { query } = useRoute()
+onMounted(() => {
+  const code = query.code as string;
+  if (code)
+    joinCode.value = code;
+})
+
 const submitJoinCode = async () => {
   try {
     await join(joinCode.value)

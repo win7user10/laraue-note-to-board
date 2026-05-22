@@ -4,51 +4,15 @@ import {useAppState} from "~/composables/appState";
 import {onMounted, ref} from "vue";
 import WebApp from "@twa-dev/sdk";
 
-let initError = ref<any>(null)
-const configuration = useRuntimeConfig();
-const testUserToken = configuration.public.testUserToken;
-const { setIsAppInitialized, appState, setIsInMiniApp } = useAppState();
-const { initUserWithBearer, tryAuthWithStoredBearer, tryAuthOrganizationWithStoredBearer } = useAuth();
+const { appState } = useAppState();
 const { t, setLocale, locales } = useI18n();
 
 const isAppInitialized = computed(() => appState.value.isAppInitialized)
+const initError = computed(() => appState.value.initError)
 
 onMounted(async () => {
-  try {
-    const isInMiniApp = WebApp.initData !== '';
-    if (isInMiniApp) {
-      setIsInMiniApp(true);
-      await setupMiniAppWindow()
-    }
-
-    // If bearer exists - auth is not required
-    if (await tryAuthWithStoredBearer()) {
-      console.log("Auth with existing Bearer");
-      await tryAuthOrganizationWithStoredBearer();
-      return;
-    }
-
-    // Try to get user token to check from the Telegram / variables
-    if (isInMiniApp || testUserToken) {
-      let token = '';
-      if (isInMiniApp) {
-        token = WebApp.initData;
-        console.log("Mini app launch");
-      } else if (testUserToken) {
-        token = testUserToken;
-        console.log("Dev web-app launch");
-      }
-
-      const { authViaMiniApp } = useTelegramUserApi()
-      const bearer = await authViaMiniApp(token)
-      await initUserWithBearer(bearer)
-    }
-
-  } catch (err) {
-    initError.value = err;
-  } finally {
-    setIsAppInitialized(true);
-  }
+  if (appState.value.isInMiniApp)
+    await setupMiniAppWindow()
 });
 
 const setupMiniAppWindow = async () => {

@@ -16,6 +16,7 @@ export const useAppState = () => {
         userOrganizationPreferences: null as UserOrganizationPreferencesDto | null,
         isAppInitialized: false,
         isInMiniApp: false,
+        initError: null as unknown | null,
         isLoading: false,
         loadingKeys: [] as string[],
         toasts: [] as Toast[],
@@ -40,6 +41,10 @@ export const useAppState = () => {
 
     const setIsInMiniApp = (state: boolean) => {
         appState.value.isInMiniApp = state;
+    }
+
+    const setInitError = (error: unknown | string) => {
+        appState.value.initError = error;
     }
 
     const addLoadingKey = (key: string) => {
@@ -97,5 +102,6 @@ export const useAppState = () => {
         updateEpicsOrdering,
         updateSpaceId,
         setOrganization,
+        setInitError,
     }
 }

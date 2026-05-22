@@ -1,4 +1,4 @@
 export default defineNuxtRouteMiddleware((to) => {
     const { requireOrganizationAuth } = useAuth()
-    requireOrganizationAuth(to)
+    return requireOrganizationAuth(to)
 })

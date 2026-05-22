@@ -12,8 +12,8 @@ definePageMeta({
 
 const { appState } = useAppState()
 const { getDocumentationLink } = useUtils()
-const { initOrganizationWithBearer, isOrganizationSelected } = useAuth()
-const { getOrganizations, createOrganization, editOrganization, deleteOrganization, login, join } = useOrganizationsApi()
+const { loginOrganization } = useAuth()
+const { getOrganizations, createOrganization, editOrganization, deleteOrganization } = useOrganizationsApi()
 const { t } = useI18n()
 const authUser = appState.value.user
 
@@ -78,20 +78,12 @@ const deleteOrganizationInternal = async () => {
 }
 
 const loginOrg = async (id: number) => {
-  const token = await login(id)
-  await initOrganizationWithBearer(token)
+  await loginOrganization(id)
 }
 
 const moveJoinByCode = () => {
-  navigateTo('/organizations/join');
+  return navigateTo('/organizations/join');
 }
-
-onMounted(() => {
-  const organization = appState.value.organization;
-  if (organization){
-    navigateTo(`/organizations/${organization.slug}-${organization.slugPostfix}`);
-  }
-})
 </script>
 
 <template>

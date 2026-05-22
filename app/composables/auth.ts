@@ -14,6 +14,18 @@ export const useAuth = () => {
         return appState.value.organization != null;
     }
 
+    const loginOrganization = async (id: number) => {
+        const { login } = useOrganizationsApi();
+        const token = await login(id)
+        await setOrganizationToken(token)
+
+        const { getOrganization } = useOrganizationsApi()
+        const organization = await getOrganization()
+        await initOrganizationWithOrganizationData(organization)
+
+        navigateTo(`/organizations/${organization.slug}-${organization.slugPostfix}`);
+    }
+
     const initUserWithBearer = async (bearerToken: string) => {
         await setUserToken(bearerToken)
 
@@ -93,12 +105,14 @@ export const useAuth = () => {
         const { setUser } = useAppState()
         setUser(null);
         await deleteUserToken();
+        navigateTo('/organizations');
     }
 
     const logoutOrganization = async () => {
         const { setOrganization } = useAppState()
         setOrganization(null);
         await deleteOrganizationToken();
+        return navigateTo(`/`)
     }
 
     const redirectPath = useState('redirectPath', () => '/')
@@ -109,8 +123,7 @@ export const useAuth = () => {
         const { appState } = useAppState()
         if (!appState.value.user) {
             redirectPath.value = to.fullPath
-            showLoginUserModal.value = true
-            return false
+            return navigateTo(`/`)
         }
         return true
     }
@@ -119,8 +132,7 @@ export const useAuth = () => {
         const { appState } = useAppState()
         if (!appState.value.organization) {
             redirectPath.value = to.fullPath
-            showLoginUserModal.value = true
-            return false
+            return navigateTo(`/organizations`);
         }
         return true
     }
@@ -139,5 +151,6 @@ export const useAuth = () => {
         showLoginOrganizationModal,
         isUserAuthenticated,
         isOrganizationSelected,
+        loginOrganization,
     }
 }

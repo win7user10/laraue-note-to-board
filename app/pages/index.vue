@@ -20,8 +20,8 @@
   };
 
   onMounted(async () => {
-    if (appState.value.isInMiniApp)
-      navigateTo('/organizations')
+    if (appState.value.user)
+      return navigateTo('/organizations')
 
     await trySetLocale();
     tryAddLoginWidget();
@@ -54,7 +54,7 @@
 </script>
 
 <template>
-  <LnbAuthScreen v-if="!appState.isInMiniApp">
+  <LnbAuthScreen v-if="!appState.user">
     <div class="login-card">
       <div class="login-logo">msg<span>board</span></div>
       <div class="login-tagline">

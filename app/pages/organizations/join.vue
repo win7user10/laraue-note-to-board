@@ -62,7 +62,7 @@ const moveBack = () => {
       <div style="display:flex;gap:6px">
         <LnbButton
             @click="moveBack"
-            :name="t('back')"
+            :name="t('backToOrganizations')"
             type="ghost"/>
         <LnbButton
             :name="t('joinOrganization')"

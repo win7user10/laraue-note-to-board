@@ -1,5 +1,14 @@
 import {useUserClient} from "~/composables/userClient";
 
+export enum EpicSortOrder {
+    LastUpdated = 0,
+    Alphabetical = 1,
+}
+
+export interface UserPreferencesDto {
+    epicSortOrder: EpicSortOrder;
+}
+
 export interface UserDto {
     username?: string;
     languageCode: string;
@@ -9,6 +18,7 @@ export interface UserDto {
     lastName?: string;
     initials?: string;
     palette: string[];
+    preferences: UserPreferencesDto;
 }
 
 export const useUserApi = () => {
@@ -20,7 +30,14 @@ export const useUserApi = () => {
         });
     }
 
+    const updateEpicSortOrder = (newOrder: EpicSortOrder) => {
+        return client('/user/settings/epic-sort-order/' + newOrder, {
+            method: 'PUT'
+        });
+    }
+
     return {
         loadUser,
+        updateEpicSortOrder,
     }
 }

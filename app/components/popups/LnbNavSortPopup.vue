@@ -1,5 +1,5 @@
 <script setup lang="ts">
-  import { EpicSortOrder } from "~/composables/userPreferencesApi";
+  import { EpicSortOrder } from "~/composables/userApi";
   import LnbPopup from "~/components/popups/LnbPopup.vue";
   import LnbPopupItem from "~/components/popups/LnbPopupItem.vue";
   const emits = defineEmits<{
@@ -8,9 +8,9 @@
 
   const { t } = useI18n();
 
-  const { updateEpicSortOrder } = useUserPreferencesApi()
+  const { updateEpicSortOrder } = useUserApi()
   const { appState, updateEpicsOrdering } = useAppState()
-  const sortOrder = computed(() => appState.value.userPreferences!.epicSortOrder);
+  const sortOrder = computed(() => appState.value.user!.preferences.epicSortOrder);
 
   const updateSortOrder = async (sortOrder: EpicSortOrder) => {
     updateEpicsOrdering(sortOrder)

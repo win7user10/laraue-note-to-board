@@ -1,4 +1,3 @@
-import {useUserOrganizationPreferencesApi} from "~/composables/userOrganizationPreferencesApi";
 import {useOrganizationsApi} from "~/composables/organizationsApi";
 
 export const useAuth = () => {
@@ -72,12 +71,8 @@ export const useAuth = () => {
     }
 
     const initUserWithUserData = async (user: UserDto) => {
-        const { setUser, setPreferences } = useAppState()
+        const { setUser } = useAppState()
         setUser(user);
-
-        const { loadPreferences } = useUserPreferencesApi()
-        const preferences = await loadPreferences();
-        setPreferences(preferences);
 
         // @ts-ignore
         const { $i18n } = useNuxtApp();
@@ -93,19 +88,15 @@ export const useAuth = () => {
     }
 
     const initOrganizationWithOrganizationData = async (organization: OrganizationDto) => {
-        const { setOrganization, setUserOrganizationPreferences } = useAppState()
+        const { setOrganization } = useAppState()
         setOrganization(organization);
-
-        const { loadPreferences } = useUserOrganizationPreferencesApi()
-        const preferences = await loadPreferences();
-        setUserOrganizationPreferences(preferences);
     }
 
     const logout = async () => {
         const { setUser } = useAppState()
         setUser(null);
         await deleteUserToken();
-        navigateTo('/organizations');
+        return navigateTo('/organizations');
     }
 
     const logoutOrganization = async () => {

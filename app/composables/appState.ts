@@ -1,5 +1,4 @@
 import type {OrganizationDto} from "~/composables/organizationsApi";
-import type {UserOrganizationPreferencesDto} from "~/composables/userOrganizationPreferencesApi";
 
 export interface Toast {
     id: number;
@@ -12,8 +11,6 @@ export const useAppState = () => {
     const appState = useState('appState', () => ({
         user: null as UserDto | null,
         organization: null as OrganizationDto | null,
-        userPreferences: null as UserPreferencesDto | null,
-        userOrganizationPreferences: null as UserOrganizationPreferencesDto | null,
         isAppInitialized: false,
         isInMiniApp: false,
         initError: null as unknown | null,
@@ -71,20 +68,12 @@ export const useAppState = () => {
         }, 1200);
     }
 
-    const setPreferences = (preferences: UserPreferencesDto) => {
-        appState.value.userPreferences = preferences;
-    }
-
-    const setUserOrganizationPreferences = (preferences: UserOrganizationPreferencesDto) => {
-        appState.value.userOrganizationPreferences = preferences;
-    }
-
     const updateEpicsOrdering = (sortOrder: EpicSortOrder) => {
-        appState.value.userPreferences!.epicSortOrder = sortOrder;
+        appState.value.user!.preferences.epicSortOrder = sortOrder;
     }
 
     const updateSpaceId = (spaceId: number) => {
-        appState.value.userOrganizationPreferences!.selectedSpaceId = spaceId;
+        appState.value.organization!.preferences.selectedSpaceId = spaceId;
     }
 
     return {
@@ -97,8 +86,6 @@ export const useAppState = () => {
         setIsAppInitialized,
         setIsInMiniApp,
         palette,
-        setPreferences,
-        setUserOrganizationPreferences,
         updateEpicsOrdering,
         updateSpaceId,
         setOrganization,

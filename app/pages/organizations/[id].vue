@@ -64,10 +64,8 @@ onMounted(async () => {
 
   // Selected org is not found or forbidden
   console.log("Org in path is not available")
-  isForbidden.value = true;
+  return navigateTo('/organizations');
 });
-
-const isForbidden = ref(false);
 
 watch(() => appState.value.organization?.id, (val) => {
   if (val) board.fullReload()
@@ -303,12 +301,6 @@ const closeMassMove = () => {
           @openEdit="openEditCard"
           @openDelete="openDelete"/>
     </template>
-  </template>
-
-  <template v-if="isForbidden">
-    <LnbAuthScreen>
-      Organization is not exists or forbidden for current user
-    </LnbAuthScreen>
   </template>
 
   <template v-if="!anySpaceAvailable">

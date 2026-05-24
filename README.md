@@ -13,7 +13,7 @@ NUXT_PUBLIC_MESSAGES_BASE_ADDRESS=http://localhost:5200/api/
 As soon as telegram authorization is not available local without additional setup, the easiest way to launch the app local
 is to set variable `NUXT_PUBLIC_TEST_USER_TOKEN` in `.env` file. The value receiving is described in the backend repository.
 
-### Launch with real authorisation logic
+### Authorization through real Mini App
 The path is harder, but allows to check the whole authorisation flow locally
 
 #### Part 1 - launch ngrok
@@ -72,3 +72,11 @@ app: {
   }
 }
 ```
+
+### Authorization through Telegram login widget
+1. First three steps are the same as on [Authorization through real Mini App](#authorization-through-real-mini-app)
+2. Write @BotFather the command /setdomain and select your bot
+3. Send Frontend url as authorization domain, e.g. `47f2-194-154-26-10.ngrok-free.app`
+4. Set the bot name without `@` to variable `NUXT_PUBLIC_BOT_NAME` in `.env`
+5. Drop the authorization token from variable `NUXT_PUBLIC_TEST_USER_TOKEN` in `.env`
+6. Open Web url, e.g. https://47f2-194-154-26-10.ngrok-free.app in browser and try to auth via telegram

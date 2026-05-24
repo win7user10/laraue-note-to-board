@@ -5,7 +5,7 @@
   const { appState } = useAppState();
   const auth = useAuth();
   const userPopupOpen = ref(false);
-  const currentUser = computed(() => appState.value.user!);
+  const currentUser = computed(() => appState.value.user);
   const currentOrganization = computed(() => appState.value.organization!);
   const isInMiniApp = computed(() => appState.value.isInMiniApp!);
   const logout = () => {
@@ -15,11 +15,13 @@
     auth.logoutOrganization()
   }
   const avatarData = computed(() => {
-    return {
-      color: currentUser.value.color,
-      initials: currentUser.value.initials!.toLocaleUpperCase(),
-      name: (currentUser.value.firstName ?? '') + ' ' + (currentUser.value.lastName ?? ''),
-    }
+    return currentUser.value ?
+      {
+        color: currentUser.value.color,
+        initials: currentUser.value.initials!.toLocaleUpperCase(),
+        name: (currentUser.value.firstName ?? '') + ' ' + (currentUser.value.lastName ?? ''),
+        username: currentUser.value.username,
+      } : null
   })
   const modals = reactive({
     manage: false
@@ -34,14 +36,17 @@
 <template>
 
   <!-- USER AVATAR — shown on web only (hidden inside Telegram via CSS) -->
-  <LnbCardAvatar :color="avatarData.color" @click.stop="userPopupOpen = !userPopupOpen" class="user-avatar">
-    {{avatarData.initials}}
+  <LnbCardAvatar v-if="avatarData"
+    :color="avatarData.color"
+    @click.stop="userPopupOpen = !userPopupOpen"
+    class="user-avatar">
+      {{avatarData.initials}}
   </LnbCardAvatar>
 
   <!-- User popup -->
-  <LnbPopup v-if="userPopupOpen" @close="userPopupOpen = false" :min-width="200">
+  <LnbPopup v-if="avatarData && userPopupOpen" @close="userPopupOpen = false" :min-width="200">
     <div class="user-popup-name">{{ avatarData.name }}</div>
-    <div class="user-popup-handle">@{{currentUser.username}}</div>
+    <div class="user-popup-handle">@{{avatarData.username}}</div>
     <div class="user-popup-divider"></div>
     <div
       v-if="currentOrganization.canManage"

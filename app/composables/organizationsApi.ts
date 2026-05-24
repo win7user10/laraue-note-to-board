@@ -21,6 +21,7 @@ export interface OrganizationDto {
     canMassMove: boolean;
     slug: string;
     slugPostfix: string;
+    preferences: UserOrganizationPreferencesDto
 }
 
 export interface CreateOrganizationRequest {
@@ -86,6 +87,10 @@ export interface CreateOrganizationResponse {
     id: number;
     slug: string;
     slugPostfix: string;
+}
+
+export interface UserOrganizationPreferencesDto {
+    selectedSpaceId?: number;
 }
 
 export const useOrganizationsApi = () => {
@@ -191,6 +196,13 @@ export const useOrganizationsApi = () => {
         });
     }
 
+    const updateSelectedSpace = (spaceId: number) => {
+        const organizationsClient = useOrganizationsOrganizationClient()
+        return organizationsClient('/organizations/settings/selected-space/' + spaceId, {
+            method: 'PUT'
+        });
+    }
+
     return {
         getOrganizations,
         createOrganization,
@@ -206,5 +218,6 @@ export const useOrganizationsApi = () => {
         getJoinCode,
         regenerateJoinCode,
         revokeAccess,
+        updateSelectedSpace,
     }
 }

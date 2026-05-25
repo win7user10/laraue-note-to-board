@@ -143,7 +143,7 @@
   "noAvailableEpicsInSpace": "No epics are available in Space",
   "issuesNotAvailableForView": "Issues are not available for view",
   "contactAdminForPermissions": "Please contact organization administrator and ask for permissions",
-  "backToOrganizations": "Organizations list",
+  "backToOrganizations": "Back",
 
   "moveEntireSpace": "Move entire space",
   "moveEntireSpaceDesc": "Moves the space, all its epics and issues to another organization. Default space can not be moved.",

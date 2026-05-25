@@ -115,6 +115,7 @@ export const useAuth = () => {
         const { appState } = useAppState()
         if (!appState.value.user) {
             redirectPath.value = to.fullPath
+            console.log('Save redirect path', redirectPath.value)
             return navigateTo(`/`)
         }
         return true
@@ -123,7 +124,6 @@ export const useAuth = () => {
     const requireOrganizationAuth = (to: ReturnType<typeof useRoute>) => {
         const { appState } = useAppState()
         if (!appState.value.organization) {
-            redirectPath.value = to.fullPath
             return navigateTo(`/organizations`);
         }
         return true

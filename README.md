@@ -1,6 +1,6 @@
 # Laraue Boards (Frontend)
 
-The [repository](https://github.com/win7user10/Laraue.Apps.StructuredMessages) contains backend for the application.
+This [repository](https://github.com/win7user10/Laraue.Apps.StructuredMessages) contains backend for the application.
 
 ## Repository setup
 You should create `.env` file in repository with the following content to proxy FE requests to backend.
@@ -31,8 +31,7 @@ tunnels:
     addr: 3000 # Frontend address
     proto: http
 ```
-3. Run ngrok with a command `ngrok start --all` when ngrok executable is in the same folder as config.
-Or provide the config path using parameter: `ngrok start --all --config ngrok.yml`.
+3. Run ngrok with a command `ngrok start --all --config ngrok.yml`
 
 #### Part 2 - setup telegram bot
 1. Write @BotFather in Telegram and open their Mini App to manage bots.
@@ -55,6 +54,7 @@ to the following format:
 ```
 NUXT_PUBLIC_MESSAGES_BASE_ADDRESS=https://f9f3-194-154-26-10.ngrok-free.app/api/
 ```
+3. Drop the authorization token from variable `NUXT_PUBLIC_TEST_USER_TOKEN` in `.env`
 
 #### Part 4 - test the app
 1. Open the Mini App in your bot.
@@ -78,5 +78,4 @@ app: {
 2. Write @BotFather the command /setdomain and select your bot
 3. Send Frontend url as authorization domain, e.g. `47f2-194-154-26-10.ngrok-free.app`
 4. Set the bot name without `@` to variable `NUXT_PUBLIC_BOT_NAME` in `.env`
-5. Drop the authorization token from variable `NUXT_PUBLIC_TEST_USER_TOKEN` in `.env`
-6. Open Web url, e.g. https://47f2-194-154-26-10.ngrok-free.app in browser and try to auth via telegram
+5. Open Web url, e.g. https://47f2-194-154-26-10.ngrok-free.app in browser and try to auth via telegram

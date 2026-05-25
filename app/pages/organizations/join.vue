@@ -18,10 +18,12 @@ const joinCode = ref('')
 const joinCodeError = ref('')
 
 const { query } = useRoute()
-onMounted(() => {
+onMounted(async() => {
   const code = query.code as string;
-  if (code)
+  if (code) {
     joinCode.value = code;
+    await submitJoinCode()
+  }
 })
 
 const submitJoinCode = async () => {
@@ -31,7 +33,7 @@ const submitJoinCode = async () => {
     const error = _error as FetchError;
     if (error.status === 404)
       joinCodeError.value = t('noOrgWithSuchCode');
-    if (error.status === 406)
+    else if (error.status === 406)
       joinCodeError.value = t('userIsAlreadyMember');
     else
       throw _error;

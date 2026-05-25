@@ -144,7 +144,7 @@
   "noAvailableEpicsInSpace": "В пространстве нет доступных эпиков",
   "issuesNotAvailableForView": "Задачи недоступны для просмотра",
   "contactAdminForPermissions": "Пожалуйста, обратитесь к администратору организации и запросите разрешения",
-  "backToOrganizations": "Список организаций",
+  "backToOrganizations": "Назад",
 
   "moveEntireSpace": "Переместить всё пространство",
   "moveEntireSpaceDesc": "Перемещает пространство, все его эпики и задачи в другую организацию. Пространство по умолчанию переместить нельзя.",

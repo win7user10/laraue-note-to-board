@@ -1,57 +1,18 @@
 <script setup lang="ts">
 
 import {useAppState} from "~/composables/appState";
-import {onMounted, ref} from "vue";
+import {onMounted} from "vue";
 import WebApp from "@twa-dev/sdk";
-import LnbTgAuth from "~/components/LnbTgAuth.vue";
 
-let initError = ref<any>(null)
-const configuration = useRuntimeConfig();
-const testUserToken = configuration.public.testUserToken;
-const { setIsAppInitialized, appState, setIsInMiniApp } = useAppState();
-const { setAppUser, tryAuthWithStoredBearer, tryAuthOrganizationWithStoredBearer } = useInitUser();
+const { appState } = useAppState();
 const { t, setLocale, locales } = useI18n();
 
 const isAppInitialized = computed(() => appState.value.isAppInitialized)
-const user = computed(() => appState.value.user)
-const organization = computed(() => appState.value.organization)
+const initError = computed(() => appState.value.initError)
 
 onMounted(async () => {
-  try {
-    const isInMiniApp = WebApp.initData !== '';
-    if (isInMiniApp) {
-      setIsInMiniApp(true);
-      await setupMiniAppWindow()
-    }
-
-    // If bearer exists - auth is not required
-    if (await tryAuthWithStoredBearer()) {
-      console.log("Auth with existing Bearer");
-      await tryAuthOrganizationWithStoredBearer();
-      return;
-    }
-
-    // Try to get user token to check from the Telegram / variables
-    if (isInMiniApp || testUserToken) {
-      let token = '';
-      if (isInMiniApp) {
-        token = WebApp.initData;
-        console.log("Mini app launch");
-      } else if (testUserToken) {
-        token = testUserToken;
-        console.log("Dev web-app launch");
-      }
-
-      const { authViaMiniApp } = useTelegramUserApi()
-      const bearer = await authViaMiniApp(token)
-      await setAppUser(bearer)
-    }
-
-  } catch (err) {
-    initError.value = err;
-  } finally {
-    setIsAppInitialized(true);
-  }
+  if (appState.value.isInMiniApp)
+    await setupMiniAppWindow()
 });
 
 const setupMiniAppWindow = async () => {
@@ -68,24 +29,10 @@ const setupMiniAppWindow = async () => {
 
     // Telegram provides its own inset for the header bar
     const applyInsets = () => {
-      const isLandscape = window.matchMedia("(orientation: landscape)").matches;
-      const platform = WebApp.platform;
-
       let safeTop = WebApp.safeAreaInset?.top ?? 0;
       let safeBottom = WebApp.safeAreaInset?.bottom ?? 0;
       let safeLeft = WebApp.safeAreaInset?.left ?? 0;
       let safeRight = WebApp.safeAreaInset?.right ?? 0;
-
-      if (platform === "ios") {
-        if (!isLandscape){
-        }
-      }
-
-      // On mobile: use the larger of both (Telegram chrome overlaps)
-      // On desktop: looks like calculates wrong. The hardcoded value.
-      // Logged values:
-      // [tdesktop][0][56] - too big offset
-      // [ios][54][46] - looks great
 
       // contentSafeAreaInset accounts for Telegram's own header chrome
       document.documentElement.style.setProperty('--safe-top', safeTop + 'px');
@@ -104,29 +51,16 @@ const setupMiniAppWindow = async () => {
 
 <template>
   <div id="app">
-    <LnbTgAuth v-if="isAppInitialized && !user && !initError" />
-    <LnbOrganizationAuth v-if="isAppInitialized && user && !organization && !initError"/>
-    <div v-else-if="!isAppInitialized" class="loader-overlay">
-      <div class="loader-logo">Msg<span>board</span></div>
-      <div class="loader-bar"><div class="loader-bar-fill"></div></div>
-      <div class="loader-text">{{ t('appInitializing') }}</div>
+
+    <div v-if="initError">
+      {{ initError }}
     </div>
-    <span v-else-if="initError">{{initError}}</span>
-    <NuxtPage v-else-if="user" />
-    <span v-else>App is initializing</span>
+
+    <NuxtPage v-if="isAppInitialized" />
+
     <LnbToastStack />
   </div>
 </template>
 
 <style scoped>
-/* LOADER */
-.loader-overlay{position:fixed;inset:0;background:var(--bg);z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;transition:opacity 0.35s,visibility 0.35s}
-.loader-overlay.hidden{opacity:0;visibility:hidden;pointer-events:none}
-.loader-logo{font-size:24px;font-weight:800;letter-spacing:-0.5px;color:var(--accent)}
-.loader-logo span{color:var(--text2);font-weight:400}
-.loader-bar{width:160px;height:3px;background:var(--surface3);border-radius:2px;overflow:hidden}
-.loader-bar-fill{height:100%;border-radius:2px;background:var(--accent);animation:loader-progress 1.4s cubic-bezier(0.4,0,0.2,1) forwards}
-@keyframes loader-progress{0%{width:0%;opacity:1}70%{width:85%;opacity:1}100%{width:100%;opacity:0}}
-.loader-text{font-size:12px;color:var(--text3);font-family:'JetBrains Mono',monospace;animation:loader-blink 1.2s ease-in-out infinite}
-@keyframes loader-blink{0%,100%{opacity:0.4}50%{opacity:1}}
 </style>

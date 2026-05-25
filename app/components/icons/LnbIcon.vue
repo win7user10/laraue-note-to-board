@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const props = defineProps({
   size: {type: String as PropType<'mini' | 'small' | 'medium'>, required: true },
-  icon: {type: String as PropType<'clear' | 'delete' | 'edit' | 'move' | 'search'>, required: true },
+  icon: {type: String as PropType<'clear' | 'delete' | 'edit' | 'move' | 'search' | 'logout'>, required: true },
 })
 const size = computed(() => {
   switch (props.size) {
@@ -42,6 +42,9 @@ const size = computed(() => {
     <template v-if="icon === 'search'">
       <circle cx="6.5" cy="6.5" r="4"/>
       <path d="M10 10l3 3"/>
+    </template>
+    <template v-if="icon === 'logout'">
+      <path d="M6 3H3v10h3M10 5l3 3-3 3M13 8H6" />
     </template>
   </svg>
 </template>

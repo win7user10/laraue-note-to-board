@@ -1,5 +1,6 @@
 import { useAppState } from "~/composables/appState";
 import {useLocalStorageUtils} from "~/composables/localStorageUtils";
+import {ApiError} from "~/composables/userAuthApi";
 
 export const useOrganizationAuthApi = () => {
 
@@ -34,7 +35,7 @@ export const useOrganizationAuthApi = () => {
             const loadingKey = (context as any).context?.loadingKey;
             if (loadingKey)
                 removeLoadingKey(loadingKey);
-            showToast("Request error", "danger", loadingKey)
+            throw new ApiError(context.response.status, context.response._data.errors ?? {})
         }
     })
 

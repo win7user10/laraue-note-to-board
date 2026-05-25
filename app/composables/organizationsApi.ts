@@ -8,6 +8,8 @@ export interface OrganizationListDto {
     canDelete: boolean;
     isPersonal: boolean;
     canCreateSpaces: boolean;
+    slug: string;
+    slugPostfix: string;
 }
 
 export interface OrganizationDto {
@@ -17,11 +19,15 @@ export interface OrganizationDto {
     canCreateSpaces: boolean;
     canManage: boolean;
     canMassMove: boolean;
+    slug: string;
+    slugPostfix: string;
+    preferences: UserOrganizationPreferencesDto
 }
 
 export interface CreateOrganizationRequest {
     name: string;
     color: string;
+    slug: string;
 }
 
 export interface EditOrganizationRequest {
@@ -78,6 +84,16 @@ export interface PermittableEpic {
     isDefault: boolean;
 }
 
+export interface CreateOrganizationResponse {
+    id: number;
+    slug: string;
+    slugPostfix: string;
+}
+
+export interface UserOrganizationPreferencesDto {
+    selectedSpaceId?: number;
+}
+
 export const useOrganizationsApi = () => {
     const client = useOrganizationsUserClient()
 
@@ -88,7 +104,7 @@ export const useOrganizationsApi = () => {
     }
 
     const createOrganization = (request: CreateOrganizationRequest) => {
-        return client<number>('/organizations', {
+        return client<CreateOrganizationResponse>('/organizations', {
             method: 'POST',
             body: request
         });
@@ -181,6 +197,13 @@ export const useOrganizationsApi = () => {
         });
     }
 
+    const updateSelectedSpace = (spaceId: number) => {
+        const organizationsClient = useOrganizationsOrganizationClient()
+        return organizationsClient('/organizations/settings/selected-space/' + spaceId, {
+            method: 'PUT'
+        });
+    }
+
     return {
         getOrganizations,
         createOrganization,
@@ -196,5 +219,6 @@ export const useOrganizationsApi = () => {
         getJoinCode,
         regenerateJoinCode,
         revokeAccess,
+        updateSelectedSpace,
     }
 }

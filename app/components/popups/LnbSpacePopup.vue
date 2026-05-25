@@ -16,7 +16,7 @@ const { t } = useI18n()
 
 const { currentSpace, spaces, createSpace, reloadBoard, reloadEpics, setCategory, editSpace, deleteSpace } = useBoard()
 const { updateSpaceId, appState } = useAppState()
-const { updateSpace } = useUserOrganizationPreferencesApi()
+const { updateSelectedSpace } = useOrganizationsApi()
 const modals = reactive({
   createSpace: false,
   editSpace: false,
@@ -33,7 +33,7 @@ const setSpaceInternal = async (id: number) => {
   await reloadBoard(true)
 
   // update preferences
-  await updateSpace(id)
+  await updateSelectedSpace(id)
   closePopup()
 }
 

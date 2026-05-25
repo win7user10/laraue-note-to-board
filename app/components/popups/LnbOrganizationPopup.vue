@@ -1,17 +1,14 @@
 <script setup lang="ts">
 import LnbPopup from "~/components/popups/LnbPopup.vue";
 import {ref} from "vue";
-import {useOrganizationsApi} from "~/composables/organizationsApi";
 
 const emits = defineEmits<{
   (e: 'close'): void,
 }>()
 
-const { login } = useOrganizationsApi()
-const { setOrganizationToken } = useLocalStorageUtils()
 const { appState } = useAppState()
 const { getOrganizations } = useBoard()
-const { setOrganization } = useInitUser()
+const { loginOrganization } = useAuth()
 const organizations = ref<OrganizationListDto[]>([]);
 const updateOrganizations = async () => {
   organizations.value = await getOrganizations();
@@ -19,15 +16,8 @@ const updateOrganizations = async () => {
 
 await updateOrganizations()
 
-// TODO - this code is repeated in AUTH snippet
 const loginOrg = async (id: number) => {
-  const token = await login(id)
-  await setOrganizationToken(token)
-
-  const { getOrganization } = useOrganizationsApi()
-  const organization = await getOrganization()
-  await setOrganization(organization)
-
+  await loginOrganization(id)
   emits('close')
 }
 

@@ -55,8 +55,7 @@ export const useUtils = () => {
 
     const getDocumentationLink = (relativeUrl: string) => {
         const { locale } = useI18n();
-        const url = `${laraueUrl}${locale.value === 'ru' ? '/ru' : ''}${documentationPath}${relativeUrl}`;
-        return url;
+        return `${laraueUrl}${locale.value === 'ru' ? '/ru' : ''}${documentationPath}${relativeUrl}`;
     }
 
     return {

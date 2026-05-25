@@ -1,6 +1,17 @@
 import { useAppState } from "~/composables/appState";
 import {useLocalStorageUtils} from "~/composables/localStorageUtils";
 
+export class ApiError extends Error {
+    constructor(public status: number, public errors: { [key: string]: string[] }) {
+
+        const error = Object.values(errors)
+            .flat()
+            .join('\n');
+
+        super(`API response ${status}. ${error}`);
+    }
+}
+
 export const useUserAuthApi = () => {
 
     const { addLoadingKey, removeLoadingKey, showToast } = useAppState();
@@ -30,12 +41,12 @@ export const useUserAuthApi = () => {
                 removeLoadingKey(loadingKey);
             showToast("Request error", "danger", loadingKey)
         },
-        onResponseError: (context) => {
+        onResponseError: async (context) => {
             const loadingKey = (context as any).context?.loadingKey;
             if (loadingKey)
                 removeLoadingKey(loadingKey);
-            showToast("Request error", "danger", loadingKey)
-        }
+            throw new ApiError(context.response.status, context.response._data.errors ?? {})
+        },
     })
 
     return {

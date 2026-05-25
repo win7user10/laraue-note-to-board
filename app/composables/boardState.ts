@@ -29,7 +29,7 @@ export const useBoard = () => {
     })
 
     const spaceId = computed(() => {
-        let val = appState.value.userOrganizationPreferences?.selectedSpaceId;
+        let val = appState.value.organization?.preferences.selectedSpaceId;
         const spaces = state.value.spaces;
         const space = spaces.find((space) => space.id === val);
         if (space)
@@ -124,7 +124,7 @@ export const useBoard = () => {
     }
 
     const epics = computed(() => {
-        const categoryOrder = appState.value.userPreferences!.epicSortOrder
+        const categoryOrder = appState.value.user?.preferences.epicSortOrder
         let data = [...state.value.epics];
         if (categoryOrder === EpicSortOrder.Alphabetical)
             data.sort((a, b) => {
@@ -485,8 +485,8 @@ export const useBoard = () => {
                 await reloadEpics()
 
                 // Update preferences
-                const { updateSpace } = useUserOrganizationPreferencesApi()
-                await updateSpace(selectedSpace.id)
+                const { updateSelectedSpace } = useOrganizationsApi()
+                await updateSelectedSpace(selectedSpace.id)
             }
         }
 

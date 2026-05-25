@@ -1,5 +1,4 @@
 import type {OrganizationDto} from "~/composables/organizationsApi";
-import type {UserOrganizationPreferencesDto} from "~/composables/userOrganizationPreferencesApi";
 
 export interface Toast {
     id: number;
@@ -12,10 +11,9 @@ export const useAppState = () => {
     const appState = useState('appState', () => ({
         user: null as UserDto | null,
         organization: null as OrganizationDto | null,
-        userPreferences: null as UserPreferencesDto | null,
-        userOrganizationPreferences: null as UserOrganizationPreferencesDto | null,
         isAppInitialized: false,
         isInMiniApp: false,
+        initError: null as unknown | null,
         isLoading: false,
         loadingKeys: [] as string[],
         toasts: [] as Toast[],
@@ -42,6 +40,10 @@ export const useAppState = () => {
         appState.value.isInMiniApp = state;
     }
 
+    const setInitError = (error: unknown | string) => {
+        appState.value.initError = error;
+    }
+
     const addLoadingKey = (key: string) => {
         appState.value.loadingKeys.push(key)
         appState.value.isLoading = true;
@@ -63,23 +65,15 @@ export const useAppState = () => {
         appState.value.toasts.push({ id, title, subTitle: subtitle ||'', type });
         setTimeout(() => {
             appState.value.toasts = appState.value.toasts.filter(t => t.id !== id);
-        }, 1200);
-    }
-
-    const setPreferences = (preferences: UserPreferencesDto) => {
-        appState.value.userPreferences = preferences;
-    }
-
-    const setUserOrganizationPreferences = (preferences: UserOrganizationPreferencesDto) => {
-        appState.value.userOrganizationPreferences = preferences;
+        }, 1500);
     }
 
     const updateEpicsOrdering = (sortOrder: EpicSortOrder) => {
-        appState.value.userPreferences!.epicSortOrder = sortOrder;
+        appState.value.user!.preferences.epicSortOrder = sortOrder;
     }
 
     const updateSpaceId = (spaceId: number) => {
-        appState.value.userOrganizationPreferences!.selectedSpaceId = spaceId;
+        appState.value.organization!.preferences.selectedSpaceId = spaceId;
     }
 
     return {
@@ -92,10 +86,9 @@ export const useAppState = () => {
         setIsAppInitialized,
         setIsInMiniApp,
         palette,
-        setPreferences,
-        setUserOrganizationPreferences,
         updateEpicsOrdering,
         updateSpaceId,
         setOrganization,
+        setInitError,
     }
 }

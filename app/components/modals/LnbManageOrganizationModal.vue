@@ -8,13 +8,17 @@ const { appState, showToast } = useAppState()
 const { getRoleKey } = useUtils()
 const { getOrganizationMembers, getPermittableEntities, setUserPermissions, getJoinCode, regenerateJoinCode, revokeAccess } = useOrganizationsApi()
 const organization = computed(() => appState.value.organization)
+const url = useRequestURL()
 
 const members = ref(await getOrganizationMembers());
 const permittableEntities = await getPermittableEntities();
 const joinCode = ref(await getJoinCode())
+const joinLink = computed(() => {
+  return joinCode.value ? `${url.origin}/organizations/join?code=${joinCode.value}` : ''
+})
 
 const copyInviteLink = () => {
-  navigator.clipboard?.writeText(joinCode.value);
+  navigator.clipboard?.writeText(joinLink.value);
   showToast(t('inviteCodeCopied'), 'success');
 }
 
@@ -76,7 +80,7 @@ const { t } = useI18n();
         {{ t('inviteCode') }}
       </div>
       <div class="invite-link-row">
-        <div class="invite-link-val">{{ joinCode }}</div>
+        <div class="invite-link-val">{{ joinLink }}</div>
         <div class="invite-link-btn" @click="copyInviteLink">
           {{ t('copy') }}
         </div>

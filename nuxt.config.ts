@@ -1,6 +1,9 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
+  future: {
+    compatibilityVersion: 4
+  },
   ssr: false,
   typescript: {
     typeCheck: true,
@@ -26,8 +29,8 @@ export default defineNuxtConfig({
         }
       ],
       viewport: "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover",
-      title: "Message Board"
-    }
+      title: "Laraue Boards"
+    },
   },
 
   i18n: {

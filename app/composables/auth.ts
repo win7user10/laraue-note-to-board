@@ -22,7 +22,7 @@ export const useAuth = () => {
         const organization = await getOrganization()
         await initOrganizationWithOrganizationData(organization)
 
-        navigateTo(`/organizations/${organization.slug}-${organization.slugPostfix}`);
+        return navigateTo(`/organizations/${organization.slug}-${organization.slugPostfix}`);
     }
 
     const initUserWithBearer = async (bearerToken: string) => {
@@ -32,6 +32,9 @@ export const useAuth = () => {
 
         const user = await loadUser();
         await initUserWithUserData(user);
+
+        if (redirectPath.value)
+            return navigateTo(redirectPath.value)
     }
 
     const tryAuthWithStoredBearer = async () => {
@@ -107,8 +110,6 @@ export const useAuth = () => {
     }
 
     const redirectPath = useState('redirectPath', () => '/')
-    const showLoginUserModal = useState('showLoginModal', () => false)
-    const showLoginOrganizationModal = useState('showLoginModal', () => false)
 
     const requireUserAuth = (to: ReturnType<typeof useRoute>) => {
         const { appState } = useAppState()
@@ -138,8 +139,6 @@ export const useAuth = () => {
         initOrganizationWithBearer,
         requireUserAuth,
         requireOrganizationAuth,
-        showLoginUserModal,
-        showLoginOrganizationModal,
         isUserAuthenticated,
         isOrganizationSelected,
         loginOrganization,

@@ -5,6 +5,8 @@ import LnbCreateOrganizationModal from "~/components/modals/LnbCreateOrganizatio
 import {ref} from "vue";
 import LnbEditOrganizationModal from "~/components/modals/LnbEditOrganizationModal.vue";
 import LnbDeleteOrganizationModal from "~/components/modals/LnbDeleteOrganizationModal.vue";
+import LnbDivider from "~/components/LnbDivider.vue";
+import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
 
 definePageMeta({
   middleware: 'auth'
@@ -12,8 +14,8 @@ definePageMeta({
 
 const { appState } = useAppState()
 const { getDocumentationLink } = useUtils()
-const { loginOrganization } = useAuth()
-const { getOrganizations, createOrganization, editOrganization, deleteOrganization } = useOrganizationsApi()
+const { loginOrganization, logout } = useAuth()
+const { getOrganizations, editOrganization, deleteOrganization } = useOrganizationsApi()
 const { t } = useI18n()
 const authUser = appState.value.user
 
@@ -47,19 +49,8 @@ const openCreateOrganization = () => {
   modals.createOrganization = true;
 }
 
-const createOrganizationInternal = async (request: CreateOrganizationRequest) => {
-  const result = await createOrganization(request)
-  organizations.value.push({
-    id: result.id,
-    name: request.name,
-    color: request.color,
-    isPersonal: false,
-    canUpdate: true,
-    canDelete: true,
-    canCreateSpaces: true,
-    slug: result.slug,
-    slugPostfix: result.slugPostfix,
-  })
+const createOrganizationInternal = async (request: OrganizationListDto) => {
+  organizations.value.push(request)
   modals.createOrganization = false;
 }
 
@@ -91,14 +82,22 @@ const moveJoinByCode = () => {
 <template>
   <LnbAuthScreen>
     <div class="org-select-head">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-        <LnbCardAvatar :color="authUser?.color">
-          {{authUser?.initials}}
-        </LnbCardAvatar>
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--text)">{{authUser?.firstName}} {{authUser?.lastName}}</div>
-          <div style="font-size:11px;color:var(--text3)">@{{authUser?.username}}</div>
+      <div style="display:flex;margin-bottom:10px;justify-content: space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <LnbCardAvatar :color="authUser?.color">
+            {{authUser?.initials}}
+          </LnbCardAvatar>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--text)">{{authUser?.firstName}} {{authUser?.lastName}}</div>
+            <div style="font-size:11px;color:var(--text3)">@{{authUser?.username}}</div>
+          </div>
         </div>
+        <LnbIconBtn
+            @click="logout"
+            :title="t('signOut')"
+            icon="logout"
+            icon-size="mini"
+            btn-size="mini"/>
       </div>
       <LnbElementWithHelpLink
           :linkTitle="t('learnAboutOrganizations')"
@@ -107,7 +106,9 @@ const moveJoinByCode = () => {
           {{ t('chooseWorkspace') }}
         </div>
       </LnbElementWithHelpLink>
-      <div class="org-select-sub">{{ t('selectWhereYouWantToWork') }}</div>
+      <div class="org-select-sub">
+        {{ t('selectWhereYouWantToWork') }}
+      </div>
     </div>
     <LnbNavLoader />
     <div class="org-select-body">
@@ -136,28 +137,24 @@ const moveJoinByCode = () => {
           </div>
         </div>
       </div>
+
       <!-- Create new org -->
-      <div class="org-item" style="border-style:dashed;justify-content:center;gap:8px" @click="openCreateOrganization">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:15px;height:15px;color:var(--text3)"><path d="M8 3v10M3 8h10"/></svg>
-        <span style="font-size:13px;font-weight:600;color:var(--text3)">{{ t('newOrganization') }}</span>
+      <div class="org-item org-manage-button" @click="openCreateOrganization">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v10M3 8h10"/></svg>
+        <span class="org-manage-button-text">
+          {{ t('newOrganization') }}
+        </span>
       </div>
 
-      <!-- Divider -->
-      <div style="display:flex;align-items:center;gap:8px;margin:4px 0">
-        <div style="flex:1;height:1px;background:var(--border)"></div>
-        <div style="font-size:10px;color:var(--text3);font-weight:600">
-          {{ t('or') }}
-        </div>
-        <div style="flex:1;height:1px;background:var(--border)"></div>
-      </div>
+      <LnbDivider />
 
       <!-- Join by code -->
-      <div class="org-item" style="border-style:dashed;justify-content:center;gap:8px" @click="moveJoinByCode">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:15px;height:15px;color:var(--text3)">
+      <div class="org-item org-manage-button" @click="moveJoinByCode">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M3 6h10M3 10h10M6 3v10M10 3v10" opacity="0.5"/>
           <rect x="2" y="2" width="12" height="12" rx="2"/>
         </svg>
-        <span style="font-size:13px;font-weight:600;color:var(--text3)">
+        <span class="org-manage-button-text">
           {{ t('joinWithCode') }}
         </span>
       </div>
@@ -200,4 +197,9 @@ const moveJoinByCode = () => {
 .org-item-btn.danger:hover{border-color:var(--red);color:var(--red)}
 .org-item-btn svg{width:12px;height:12px}
 .org-enter-btn svg{width:12px;height:12px}
+.org-manage-button{border-style:dashed;justify-content:center;gap:8px}
+.org-manage-button svg {width:15px;height:15px;color:var(--text3)}
+.org-manage-button-text{font-size:13px;font-weight:600;color:var(--text3)}
+.org-manage-button-sign-out svg {color:var(--red)}
+.org-manage-button-sign-out .org-manage-button-text {color:var(--red)}
 </style>

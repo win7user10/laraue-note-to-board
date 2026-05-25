@@ -94,6 +94,8 @@
   "newOrganization": "New Organization",
   "organizationName": "Organization Name",
   "organizationNameExample": "e.g. Acme Corp…",
+  "organizationSlug": "Organization Slug",
+  "organizationSlugExample": "e.g. acme-corp...",
   "editOrganization": "Edit Organization",
   "editOrganizationTitle": "Edit Organization",
   "deleteOrganizationTitle": "Delete Organization?",

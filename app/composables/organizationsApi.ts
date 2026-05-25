@@ -27,6 +27,7 @@ export interface OrganizationDto {
 export interface CreateOrganizationRequest {
     name: string;
     color: string;
+    slug: string;
 }
 
 export interface EditOrganizationRequest {

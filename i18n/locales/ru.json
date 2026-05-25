@@ -94,6 +94,8 @@
   "newOrganization": "Новая организация",
   "organizationName": "Название организации",
   "organizationNameExample": "например, ООО Акмэ…",
+  "organizationSlug": "Идентификатор организаций",
+  "organizationSlugExample": "например, acme-corp...",
   "editOrganization": "Редактировать организацию",
   "editOrganizationTitle": "Редактирование",
   "deleteOrganizationTitle": "Delete Organization?",

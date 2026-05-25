@@ -19,6 +19,10 @@
     }
   };
 
+  definePageMeta({
+    middleware: 'no-auth'
+  })
+
   onMounted(async () => {
     if (appState.value.user)
       return navigateTo('/organizations')

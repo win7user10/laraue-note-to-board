@@ -65,7 +65,7 @@ export const useAppState = () => {
         appState.value.toasts.push({ id, title, subTitle: subtitle ||'', type });
         setTimeout(() => {
             appState.value.toasts = appState.value.toasts.filter(t => t.id !== id);
-        }, 1200);
+        }, 1500);
     }
 
     const updateEpicsOrdering = (sortOrder: EpicSortOrder) => {

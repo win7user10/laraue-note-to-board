@@ -33,6 +33,8 @@ const submitJoinCode = async () => {
       joinCodeError.value = t('noOrgWithSuchCode');
     if (error.status === 406)
       joinCodeError.value = t('userIsAlreadyMember');
+    else
+      throw _error;
   }
 }
 

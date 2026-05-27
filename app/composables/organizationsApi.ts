@@ -33,6 +33,7 @@ export interface CreateOrganizationRequest {
 export interface EditOrganizationRequest {
     name: string;
     color: string;
+    slug: string;
 }
 
 export interface OrganizationMember {

@@ -15,7 +15,7 @@ definePageMeta({
 const { appState } = useAppState()
 const { getDocumentationLink } = useUtils()
 const { loginOrganization, logout } = useAuth()
-const { getOrganizations, editOrganization, deleteOrganization } = useOrganizationsApi()
+const { getOrganizations, deleteOrganization } = useOrganizationsApi()
 const { t } = useI18n()
 const authUser = appState.value.user
 
@@ -55,7 +55,6 @@ const createOrganizationInternal = async (request: OrganizationListDto) => {
 }
 
 const editOrganizationInternal = async (request: EditOrganizationRequest) => {
-  await editOrganization(editingOrganization.value!.id, request)
   editingOrganization.value!.color = request.color
   editingOrganization.value!.name = request.name
   modals.editOrganization = false;

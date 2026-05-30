@@ -14,6 +14,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n();
 const { getRandomColor } = useAppState();
+const { getEmptyErrorsObject } = useUtils();
 const { createOrganization } = useOrganizationsApi()
 
 const newOrganization = ref<CreateOrganizationRequest>({
@@ -22,7 +23,7 @@ const newOrganization = ref<CreateOrganizationRequest>({
   slug: ""
 })
 
-const errors = ref<{ [key: string]: string[] }>({})
+const errors = ref(getEmptyErrorsObject())
 
 const createOrganizationInternal = async () => {
   try {

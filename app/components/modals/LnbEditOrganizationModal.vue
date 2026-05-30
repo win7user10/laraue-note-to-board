@@ -14,6 +14,7 @@ const emit = defineEmits<{
 }>()
 
 const { editOrganization } = useOrganizationsApi()
+const { getEmptyErrorsObject } = useUtils()
 
 const request = ref<EditOrganizationRequest>({
   name: "",
@@ -28,7 +29,7 @@ onMounted(() => {
 })
 
 const { t } = useI18n();
-const errors = ref<{ [key: string]: string[] }>({})
+const errors = ref(getEmptyErrorsObject())
 
 const editOrganizationInternal = async () => {
   try {

@@ -1,11 +1,13 @@
 export interface CreateSpaceRequest {
     name: string;
     color: string;
+    key: string;
 }
 
 export interface EditSpaceRequest {
     name: string;
     color: string;
+    key: string;
 }
 
 export interface SpaceDto {
@@ -18,6 +20,7 @@ export interface SpaceListDto {
     id: number;
     name: string;
     color: string;
+    key: string;
     canUpdate: boolean;
     canDelete: boolean;
 }

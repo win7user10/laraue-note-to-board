@@ -37,19 +37,9 @@ const setSpaceInternal = async (id: number) => {
   closePopup()
 }
 
-const createSpaceInternal = async (request: CreateSpaceRequest) => {
-  await createSpace(request);
-  modals.createSpace = false;
-}
-
 const closeCreateSpace = () => {
   modals.createSpace = false
   closePopup()
-}
-
-const editSpaceInternal = async (request: EditSpaceRequest) => {
-  await editSpace(editingSpace.value!.id, request);
-  modals.editSpace = false;
 }
 
 const editingSpace = ref<SpaceListDto>()
@@ -113,12 +103,10 @@ const closePopup = () => {
   </LnbPopup>
   <LnbCreateSpaceModal
     v-if="modals.createSpace"
-    @create="createSpaceInternal"
     @close="closeCreateSpace"/>
   <LnbEditSpaceModal
     v-if="modals.editSpace"
     :space="editingSpace!"
-    @edit="editSpaceInternal"
     @close="closeEditSpace"/>
   <LnbDeleteSpaceModal
     v-if="modals.deleteSpace"

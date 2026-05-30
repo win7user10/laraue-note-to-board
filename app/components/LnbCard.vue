@@ -83,7 +83,8 @@
         {{ props.message.senderInitial?.toLocaleUpperCase() }}
       </div>
       <div class="card-sender">{{ props.message.sender }}</div>
-      <div class="card-time">{{ formatDate(props.message.time) }}</div>
+      <div class="card-key">{{ props.message.key }}</div>
+      <!--<div class="card-time">{{ formatDate(props.message.time) }}</div>-->
     </div>
     <div class="card-text">
       <template v-for="chunk in hlTextChunks">
@@ -188,6 +189,7 @@
   }
   .card-sender { font-size: 12px; font-weight: 700; color: var(--text); flex: 1; }
   .card-time { font-size: 10px; color: var(--text3); font-family: 'JetBrains Mono', monospace; }
+  .card-key {font-size:9px;font-family:'JetBrains Mono',monospace;color:var(--accent);font-weight:700;opacity:0.8;}
   .card-text {
     font-size: 13px;
     color: var(--text2);

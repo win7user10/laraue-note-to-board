@@ -58,6 +58,10 @@ export const useUtils = () => {
         return `${laraueUrl}${locale.value === 'ru' ? '/ru' : ''}${documentationPath}${relativeUrl}`;
     }
 
+    const getEmptyErrorsObject = () => {
+        return {} as { [key: string]: string[] }
+    }
+
     return {
         formatDate,
         getImageUrl,
@@ -67,5 +71,6 @@ export const useUtils = () => {
         addFlag,
         deleteFlag,
         getDocumentationLink,
+        getEmptyErrorsObject,
     }
 }

@@ -6,6 +6,7 @@ export interface MessageListDto {
     content?: string;
     epicId: number;
     statusId: number;
+    key: string;
     senderColor: string;
     media: MediaInfo[];
 }

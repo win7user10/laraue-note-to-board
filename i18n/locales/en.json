@@ -76,6 +76,8 @@
   "newSpace": "New Space",
   "spaceName": "Space Name",
   "spaceNameExample": "e.g. Mobile App, Marketing…",
+  "key": "Key",
+  "keyExample": "e.g. MOB, MAR...",
   "spaceCreated": "Space created",
   "space": "Space",
   "board": "Board",

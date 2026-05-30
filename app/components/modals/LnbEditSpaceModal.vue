@@ -12,20 +12,38 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'close'): void,
-  (e: 'edit', value: EditSpaceRequest): void
 }>()
+
+const { editSpace } = useBoard();
+const { getEmptyErrorsObject } = useUtils();
 
 const request = ref<EditSpaceRequest>({
   name: "",
   color: "",
+  key: ""
 })
 
 onMounted(() => {
   request.value.color = props.space.color;
   request.value.name = props.space.name;
+  request.value.key = props.space.key;
 })
 
 const { t } = useI18n();
+
+const errors = ref(getEmptyErrorsObject())
+const editSpaceInternal = async () => {
+  try {
+    await editSpace(props.space.id, request.value);
+    emit("close")
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 400) {
+      errors.value = error.errors;
+    } else {
+      throw error;
+    }
+  }
+}
 
 </script>
 
@@ -35,14 +53,28 @@ const { t } = useI18n();
     :title="t('editSpaceTitle')"
     @close="emit('close')"
     @cancel="emit('close')"
-    @apply="emit('edit', request)">
-    <LnbModalLabel>{{ t('spaceName') }}</LnbModalLabel>
+    @apply="editSpaceInternal">
+
+    <LnbModalLabel>
+      {{ t('spaceName') }}
+    </LnbModalLabel>
     <LnbModalInput
         focus
-        @enter="emit('edit', request)"
+        :errors="errors['Name']"
         v-model="request.name"
         :placeholder="t('spaceNameExample')"/>
-    <LnbModalLabel>{{ t('color') }}</LnbModalLabel>
+
+    <LnbModalLabel>
+      {{ t('key') }}
+    </LnbModalLabel>
+    <LnbModalInput
+        v-model="request.key"
+        :errors="errors['Key']"
+        :placeholder="t('keyExample')"/>
+
+    <LnbModalLabel>
+      {{ t('color') }}
+    </LnbModalLabel>
     <LnbColorPicker
         v-model="request.color"/>
   </LnbModal>

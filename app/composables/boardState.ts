@@ -452,6 +452,7 @@ export const useBoard = () => {
             color: request.color,
             canDelete: spaceInfo.canDelete,
             canUpdate: spaceInfo.canUpdate,
+            key: request.key,
         })
         showToast(t('spaceCreated'), 'success', request.name)
     }
@@ -463,7 +464,14 @@ export const useBoard = () => {
         if (space) {
             space.color = request.color;
             space.name = request.name;
+            space.key = request.key;
         }
+
+        // Replace keys in issues
+        if (id === currentSpace.value?.id)
+            state.value.messages
+                .flatMap(x => x.items.data)
+                .forEach((item) => item.key = request.key + item.key.slice(3))
 
         showToast(t('spaceEdited'), 'success', request.name);
     }

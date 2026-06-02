@@ -110,7 +110,7 @@
       </template>
     </div>
     <div class="card-footer">
-      <!--<span class="card-tag">PM</span>-->
+      <slot name="footer"></slot>
       <div class="card-actions">
         <LnbIconBtn
           v-if="assignButton"
@@ -205,15 +205,6 @@
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
-  }
-  .card-tag {
-    background: var(--surface3);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-size: 10px;
-    color: var(--text2);
-    font-weight: 600;
   }
   .card-actions {
     margin-left: auto;

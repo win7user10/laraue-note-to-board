@@ -11,6 +11,13 @@ export interface MessageListDto {
     media: MediaInfo[];
 }
 
+export interface SearchIssueDto extends MessageListDto{
+    statusColor: string;
+    statusName: string;
+    epicColor: string;
+    epicName: string;
+}
+
 export interface MediaInfo {
     previewFileId?: string;
     originalFileId?: string;
@@ -127,7 +134,7 @@ export const useMessagesApi = () => {
     }
 
     const searchMessages = (request: SearchRequest) => {
-        return client<FullPaginatedResult<MessageListDto>>('/issues/search', {
+        return client<ShortPaginatedResult<SearchIssueDto>>('/issues/search', {
             method: 'GET',
             query: request
         });

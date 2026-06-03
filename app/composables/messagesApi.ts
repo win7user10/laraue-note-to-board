@@ -12,8 +12,8 @@ export interface MessageListDto {
 }
 
 export interface SearchIssueDto extends MessageListDto{
-    statusColor: string;
-    statusName: string;
+    statusColor?: string;
+    statusName?: string;
     epicColor: string;
     epicName: string;
 }
@@ -35,12 +35,13 @@ export interface MessageDetailDto {
     sender?: string;
     senderInitial?: string;
     content: string;
-    categoryName?: string;
-    categoryColor?: string;
+    epicName?: string;
+    epicColor?: string;
     statusName?: string;
     statusColor?: string;
     color: string;
     senderColor: string;
+    canEdit: string;
 }
 
 export interface CreateCardRequest {
@@ -56,7 +57,7 @@ export interface SearchRequest {
     searchString: string;
     page: number;
     perPage: number;
-    epicId: number | null;
+    epicIds: Array<number>;
     spaceId: number | null;
 }
 

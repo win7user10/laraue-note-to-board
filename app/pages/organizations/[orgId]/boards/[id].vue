@@ -1,22 +1,16 @@
 <script setup lang="ts">
 
-import LnbDeleteCardModal from "~/components/modals/LnbDeleteCardModal.vue";
-import LnbMoveCardModal from "~/components/modals/LnbMoveCardModal.vue";
-import LnbEditCardModal from "~/components/modals/LnbEditCardModal.vue";
 import LnbEditCategoryModal from "~/components/modals/LnbEditCategoryModal.vue";
 import LnbDeleteCategoryModal from "~/components/modals/LnbDeleteCategoryModal.vue";
 import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
 import LnbElementWithHelpLink from "~/components/modals/LnbElementWithHelpLink.vue";
 
-const { editCard, deleteCard, editCategory, deleteCategory, state, dbMessagesCount, reloadEpics, currentSpace, trySetCategory } = useBoard()
+const { editCategory, deleteCategory, state, dbMessagesCount, reloadEpics, currentSpace, trySetCategory, isLoading, search } = useBoard()
 const { t } = useI18n()
 const { getDocumentationLink } = useUtils()
 const { params } = useRoute()
 
 const modal = reactive({
-  editCard: false,
-  assign: false,
-  delete: false,
   search: false,
   editCategory: false,
   deleteCategory: false,
@@ -32,44 +26,6 @@ watch(() => currentSpace.value, async () => {
   await reloadEpics()
   epicNotFound.value = !trySetCategory(getEpicId())
 }, { immediate: true })
-
-const openEditCard = (message: MessageListDto) => {
-  assignMsg.value = message;
-  modal.editCard = true;
-}
-
-const closeEditCard = () => {
-  modal.editCard = false;
-}
-
-const editCardInternal = async (value: EditCardRequest) => {
-  await editCard(assignMsg.value!.id, value);
-  closeEditCard();
-}
-
-const assignMsg = ref<MessageListDto | undefined>(undefined);
-const openAssignToCategory = (message: MessageListDto) => {
-  assignMsg.value = message;
-  modal.assign = true;
-}
-
-const closeAssignToCategory = () => {
-  modal.assign = false;
-}
-
-const openDelete = (message: MessageListDto) => {
-  assignMsg.value = message;
-  modal.delete = true;
-}
-
-const closeDelete = () => {
-  modal.delete = false;
-}
-
-const deleteCardInternal = async () => {
-  await deleteCard(assignMsg.value!.id)
-  closeDelete();
-}
 
 const openEditCategory = () => {
   modal.editCategory = true;
@@ -99,6 +55,14 @@ const deleteCategoryInternal = async () => {
 
 const isBacklog = computed(() => state.value.epics.find(c => state.value.epicId == c.id)?.isDefault);
 const currentCategory = computed(() => state.value.currentEpic);
+
+const showSearch = computed(() => searchString.value || dbMessagesCount.value > 0 || isLoading.value)
+const searchString = ref('')
+
+const searchInternal = async (value: string) => {
+  searchString.value = value
+  await search(value);
+}
 </script>
 
 <template>
@@ -118,35 +82,33 @@ const currentCategory = computed(() => state.value.currentEpic);
         {{ dbMessagesCount }} {{ t('cards', dbMessagesCount) }}
       </template>
       <template #actions>
+        <LnbBoardSearch
+          v-if="showSearch"
+          @update:modelValue="searchInternal($event)"
+          :modelValue="searchString"/>
         <LnbIconBtn
-            v-if="currentCategory?.canUpdate"
-            :title="t('editBoard')"
-            btnSize="medium"
-            iconSize="medium"
-            icon="edit"
-            @click="openEditCategory" />
+          v-if="currentCategory?.canUpdate"
+          :title="t('editBoard')"
+          btnSize="medium"
+          iconSize="medium"
+          icon="edit"
+          @click="openEditCategory" />
         <LnbIconBtn
-            v-if="currentCategory?.canDelete"
-            type="danger"
-            btnSize="medium"
-            iconSize="medium"
-            :title="t('deleteBoard')"
-            icon="delete"
-            @click="openDeleteCategory" />
+          v-if="currentCategory?.canDelete"
+          type="danger"
+          btnSize="medium"
+          iconSize="medium"
+          :title="t('deleteBoard')"
+          icon="delete"
+          @click="openDeleteCategory" />
       </template>
     </LnbBoardHeader>
 
     <template v-if="isBacklog">
-      <LnbBacklogView
-          @openAssignToCategory="openAssignToCategory"
-          @openEdit="openEditCard"
-          @openDelete="openDelete" />
+      <LnbBacklogView />
     </template>
     <template v-else>
-      <LnbBoardView
-          @openAssignToCategory="openAssignToCategory"
-          @openEdit="openEditCard"
-          @openDelete="openDelete"/>
+      <LnbBoardView />
     </template>
   </template>
 
@@ -156,33 +118,15 @@ const currentCategory = computed(() => state.value.currentEpic);
         subtitle="Use navigation to move to available boards or contact your admin to get the permissions"/>
   </template>
 
-  <LnbMoveCardModal
-      :assign-msg="assignMsg as any"
-      @close="closeAssignToCategory"
-      v-if="modal.assign" />
-
-  <LnbDeleteCardModal
-      @close="closeDelete"
-      @delete="deleteCardInternal"
-      v-if="modal.delete"/>
-
-  <LnbEditCardModal
-      :id="assignMsg!.id"
-      :hide-status="(currentCategory?.statuses?.length ?? 0) < 2"
-      @edit="editCardInternal"
-      @close="closeEditCard"
-      :allowEdit="!!currentCategory?.canUpdateIssues"
-      v-if="modal.editCard"/>
-
   <LnbEditCategoryModal
-      @close="closeEditCategory"
-      @edit="editCategoryInternal"
-      v-if="modal.editCategory"/>
+    @close="closeEditCategory"
+    @edit="editCategoryInternal"
+    v-if="modal.editCategory"/>
 
   <LnbDeleteCategoryModal
-      @close="closeDeleteCategory"
-      @delete="deleteCategoryInternal"
-      v-if="modal.deleteCategory"/>
+    @close="closeDeleteCategory"
+    @delete="deleteCategoryInternal"
+    v-if="modal.deleteCategory"/>
 
 </template>
 

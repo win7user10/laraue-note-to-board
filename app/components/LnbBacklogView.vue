@@ -6,12 +6,6 @@ import {useBoard} from "~/composables/boardState";
 import LnbView from "~/components/LnbView.vue";
 import LnbSection from "~/components/LnbSection.vue";
 
-const emits = defineEmits<{
-  (e: 'openAssignToCategory', message: MessageListDto): void,
-  (e: 'openDelete', message: MessageListDto): void,
-  (e: 'openEdit', message: MessageListDto): void,
-}>()
-
 const { state, loadNextCards } = useBoard()
 
 const backlog = computed(() => {
@@ -44,16 +38,13 @@ const { t } = useI18n();
           :load-next="() => loadNextCards(statusId!)"
           :can-load-more="() => backlogMessagesResult?.hasNext ?? false">
           <LnbCard
-              v-for="msg in backlogMessagesResult?.data"
-              :deleteButton="!!state.currentEpic?.canDeleteIssues"
-              :message="msg as any"
-              :key="msg.id"
-              :assignButton="!!state.currentEpic?.canUpdateIssues"
-              :highlightText="searchString"
-              @openDelete="emits('openDelete', $event)"
-              @openAssignToCategory="emits('openAssignToCategory', $event)"
-              @openEdit="emits('openEdit', $event)"
-              :sender-color="msg.senderColor"/>
+            v-for="msg in backlogMessagesResult?.data"
+            :deleteButton="!!state.currentEpic?.canDeleteIssues"
+            :message="msg as any"
+            :key="msg.id"
+            :assignButton="!!state.currentEpic?.canUpdateIssues"
+            :highlightText="searchString"
+            :sender-color="msg.senderColor"/>
         </LnbScrollArea>
       </LnbSection>
     </template>

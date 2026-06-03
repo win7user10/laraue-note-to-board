@@ -11,7 +11,7 @@ const { searchMessages } = useMessagesApi();
 
 const request = ref({
   searchString: '',
-  epicId: null as null | number,
+  epicIds: [] as Array<number>,
 })
 
 const pagination = ref(DefaultPagination);
@@ -26,7 +26,7 @@ const loadMore = async () => {
     const item = searchResults.value!;
     const newMessages = await searchMessages({
       searchString: request.value.searchString,
-      epicId: request.value.epicId,
+      epicIds: request.value.epicIds,
       perPage: searchResults.value!.perPage,
       page: searchResults.value!.page + 1,
       spaceId: currentSpace.value!.id
@@ -44,7 +44,7 @@ const fetchSearchResults = async () => {
   isLoading.value = true;
   try {
     searchResults.value = await searchMessages({
-      epicId: request.value.epicId,
+      epicIds: request.value.epicIds,
       searchString: request.value.searchString,
       page: pagination.value.page,
       perPage: pagination.value.perPage,
@@ -65,14 +65,16 @@ watch(request, async () => {
     await fetchSearchResults();
 }, { deep: true })
 
+const updateIssue = (source: SearchIssueDto, value: EditCardRequest) => {
+  source.content = value.content;
+}
+
 </script>
 
 <template>
   <LnbBoardHeader>
     <template #title>
-      <LnbElementWithHelpLink link-href="asd" link-title="asd">
-        All Issues
-      </LnbElementWithHelpLink>
+      All Issues
     </template>
     <template #actions>
       <LnbBoardSearch v-model="request.searchString" />
@@ -81,25 +83,11 @@ watch(request, async () => {
   <LnbView>
     <LnbSection title="Filters">
 
-      <div class="filter-row">
-        <div class="filter-title">
-          Epic
-        </div>
-        <div
-          class="filter-chip"
-          :class="{active: !request.epicId}"
-          @click="request.epicId = null">
-          All
-        </div>
-        <div
-          v-for="cat in state.epics"
-          :key="cat.id"
-          class="filter-chip"
-          :class="{active: request.epicId === cat.id}"
-          @click="request.epicId = cat.id">
-          <span :style="`color:${cat.color}`">● </span>{{cat.name}}
-        </div>
-      </div>
+      <LnbFilterPill
+        :options="state.epics"
+        label="Epic"
+        no-filter-title="All Epics"
+        v-model="request.epicIds"/>
 
       <LnbScrollArea v-if="(searchResults?.data.length ?? 0) > 0"
         :load-next="() => loadMore()"
@@ -109,13 +97,14 @@ watch(request, async () => {
           :deleteButton="false"
           :assignButton="false"
           :highlightText="request.searchString"
-          :message="searchResult">
+          :message="searchResult"
+          @update="updateIssue(searchResult, $event)">
           <template #footer>
-            <LnbCardTag :color="searchResult.statusColor">
-              {{ searchResult.statusName }}
-            </LnbCardTag>
             <LnbCardTag :color="searchResult.epicColor">
-              {{ searchResult.epicName }} ↗
+              {{ searchResult.epicName }}
+            </LnbCardTag>
+            <LnbCardTag v-if="searchResult.statusName" :color="searchResult.statusColor!">
+              {{ searchResult.statusName }}
             </LnbCardTag>
           </template>
         </LnbCard>

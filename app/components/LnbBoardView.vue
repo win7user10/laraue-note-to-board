@@ -135,9 +135,6 @@ const searchString = computed(() => board.state.value.searchString);
           <div class="col-drag-inner" v-sortable="{ statusId: status.id, onCardMoved }">
             <LnbCard
               v-for="msg in cardsByStatus[status.id]?.data"
-              @openDelete="emits('openDelete', $event)"
-              @openEdit="emits('openEdit', $event)"
-              @openAssignToCategory="emits('openAssignToCategory', $event)"
               :deleteButton="!!currentCategory?.canDeleteIssues"
               :key="msg.id"
               :assignButton="!!currentCategory?.canUpdateIssues"

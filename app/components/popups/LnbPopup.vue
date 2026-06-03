@@ -1,6 +1,7 @@
 <script setup lang="ts">
 defineProps<{
   alignRight?: boolean,
+  alignLeft?: boolean,
   minWidth: number,
 }>()
 const emits = defineEmits<{
@@ -11,7 +12,10 @@ const emits = defineEmits<{
 <template>
   <!-- Sort popup -->
   <transition name="fade">
-    <div class="popup" :style="{ right: alignRight ? '0' : undefined, minWidth: minWidth + 'px' }">
+    <div class="popup" :style="{
+      right: alignRight ? '0' : undefined,
+      left: alignLeft ? '0' : undefined,
+      minWidth: minWidth + 'px' }">
       <slot></slot>
     </div>
   </transition>

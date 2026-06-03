@@ -18,6 +18,6 @@ defineProps<{
   letter-spacing: 1px;
   color: var(--text3);
   text-transform: uppercase;
-  padding: 6px 2px 4px;
+  padding: 6px 0px 4px;
 }
 </style>

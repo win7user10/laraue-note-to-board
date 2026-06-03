@@ -2,6 +2,7 @@
 import LnbNavSortPopup from "~/components/popups/LnbNavSortPopup.vue";
 import LnbCreateCategoryModal from "~/components/modals/LnbCreateCategoryModal.vue";
 import { ref, computed, reactive } from "vue";
+import LnbCreateSpaceModal from "~/components/modals/LnbCreateSpaceModal.vue";
 
 defineProps<{
   canCreateEpics?: boolean;
@@ -14,7 +15,10 @@ const route = useRoute();
 const { t } = useI18n();
 
 const navSortPopupOpen = ref(false);
-const modal = reactive({ createCategory: false });
+const modal = reactive({
+  createCategory: false,
+  createSpace: false,
+});
 
 // ── URL helpers ───────────────────────────────────────────────────────────────
 
@@ -62,6 +66,9 @@ const getEpicUrl = (id: number) => {
 
 const openCreateCategory = () => { modal.createCategory = true; };
 const closeCreateCategory = () => { modal.createCategory = false; };
+
+const openCreateSpace = () => { modal.createSpace = true; };
+const closeCreateSpace = () => { modal.createSpace = false; };
 </script>
 
 <template>
@@ -94,8 +101,8 @@ const closeCreateCategory = () => { modal.createCategory = false; };
         <div
           v-if="canCreateSpaces"
           class="nav-add"
-          :title="t('addSpace')"
-          @click="$emit('createSpace')">
+          :title="t('createSpace')"
+          @click="openCreateSpace">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M8 3v10M3 8h10"/>
           </svg>
@@ -161,9 +168,14 @@ const closeCreateCategory = () => { modal.createCategory = false; };
   </div>
 
   <LnbCreateCategoryModal
-      v-if="modal.createCategory"
-      @create="closeCreateCategory"
-      @close="closeCreateCategory"/>
+    v-if="modal.createCategory"
+    @create="closeCreateCategory"
+    @close="closeCreateCategory"/>
+
+  <LnbCreateSpaceModal
+    v-if="modal.createSpace"
+    @create="closeCreateSpace"
+    @close="closeCreateSpace"/>
 </template>
 
 <style scoped>

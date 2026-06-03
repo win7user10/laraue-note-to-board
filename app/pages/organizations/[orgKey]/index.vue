@@ -71,14 +71,14 @@ const updateIssue = (source: SearchIssueDto, value: EditCardRequest) => {
 <template>
   <LnbBoardHeader>
     <template #title>
-      Home
+      Organization issues
     </template>
     <template #actions>
       <LnbBoardSearch v-model="request.searchString" />
     </template>
   </LnbBoardHeader>
   <LnbView>
-    <LnbSection title="Issues">
+    <LnbSection>
 
       <LnbFilterPill
         :options="state.spaces"

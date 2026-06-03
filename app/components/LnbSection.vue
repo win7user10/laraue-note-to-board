@@ -5,7 +5,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="section-label">
+  <div v-if="title" class="section-label">
     {{ title }}
   </div>
   <slot></slot>

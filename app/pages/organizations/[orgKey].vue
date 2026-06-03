@@ -126,7 +126,8 @@ const openMassMove = () => {
   <LnbNavLoader />
   <LnbNav
     v-if="epicTabsAvailable"
-    :canCreateEpics="currentSpace?.canCreateEpics"/>
+    :canCreateEpics="currentSpace?.canCreateEpics"
+    :can-create-spaces="appState.organization?.canCreateSpaces"/>
 
   <NuxtPage/>
 

@@ -84,7 +84,7 @@ const closeCreateSpace = () => { modal.createSpace = false; };
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M2 6.5L8 2l6 4.5V14H10v-4H6v4H2z"/>
           </svg>
-          Home
+          {{ t('home') }}
         </nuxt-link>
 
         <div class="nav-divider"/>

@@ -32,7 +32,7 @@ const getPercent = (summary: CategorySummary) => {
 
 const getEpicUrl = (epicId: number) => {
   const key = getOrganizationKey()
-  return `/organizations/${key}/boards/${epicId}`
+  return `/organizations/${key}/spaces/${currentSpace.value!.key}/${epicId}`
 }
 
 const computedSummaries = computed(() => {

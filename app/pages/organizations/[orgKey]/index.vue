@@ -71,7 +71,7 @@ const updateIssue = (source: SearchIssueDto, value: EditCardRequest) => {
 <template>
   <LnbBoardHeader>
     <template #title>
-      Organization issues
+      {{ t('homeTitle') }}
     </template>
     <template #actions>
       <LnbBoardSearch v-model="request.searchString" />

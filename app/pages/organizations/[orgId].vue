@@ -51,9 +51,7 @@ onMounted(async () => {
   const organizationToSwitch = available.find(o => o.slug === slug && o.slugPostfix === slugPostfix);
   if (organizationToSwitch) {
     console.log("Change auth to available org")
-    await loginOrganization(organizationToSwitch.id)
-    await board.reloadSpaces()
-    await board.reloadEpics()
+    await loginOrganization(organizationToSwitch.id, false)
     return;
   }
 

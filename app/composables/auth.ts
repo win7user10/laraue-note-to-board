@@ -14,7 +14,7 @@ export const useAuth = () => {
         return appState.value.organization != null;
     }
 
-    const loginOrganization = async (id: number) => {
+    const loginOrganization = async (id: number, redirectToHome = true) => {
         const { login } = useOrganizationsApi();
         const token = await login(id)
         await setOrganizationToken(token)
@@ -24,7 +24,8 @@ export const useAuth = () => {
         await initOrganizationWithOrganizationData(organization)
 
         const key = getOrganizationKey(organization)
-        return navigateTo(`/organizations/${key}`);
+        if (redirectToHome)
+            return navigateTo(`/organizations/${key}`);
     }
 
     const initUserWithBearer = async (bearerToken: string) => {

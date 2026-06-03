@@ -136,8 +136,8 @@ export const useMessagesApi = () => {
 
     const searchMessages = (request: SearchRequest) => {
         return client<ShortPaginatedResult<SearchIssueDto>>('/issues/search', {
-            method: 'GET',
-            query: request
+            method: 'POST',
+            body: request
         });
     }
 

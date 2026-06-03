@@ -1,143 +1,351 @@
 <script setup lang="ts">
 import LnbNavSortPopup from "~/components/popups/LnbNavSortPopup.vue";
-import {ref} from "vue";
 import LnbCreateCategoryModal from "~/components/modals/LnbCreateCategoryModal.vue";
+import { ref, computed, reactive } from "vue";
 
 defineProps<{
-  canCreateEpics?: boolean,
-}>()
+  canCreateEpics?: boolean;
+  canCreateSpaces?: boolean;
+}>();
 
 const { epics, state, getOrganizationKey } = useBoard();
-const { appState } = useAppState();
+const spaces = state.value.spaces; // wire up your spaces composable
 const route = useRoute();
 const { t } = useI18n();
-const epicId = computed(() => state.value.epicId);
+
 const navSortPopupOpen = ref(false);
+const modal = reactive({ createCategory: false });
 
-const modal = reactive({
-  createCategory: false,
+// ── URL helpers ───────────────────────────────────────────────────────────────
+
+const orgUrl = computed(() => `/organizations/${getOrganizationKey()}`);
+
+const spaceKey = computed(() =>
+    route.params.spaceKey as string | undefined
+);
+
+const activeSpace = computed(() =>
+    spaceKey.value ? spaces?.find(s => s.key === spaceKey.value) : null
+);
+
+// ── Nav level ─────────────────────────────────────────────────────────────────
+
+/** 'home' = showing Home + space tabs; 'space' = showing back + Stats + epics */
+const navLevel = computed<"home" | "space">(() =>
+    spaceKey.value ? "space" : "home"
+);
+
+/** Which chip is active within the current level */
+const activeChip = computed(() => {
+  const path = route.path;
+  if (path === orgUrl.value) return "home";
+  if (path === orgUrl.value) return "stats"; // org-level stats fallback
+  if (path === `${orgUrl.value}/spaces/${spaceKey.value}`) return "stats";
+  if (route.params.boardId) return route.params.boardId as string;
+  return null;
 });
 
-const openCreateCategory = () => {
-  modal.createCategory = true;
+// ── Navigation ────────────────────────────────────────────────────────────────
+
+const getHomeUrl = computed(() => `${orgUrl.value}`)
+
+const getSpaceUrl = (key: string) => {
+  return `${orgUrl.value}/spaces/${key}`;
 }
 
-const closeCreateCategory = () => {
-  modal.createCategory = false;
+const goToSpaceStats = () =>
+    navigateTo(`${orgUrl.value}/spaces/${spaceKey.value}`);
+
+const getEpicUrl = (id: number) => {
+  return `${orgUrl.value}/spaces/${activeSpace.value!.key}/${id}`;
 }
 
-const goToStats = () => {
-  return navigateTo(organizationsUrl.value);
-}
-
-const isEpicRoute = computed(() => {
-  return route.path.startsWith(organizationsUrl.value + '/boards');
-})
-
-const goToIssues = () => {
-  return navigateTo(organizationsUrl.value + '/issues');
-}
-
-const organizationsUrl = computed(() => {
-  const key = getOrganizationKey()
-  return `/organizations/${key}`
-})
-
-const setEpicInternal = (id: number) => {
-  return navigateTo(organizationsUrl.value + '/boards/' + id);
-}
-
-const navMode = computed(() => {
-  switch (route.path) {
-    case organizationsUrl.value:
-      return 'stats'
-    case organizationsUrl.value + '/boards':
-      return 'epics'
-    case organizationsUrl.value + '/issues':
-      return 'issues'
-    default:
-      return null;
-  }
-});
+const openCreateCategory = () => { modal.createCategory = true; };
+const closeCreateCategory = () => { modal.createCategory = false; };
 </script>
 
 <template>
   <div class="nav-wrap">
-    <!-- mode switcher -->
-    <div class="nav-mode-sw">
-      <div class="nav-mode-btn stats" :class="{active: navMode === 'stats'}" @click="goToStats">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12V8M6 12V5M10 12V7M14 12V3"/></svg>
-        <span class="nav-mode-label">Stats</span>
-      </div>
-      <div class="nav-mode-sep"></div>
-      <div class="nav-mode-btn issues" :class="{active: navMode === 'issues'}" @click="goToIssues">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="8" cy="8" r="5"/><path d="M5.5 8l2 2 3-3"/></svg>
-        <span class="nav-mode-label">Issues</span>
-      </div>
+    <div class="nav-row">
+
+      <!-- ── HOME LEVEL: Home + divider + space tabs ── -->
+      <template v-if="navLevel === 'home'">
+        <nuxt-link
+          class="nav-home"
+          :class="{ active: activeChip === 'home' }"
+          :to="getHomeUrl">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 6.5L8 2l6 4.5V14H10v-4H6v4H2z"/>
+          </svg>
+          Home
+        </nuxt-link>
+
+        <div class="nav-divider"/>
+
+        <nuxt-link
+          v-for="sp in spaces"
+          :key="sp.id"
+          :to="getSpaceUrl(sp.key)"
+          class="nav-space">
+            <span class="dot" :style="`background:${sp.color}`"/>
+          {{ sp.name }}
+        </nuxt-link>
+
+        <div
+          v-if="canCreateSpaces"
+          class="nav-add"
+          :title="t('addSpace')"
+          @click="$emit('createSpace')">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3v10M3 8h10"/>
+          </svg>
+        </div>
+      </template>
+
+      <!-- ── SPACE LEVEL: back + Stats + epics ── -->
+      <template v-else>
+        <nuxt-link class="nav-back" :to="getHomeUrl">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2">
+            <path d="M10 3L5 8l5 5"/>
+          </svg>
+          <span class="dot" :style="`background:${activeSpace?.color}`"/>
+          {{ activeSpace?.name }}
+        </nuxt-link>
+
+        <div
+            class="nav-chip"
+            :class="{ active: activeChip === 'stats' }"
+            @click="goToSpaceStats">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M2 12V8M6 12V5M10 12V7M14 12V3"/>
+          </svg>
+          {{ t('stats') }}
+        </div>
+
+        <nuxt-link
+            v-for="epic in epics"
+            :key="epic.id"
+            class="nav-chip"
+            :class="{ active: activeChip === String(epic.id) }"
+            :to="getEpicUrl(epic.id)">
+          <span class="dot" :style="`background:${epic.color}`"/>
+          <span class="chip-label">{{ epic.name }}</span>
+        </nuxt-link>
+
+        <div
+            v-if="canCreateEpics"
+            class="nav-add"
+            :title="t('addEpic')"
+            @click="openCreateCategory">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M8 3v10M3 8h10"/>
+          </svg>
+        </div>
+      </template>
+
     </div>
 
-    <!-- NAV TABS -->
-    <div class="nav-divider"></div>
-    <div class="nav-tabs">
+    <!-- Controls — pinned right -->
+    <div class="nav-controls">
       <div
-          v-for="cat in epics"
-          class="nav-tab"
-          :class="{active: isEpicRoute && epicId === cat.id}"
-          :style="epicId === cat.id ? `--dot-color:${cat.color}` : ''"
-          @click="setEpicInternal(cat.id)">
-        <span class="dot" :style="`background:${cat.color}`"></span>
-        {{ cat.name }}
-      </div>
-      <div v-if="canCreateEpics" class="nav-tab-add" :title="t('addEpic')" @click="openCreateCategory">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M8 3v10M3 8h10"/>
+          class="nav-ctrl-btn"
+          @click.stop="navSortPopupOpen = !navSortPopupOpen">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M3 5h10M5 8h6M7 11h2"/>
         </svg>
       </div>
-    </div>
-
-    <!-- Board nav controls: search + sort — pinned to right edge -->
-    <div class="nav-controls">
-      <!-- Sort -->
-      <div class="nav-ctrl-btn" @click.stop="navSortPopupOpen = !navSortPopupOpen">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 5h10M5 8h6M7 11h2"/></svg>
-      </div>
       <LnbNavSortPopup
-        v-if="navSortPopupOpen"
-        @close="navSortPopupOpen = false"/>
+          v-if="navSortPopupOpen"
+          @close="navSortPopupOpen = false"/>
     </div>
   </div>
 
   <LnbCreateCategoryModal
-    @create="closeCreateCategory"
-    @close="closeCreateCategory"
-    v-if="modal.createCategory"/>
+      v-if="modal.createCategory"
+      @create="closeCreateCategory"
+      @close="closeCreateCategory"/>
 </template>
 
 <style scoped>
-/* NAV */
-.nav-wrap{background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;height:44px}
-.nav-mode-sw{display:flex;background:var(--surface3);border:1px solid var(--border);border-radius:9px;overflow:hidden;flex-shrink:0;margin:0 8px 0 10px;align-self:center}
-.nav-mode-btn{display:flex;align-items:center;gap:5px;padding:5px 11px;font-size:12px;font-weight:700;color:var(--text3);cursor:pointer;transition:all 0.15s;-webkit-tap-highlight-color:transparent;white-space:nowrap;line-height:1}
-.nav-mode-btn svg{width:11px;height:11px;flex-shrink:0}
-.nav-mode-btn.issues.active{background:var(--accent-glow);color:var(--accent)}
-.nav-mode-btn.epics.active{background:rgba(163,113,247,0.15);color:#a371f7}
-.nav-mode-btn.stats.active{background:rgba(56,189,148,0.15);color:#38bda0}
-.nav-mode-sep{width:1px;background:var(--border);align-self:stretch;flex-shrink:0}
-.nav-divider{width:1px;background:var(--border);align-self:stretch;flex-shrink:0;margin:8px 0}
-.nav-tabs{display:flex;align-items:center;gap:4px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none;padding:0 6px}
-.nav-tabs::-webkit-scrollbar{display:none}
-.nav-tab{display:flex;align-items:center;gap:5px;padding:4px 9px;border-radius:20px;border:1px solid transparent;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer;color:var(--text2);transition:all 0.15s;-webkit-tap-highlight-color:transparent;flex-shrink:0}
-.nav-tab:hover{background:var(--surface3);color:var(--text)}
-.nav-tab.active{background: var(--accent-glow);border-color:var(--accent);color:var(--accent)}
-.nav-tab .dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.nav-tab-add{width:24px;height:24px;border-radius:50%;border:1px dashed var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);flex-shrink:0;transition:all 0.15s;-webkit-tap-highlight-color:transparent}
-.nav-tab-add:hover{border-color:#a371f7;color:#a371f7}
-.nav-mode-label{display:inline}
-@media (max-width:480px){.nav-mode-label{display:none}.nav-mode-btn{padding:5px 9px}}
+.nav-wrap {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  height: 40px;
+  overflow: hidden;
+}
 
-.nav-controls{display:flex;align-items:center;gap:4px;margin-left:auto;flex-shrink:0; padding: 0 10px;border-left:1px solid var(--border);position: relative;}
-.nav-ctrl-btn{width:26px;height:26px;border-radius:var(--radius-sm);border:1px solid transparent;background:transparent;color:var(--text3);display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.15s;flex-shrink:0;-webkit-tap-highlight-color:transparent}
-.nav-ctrl-btn:hover,.nav-ctrl-btn.active{background:var(--surface3);border-color:var(--border);color:var(--text)}
-.nav-ctrl-btn.sort-active{color:var(--accent)}
-.nav-ctrl-btn svg{width:13px;height:13px}
+/* Scrollable row */
+.nav-row {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  height: 40px;
+  padding: 0 4px;
+}
+.nav-row::-webkit-scrollbar { display: none; }
+
+/* Shared dot */
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Vertical divider between Home and spaces */
+.nav-divider {
+  width: 1px;
+  background: var(--border);
+  align-self: stretch;
+  flex-shrink: 0;
+  margin: 9px 3px;
+}
+
+/* Home tab */
+.nav-home {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 10px;
+  height: 40px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
+}
+.nav-home svg { width: 13px; height: 13px; flex-shrink: 0; }
+.nav-home.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Space tabs (home level) */
+.nav-space {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px;
+  height: 40px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
+}
+.nav-space:hover { color: var(--text); }
+
+/* Back button (space level) */
+.nav-back {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 8px 0 6px;
+  height: 40px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
+}
+.nav-back svg { width: 14px; height: 14px; flex-shrink: 0; }
+.nav-back:hover { color: var(--text); }
+
+/* Stats + epic chips (space level) */
+.nav-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 9px;
+  height: 40px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text2);
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: color 0.15s;
+  -webkit-tap-highlight-color: transparent;
+  text-decoration: none;
+}
+.nav-chip svg { width: 13px; height: 13px; flex-shrink: 0; }
+.nav-chip.active { color: var(--text); border-bottom-color: var(--accent); }
+.nav-chip:hover { color: var(--text); }
+.chip-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90px;
+}
+
+/* Add button (spaces + epics) */
+.nav-add {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px dashed var(--border2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text3);
+  flex-shrink: 0;
+  transition: all 0.15s;
+  margin-left: 2px;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-add svg { width: 10px; height: 10px; }
+.nav-add:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Controls pinned right */
+.nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  padding: 0 8px;
+  border-left: 1px solid var(--border);
+  align-self: stretch;
+  position: relative;
+}
+.nav-ctrl-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-ctrl-btn:hover,
+.nav-ctrl-btn.active { background: var(--surface3); border-color: var(--border); color: var(--text); }
+.nav-ctrl-btn svg { width: 13px; height: 13px; }
+
+/* Hide labels on mobile */
+@media (max-width: 480px) {
+  .nav-home span:not(.dot) { display: none; }
+}
 </style>

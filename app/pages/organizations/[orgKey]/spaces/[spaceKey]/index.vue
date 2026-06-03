@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {type CategorySummary, useMessagesApi} from "~/composables/messagesApi";
-import LnbElementWithHelpLink from "~/components/modals/LnbElementWithHelpLink.vue";
 const summaries = ref<CategorySummary[]>([]);
 const { getBoardSummary } = useMessagesApi()
 const { currentSpace, getOrganizationKey } = useBoard();
@@ -31,9 +30,9 @@ const getPercent = (summary: CategorySummary) => {
   return (total - getToDo(summary)) / total * 100;
 }
 
-const goToEpic = (id: number) => {
+const getEpicUrl = (epicId: number) => {
   const key = getOrganizationKey()
-  return navigateTo(`/organizations/${key}/boards/${id}`)
+  return `/organizations/${key}/boards/${epicId}`
 }
 
 const computedSummaries = computed(() => {
@@ -65,16 +64,17 @@ const computedSummaries = computed(() => {
 <template>
   <LnbBoardHeader>
     <template #title>
-      <LnbElementWithHelpLink link-href="asd" link-title="asd">
-        Stats
-      </LnbElementWithHelpLink>
+      {{ t('stats') }}
     </template>
   </LnbBoardHeader>
   <LnbView>
     <LnbSection :title="t('boardsOverview')"><div class="board-summary-grid">
-      <div v-for="s in computedSummaries" :key="s.id"
-         class="board-summary-card" :style="`--card-color:${s.color}`"
-         @click="goToEpic(s.id)">
+      <router-link
+          v-for="s in computedSummaries"
+          :key="s.id"
+          class="board-summary-card"
+          :style="`--card-color:${s.color}`"
+          :to="getEpicUrl(s.id)">
         <div class="bsc-name">{{s.name}}</div>
         <div class="bsc-progress-wrap">
           <div class="bsc-progress-bar">
@@ -91,7 +91,7 @@ const computedSummaries = computed(() => {
             <span :style="`color:${c.color}`">{{ c.count }} {{ c.name }}</span>
           </div>
         </div>
-      </div>
+      </router-link>
     </div>
     </LnbSection>
   </LnbView>
@@ -100,7 +100,7 @@ const computedSummaries = computed(() => {
 <style scoped>
 /* BOARD SUMMARY CARDS (backlog dashboard) */
 .board-summary-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:4px}
-.board-summary-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent}
+.board-summary-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer;transition:border-color 0.15s,box-shadow 0.15s;position:relative;overflow:hidden;-webkit-tap-highlight-color:transparent;text-decoration: none;}
 .board-summary-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--card-color,var(--accent));border-radius:3px 0 0 3px}
 .board-summary-card:hover{border-color:var(--border2);box-shadow:0 2px 12px rgba(0,0,0,0.3)}
 .bsc-name{font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -114,5 +114,4 @@ const computedSummaries = computed(() => {
 .bsc-stats{display:flex;gap:6px;flex-wrap:wrap}
 .bsc-stat{display:flex;align-items:center;gap:3px;font-size:10px;font-weight:600}
 .bsc-stat-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.bsc-section-label{font-size:10px;font-weight:700;letter-spacing:1px;color:var(--text3);text-transform:uppercase;padding:4px 2px 2px;margin-bottom:2px}
 </style>

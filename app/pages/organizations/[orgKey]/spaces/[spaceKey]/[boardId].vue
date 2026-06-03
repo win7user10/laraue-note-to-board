@@ -17,7 +17,7 @@ const modal = reactive({
 });
 
 const getEpicId = () => {
-  return Number.parseInt(params.id as string);
+  return Number.parseInt(params.boardId as string);
 }
 
 const epicNotFound = ref(false)

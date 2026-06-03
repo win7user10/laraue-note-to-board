@@ -12,10 +12,14 @@ export interface MessageListDto {
 }
 
 export interface SearchIssueDto extends MessageListDto{
-    statusColor?: string;
-    statusName?: string;
-    epicColor: string;
-    epicName: string;
+    status?: NameAndColor;
+    epic: NameAndColor;
+    space: NameAndColor;
+}
+
+export interface NameAndColor{
+    name: string;
+    color: string;
 }
 
 export interface MediaInfo {
@@ -58,7 +62,7 @@ export interface SearchRequest {
     page: number;
     perPage: number;
     epicIds: Array<number>;
-    spaceId: number | null;
+    spaceIds: Array<number>;
 }
 
 export interface ColumnMessages {

@@ -32,21 +32,6 @@ const orgSwitcherOpen = ref(false);
         v-if="orgSwitcherOpen"
         @close="orgSwitcherOpen = false"/>
 
-      <!-- Space segment -->
-      <template v-if="spaces.length > 0">
-        <div class="topbar-breadcrumb-sep">/</div>
-        <div class="topbar-breadcrumb-seg space" @click.stop="spacePopupOpen=!spacePopupOpen">
-          <div class="topbar-breadcrumb-dot" :style="`background:${currentSpace?.color}`"></div>
-          <div class="topbar-breadcrumb-name">{{currentSpace?.name}}</div>
-          <div class="topbar-breadcrumb-chevron">
-            <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3.5l3 3 3-3"/></svg>
-          </div>
-        </div>
-        <LnbSpacePopup
-          v-if="spacePopupOpen"
-          @close="spacePopupOpen = false"/>
-      </template>
-
     </div>
   </div>
 </template>

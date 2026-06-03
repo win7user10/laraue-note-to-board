@@ -147,6 +147,7 @@
   "contactAdminForPermissions": "Please contact organization administrator and ask for permissions",
   "backToOrganizations": "Back",
   "clearFilter": "Clear filter",
+  "stats": "Stats",
 
   "moveEntireSpace": "Move entire space",
   "moveEntireSpaceDesc": "Moves the space, all its epics and issues to another organization. Default space can not be moved.",

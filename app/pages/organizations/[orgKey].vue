@@ -24,16 +24,16 @@ const board = useBoard();
 const { loginOrganization } = useAuth();
 
 onMounted(async () => {
-  const orgId = params.orgId;
-  if (!orgId) {
+  const orgKey = params.orgKey;
+  if (!orgKey) {
     console.log("Org parameter is not found")
     return navigateTo('/organizations');
   }
 
-  const orgKey = (orgId as string).split("-")
+  const orgKeys = (orgKey as string).split("-")
 
-  const slug = orgKey[0];
-  const slugPostfix = orgKey[1];
+  const slug = orgKeys[0];
+  const slugPostfix = orgKeys[1];
 
   console.log(slug, slugPostfix)
 
@@ -41,8 +41,7 @@ onMounted(async () => {
   // Current org opening, do nothing, just reloading the board
   if (organization.slug === slug && organization.slugPostfix === slugPostfix) {
     console.log("Use auth of selected org")
-    await board.reloadSpaces()
-    await board.reloadEpics()
+    await board.reloadSpaces();
     return;
   }
 
@@ -52,6 +51,7 @@ onMounted(async () => {
   if (organizationToSwitch) {
     console.log("Change auth to available org")
     await loginOrganization(organizationToSwitch.id, false)
+    await board.reloadSpaces();
     return;
   }
 
@@ -61,8 +61,9 @@ onMounted(async () => {
 });
 
 watch(() => appState.value.organization?.id, (val) => {
-  if (val) board.fullReload()
+  if (val) board.reloadSpaces()
 })
+
 watch(() => state.value.epicId, async () => {
   await board.reloadCategory();
   await board.reloadBoard(true);
@@ -124,10 +125,10 @@ const openMassMove = () => {
   <LnbTopbar />
   <LnbNavLoader />
   <LnbNav
-      v-if="epicTabsAvailable"
-      :canCreateEpics="currentSpace?.canCreateEpics"/>
+    v-if="epicTabsAvailable"
+    :canCreateEpics="currentSpace?.canCreateEpics"/>
 
-  <NuxtPage />
+  <NuxtPage/>
 
   <LnbCreateCategoryModal
       @create="createCategoryInternal"

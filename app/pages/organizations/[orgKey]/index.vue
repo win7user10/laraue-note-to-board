@@ -2,16 +2,16 @@
 import type {SearchIssueDto} from "~/composables/messagesApi";
 
 const { t } = useI18n()
-import LnbElementWithHelpLink from "~/components/modals/LnbElementWithHelpLink.vue";
 import LnbScrollArea from "~/components/LnbScrollArea.vue";
 import LnbSection from "~/components/LnbSection.vue";
 
-const { currentSpace, state } = useBoard()
+const { state } = useBoard()
 const { searchMessages } = useMessagesApi();
 
 const request = ref({
   searchString: '',
   epicIds: [] as Array<number>,
+  spaceIds: [] as Array<number>,
 })
 
 const pagination = ref(DefaultPagination);
@@ -29,7 +29,7 @@ const loadMore = async () => {
       epicIds: request.value.epicIds,
       perPage: searchResults.value!.perPage,
       page: searchResults.value!.page + 1,
-      spaceId: currentSpace.value!.id
+      spaceIds: request.value.spaceIds
     })
     item.data.push(...newMessages.data);
     item.page = newMessages.page;
@@ -39,7 +39,6 @@ const loadMore = async () => {
   }
 }
 
-const currentSpaceId = computed(() => currentSpace.value?.id)
 const fetchSearchResults = async () => {
   isLoading.value = true;
   try {
@@ -48,21 +47,19 @@ const fetchSearchResults = async () => {
       searchString: request.value.searchString,
       page: pagination.value.page,
       perPage: pagination.value.perPage,
-      spaceId: currentSpace.value!.id
+      spaceIds: request.value.spaceIds
     });
   } finally {
     isLoading.value = false;
   }
 }
 
-watch(currentSpaceId, async (newValue) => {
-  if (newValue)
-    await fetchSearchResults();
-}, { immediate: true })
+onMounted(async () => {
+  await fetchSearchResults();
+})
 
 watch(request, async () => {
-  if (currentSpaceId.value)
-    await fetchSearchResults();
+  await fetchSearchResults();
 }, { deep: true })
 
 const updateIssue = (source: SearchIssueDto, value: EditCardRequest) => {
@@ -74,20 +71,20 @@ const updateIssue = (source: SearchIssueDto, value: EditCardRequest) => {
 <template>
   <LnbBoardHeader>
     <template #title>
-      All Issues
+      Home
     </template>
     <template #actions>
       <LnbBoardSearch v-model="request.searchString" />
     </template>
   </LnbBoardHeader>
   <LnbView>
-    <LnbSection title="Filters">
+    <LnbSection title="Issues">
 
       <LnbFilterPill
-        :options="state.epics"
-        label="Epic"
-        no-filter-title="All Epics"
-        v-model="request.epicIds"/>
+        :options="state.spaces"
+        label="Space"
+        no-filter-title="All Spaces"
+        v-model="request.spaceIds"/>
 
       <LnbScrollArea v-if="(searchResults?.data.length ?? 0) > 0"
         :load-next="() => loadMore()"
@@ -100,11 +97,14 @@ const updateIssue = (source: SearchIssueDto, value: EditCardRequest) => {
           :message="searchResult"
           @update="updateIssue(searchResult, $event)">
           <template #footer>
-            <LnbCardTag :color="searchResult.epicColor">
-              {{ searchResult.epicName }}
+            <LnbCardTag :color="searchResult.space.color">
+              {{ searchResult.space.name }}
             </LnbCardTag>
-            <LnbCardTag v-if="searchResult.statusName" :color="searchResult.statusColor!">
-              {{ searchResult.statusName }}
+            <LnbCardTag :color="searchResult.epic.color">
+              {{ searchResult.epic.name }}
+            </LnbCardTag>
+            <LnbCardTag v-if="searchResult.status" :color="searchResult.status.color">
+              {{ searchResult.status.name }}
             </LnbCardTag>
           </template>
         </LnbCard>

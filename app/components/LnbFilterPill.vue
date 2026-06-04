@@ -1,5 +1,6 @@
 <script setup lang="ts">
   import LnbPopup from "~/components/popups/LnbPopup.vue";
+  import {ref} from "vue";
 
   const { t } = useI18n();
 
@@ -36,6 +37,8 @@
     else
       updateValue(props.modelValue.filter(x => x !== id))
   }
+
+  const openPopupRef = ref<HTMLDivElement>();
 </script>
 
 <template>
@@ -44,7 +47,7 @@
       {{ props.label }}
     </span>
 
-    <div class="filter-wrap">
+    <div class="filter-wrap" ref="openPopupRef">
       <!-- Pill -->
       <div class="filter-pill" :class="{'has-filter': currentOptions.length > 0}" @click="epicFilterOpen=!epicFilterOpen">
 
@@ -71,7 +74,7 @@
         </template>
       </div>
 
-      <LnbPopup v-if="epicFilterOpen" :min-width="200" @close="epicFilterOpen = false">
+      <LnbPopup v-if="epicFilterOpen" :min-width="200" @close="epicFilterOpen = false" :parentRef="openPopupRef">
         <div v-for="option in options" :key="option.id"
              class="filter-opt" :class="{selected: modelValue.includes(option.id)}"
              @click="toggleEpicFilter(option.id)">

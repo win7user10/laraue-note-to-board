@@ -5,7 +5,7 @@ import {type EpicListDto, useSpacesApi} from "~/composables/spacesApi";
 import {useEpicsApi} from "~/composables/epicsApi";
 import {type OrganizationDto, useOrganizationsApi} from "~/composables/organizationsApi";
 
-const { showToast, appState, updateSpaceId } = useAppState()
+const { showToast, appState } = useAppState()
 
 export const useBoard = () => {
     const { t } = useI18n()
@@ -22,6 +22,7 @@ export const useBoard = () => {
         openedMedia: [] as MediaInfo[],
         openedMediaIndex: 0,
         organizations: [] as OrganizationListDto[],
+        spaceId: null as null | number,
     }))
 
     const spaces = computed(() => {
@@ -29,18 +30,12 @@ export const useBoard = () => {
     })
 
     const spaceId = computed(() => {
-        let val = appState.value.organization?.preferences.selectedSpaceId;
-        const spaces = state.value.spaces;
-        const space = spaces.find((space) => space.id === val);
-        if (space)
-            return space.id;
-
-        const firstSpace = spaces[0];
-        if (!firstSpace)
-            return null;
-
-        return firstSpace.id;
+        return state.value.spaceId;
     })
+
+    const updateSpaceId = (id: number) => {
+        state.value.spaceId = id
+    }
 
     const getOrganizations = async () => {
         if (state.value.organizations?.length > 0)
@@ -53,7 +48,7 @@ export const useBoard = () => {
     }
 
     const currentSpace = computed(() => {
-        return spaces.value.find(x => x.id === spaceId.value) ?? spaces.value[0]
+        return spaces.value.find(x => x.id === spaceId.value)
     })
 
     const trySetCategory = (id: number) => {
@@ -463,6 +458,7 @@ export const useBoard = () => {
         const api = useSpacesApi()
         await api.editSpace(id, request)
         const space = state.value.spaces.find(c => c.id === id)
+
         if (space) {
             space.color = request.color;
             space.name = request.name;
@@ -484,31 +480,11 @@ export const useBoard = () => {
         const index = state.value.spaces.findIndex(c => c.id === id)
         state.value.spaces.splice(index, 1);
 
-        // Update views if that space was opened
-        if (id === currentSpace.value!.id)
-        {
-            const selectedSpace = state.value.spaces[0]
-            if (selectedSpace) {
-                updateSpaceId(selectedSpace.id)
-                state.value.epicId = selectedSpace.id;
-                await reloadBoard(false)
-                await reloadEpics()
-
-                // Update preferences
-                const { updateSelectedSpace } = useOrganizationsApi()
-                await updateSelectedSpace(selectedSpace.id)
-            }
-        }
-
         showToast(t('spaceDeleted'), 'danger');
     }
 
     const anySpaceAvailable = computed(() => {
         return spaces.value.length > 0
-    })
-
-    const epicTabsAvailable = computed(() => {
-        return epics.value.length > 0 || currentSpace.value?.canCreateEpics
     })
 
     const getOrganizationKey = () => {
@@ -552,7 +528,7 @@ export const useBoard = () => {
         anySpaceAvailable,
         getOrganizations,
         fullReload,
-        epicTabsAvailable,
         getOrganizationKey,
+        updateSpaceId,
     }
 }

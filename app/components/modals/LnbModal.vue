@@ -7,7 +7,6 @@
     applyText?: string,
     cancelText?: string,
     fullHeight?: boolean,
-    determineScroll?: boolean,
     disableApply?: boolean,
     subtitle?: string,
     confirmButton?: "ghost" | "primary" | "warn",
@@ -41,17 +40,6 @@
     }
   }
 
-  const scrollableEl = ref<HTMLElement | null>(null);
-  onMounted(() => {
-    if (props.determineScroll)
-      useInfiniteScroll(scrollableEl, async () => {
-        emit('scroll')
-      }, {
-        distance: 150,
-        canLoadMore: () => true,
-      });
-  })
-
   const isLoading = computed(() => appState.value.isLoading)
 </script>
 
@@ -65,7 +53,7 @@
           <div class="modal-subtitle" v-if="subtitle">{{ subtitle }}</div>
           <slot name="head"></slot>
         </div>
-        <div class="modal-body" ref="scrollableEl">
+        <div class="modal-body">
           <slot></slot>
           <div class="modal-btns">
 

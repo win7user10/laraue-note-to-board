@@ -3,14 +3,17 @@ import LnbNavSortPopup from "~/components/popups/LnbNavSortPopup.vue";
 import LnbCreateCategoryModal from "~/components/modals/LnbCreateCategoryModal.vue";
 import { ref, computed, reactive } from "vue";
 import LnbCreateSpaceModal from "~/components/modals/LnbCreateSpaceModal.vue";
+import LnbDeleteSpaceModal from "~/components/modals/LnbDeleteSpaceModal.vue";
+import LnbEditSpaceModal from "~/components/modals/LnbEditSpaceModal.vue";
+import LnbPopup from "~/components/popups/LnbPopup.vue";
+import LnbIcon from "~/components/icons/LnbIcon.vue";
 
 defineProps<{
   canCreateEpics?: boolean;
   canCreateSpaces?: boolean;
 }>();
 
-const { epics, state, getOrganizationKey } = useBoard();
-const spaces = state.value.spaces; // wire up your spaces composable
+const { epics, state, getOrganizationKey, deleteSpace } = useBoard();
 const route = useRoute();
 const { t } = useI18n();
 
@@ -18,19 +21,22 @@ const navSortPopupOpen = ref(false);
 const modal = reactive({
   createCategory: false,
   createSpace: false,
+  editSpace: false,
+  deleteSpace: false,
 });
 
 // ── URL helpers ───────────────────────────────────────────────────────────────
 
 const orgUrl = computed(() => `/organizations/${getOrganizationKey()}`);
 
+const spaces = computed(() => state.value.spaces);
 const spaceKey = computed(() =>
     route.params.spaceKey as string | undefined
 );
 
-const activeSpace = computed(() =>
-    spaceKey.value ? spaces?.find(s => s.key === spaceKey.value) : null
-);
+const activeSpace = computed(() => {
+  return spaces?.value.find(s => s.key === spaceKey.value)
+});
 
 // ── Nav level ─────────────────────────────────────────────────────────────────
 
@@ -57,18 +63,48 @@ const getSpaceUrl = (key: string) => {
   return `${orgUrl.value}/spaces/${key}`;
 }
 
-const goToSpaceStats = () =>
-    navigateTo(`${orgUrl.value}/spaces/${spaceKey.value}`);
+const spaceStatsUrl = computed(() => `${orgUrl.value}/spaces/${spaceKey.value}`)
 
 const getEpicUrl = (id: number) => {
-  return `${orgUrl.value}/spaces/${activeSpace.value!.key}/${id}`;
+  return `${orgUrl.value}/spaces/${activeSpace.value?.key}/${id}`;
 }
 
 const openCreateCategory = () => { modal.createCategory = true; };
 const closeCreateCategory = () => { modal.createCategory = false; };
 
 const openCreateSpace = () => { modal.createSpace = true; };
-const closeCreateSpace = () => { modal.createSpace = false; };
+const closeCreateSpace = () => { modal.createSpace = false; closeSpaceMenu(); };
+
+const editingSpace = ref();
+const openEditSpace = () => {
+  editingSpace.value = activeSpace.value;
+  modal.editSpace = true;
+};
+
+const closeEditSpace = () => {
+  modal.editSpace = false;
+  closeSpaceMenu();
+
+  // If navigation key changed, update it in url
+  if (editingSpace.value!.key !== spaceKey.value)
+    return navigateTo(`${orgUrl.value}/spaces/${editingSpace.value?.key}`);
+};
+
+const openDeleteSpace = () => { modal.deleteSpace = true; };
+const closeDeleteSpace = () => { modal.deleteSpace = false; };
+
+const deleteSpaceInternal = async () => {
+  await deleteSpace(activeSpace.value!.id);
+  closeDeleteSpace()
+  closeSpaceMenu()
+  return navigateTo(orgUrl.value);
+}
+
+const closeSpaceMenu = () => { spaceMenuOpen.value = false }
+
+const spaceMenuOpen = ref(false);
+const spaceMenuBtnRef = ref<HTMLDivElement>();
+const sortBtnRef = ref<HTMLDivElement>();
 </script>
 
 <template>
@@ -111,6 +147,8 @@ const closeCreateSpace = () => { modal.createSpace = false; };
 
       <!-- ── SPACE LEVEL: back + Stats + epics ── -->
       <template v-else>
+
+        <!-- Back -->
         <nuxt-link class="nav-back" :to="getHomeUrl">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.2">
             <path d="M10 3L5 8l5 5"/>
@@ -119,22 +157,50 @@ const closeCreateSpace = () => { modal.createSpace = false; };
           {{ activeSpace?.name }}
         </nuxt-link>
 
-        <div
-            class="nav-chip"
-            :class="{ active: activeChip === 'stats' }"
-            @click="goToSpaceStats">
+        <!-- Three-dot space menu -->
+        <div class="nav-space-menu-wrap">
+
+          <div
+            class="nav-space-menu-btn"
+            ref="spaceMenuBtnRef"
+            :class="{ open: spaceMenuOpen }"
+            @click.stop="spaceMenuOpen = !spaceMenuOpen">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="4" cy="8" r="1.2" fill="currentColor"/>
+              <circle cx="8" cy="8" r="1.2" fill="currentColor"/>
+              <circle cx="12" cy="8" r="1.2" fill="currentColor"/>
+            </svg>
+          </div>
+
+          <LnbPopup v-if="spaceMenuOpen" :min-width="200" @close="closeSpaceMenu" :parentRef="spaceMenuBtnRef">
+            <div class="nav-space-popup-item" @click="openEditSpace">
+              <LnbIcon icon="edit" size="small" />
+              {{ t('editSpace') }}
+            </div>
+            <div class="nav-space-popup-item danger" @click="openDeleteSpace">
+              <LnbIcon icon="delete" size="small" />
+              {{ t('deleteSpace') }}
+            </div>
+          </LnbPopup>
+
+        </div>
+
+        <nuxt-link
+          class="nav-chip"
+          :to="spaceStatsUrl"
+          :class="{ active: activeChip === 'stats' }">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M2 12V8M6 12V5M10 12V7M14 12V3"/>
           </svg>
           {{ t('stats') }}
-        </div>
+        </nuxt-link>
 
         <nuxt-link
-            v-for="epic in epics"
-            :key="epic.id"
-            class="nav-chip"
-            :class="{ active: activeChip === String(epic.id) }"
-            :to="getEpicUrl(epic.id)">
+          v-for="epic in epics"
+          :key="epic.id"
+          class="nav-chip"
+          :class="{ active: activeChip === String(epic.id) }"
+          :to="getEpicUrl(epic.id)">
           <span class="dot" :style="`background:${epic.color}`"/>
           <span class="chip-label">{{ epic.name }}</span>
         </nuxt-link>
@@ -155,15 +221,17 @@ const closeCreateSpace = () => { modal.createSpace = false; };
     <!-- Controls — pinned right -->
     <div class="nav-controls">
       <div
-          class="nav-ctrl-btn"
-          @click.stop="navSortPopupOpen = !navSortPopupOpen">
+        class="nav-ctrl-btn"
+        ref="sortBtnRef"
+        @click.stop="navSortPopupOpen = !navSortPopupOpen">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8">
           <path d="M3 5h10M5 8h6M7 11h2"/>
         </svg>
       </div>
       <LnbNavSortPopup
-          v-if="navSortPopupOpen"
-          @close="navSortPopupOpen = false"/>
+        v-if="navSortPopupOpen"
+        :parentRef="sortBtnRef"
+        @close="navSortPopupOpen = false"/>
     </div>
   </div>
 
@@ -176,6 +244,17 @@ const closeCreateSpace = () => { modal.createSpace = false; };
     v-if="modal.createSpace"
     @create="closeCreateSpace"
     @close="closeCreateSpace"/>
+
+  <LnbEditSpaceModal
+    v-if="modal.editSpace"
+    :space="activeSpace!"
+    @close="closeEditSpace"/>
+
+  <LnbDeleteSpaceModal
+    v-if="modal.deleteSpace"
+    :space="activeSpace!"
+    @delete="deleteSpaceInternal"
+    @close="closeDeleteSpace"/>
 </template>
 
 <style scoped>
@@ -279,6 +358,42 @@ const closeCreateSpace = () => { modal.createSpace = false; };
 }
 .nav-back svg { width: 14px; height: 14px; flex-shrink: 0; }
 .nav-back:hover { color: var(--text); }
+
+/* Three-dot menu */
+.nav-space-menu-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 0 3px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  align-self: stretch;
+}
+.nav-space-menu-btn {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  border: 1px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text3);
+  transition: all 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.nav-space-menu-btn svg { width: 13px; height: 13px; }
+.nav-space-menu-btn:hover,
+.nav-space-menu-btn.open {
+  background: var(--surface3);
+  border-color: var(--border);
+  color: var(--text);
+}
+.nav-space-popup-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:7px;cursor:pointer;font-size:12px;font-weight:600;color:var(--text2);transition:background 0.12s;-webkit-tap-highlight-color:transparent}
+.nav-space-popup-item svg { width: 13px; height: 13px; flex-shrink: 0; }
+.nav-space-popup-item:hover { background: var(--surface3); color: var(--text); }
+.nav-space-popup-item.danger { color: var(--red); }
+.nav-space-popup-item.danger:hover { background: rgba(248,81,73,0.1); }
 
 /* Stats + epic chips (space level) */
 .nav-chip {

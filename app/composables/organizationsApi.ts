@@ -92,7 +92,6 @@ export interface CreateOrganizationResponse {
 }
 
 export interface UserOrganizationPreferencesDto {
-    selectedSpaceId?: number;
 }
 
 export const useOrganizationsApi = () => {

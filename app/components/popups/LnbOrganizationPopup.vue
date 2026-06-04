@@ -2,6 +2,10 @@
 import LnbPopup from "~/components/popups/LnbPopup.vue";
 import {ref} from "vue";
 
+defineProps<{
+  parentRef?: HTMLDivElement,
+}>()
+
 const emits = defineEmits<{
   (e: 'close'): void,
 }>()
@@ -25,12 +29,17 @@ const loginOrg = async (id: number) => {
 
 <template>
   <!-- Space popup -->
-  <LnbPopup @close="emits('close')" :min-width="260">
+  <LnbPopup @close="emits('close')" :min-width="260" :parentRef="parentRef">
 
     <!-- Orgs -->
-    <div v-for="org in organizations" :key="org.id" class="org-switcher-item" :class="{active: appState.organization?.id===org.id}" @click="loginOrg(org.id)">
+    <div
+      v-for="org in organizations"
+      :key="org.id"
+      class="org-switcher-item"
+      :class="{active: appState.organization?.id === org.id}"
+      @click="loginOrg(org.id)">
       <LnbCardAvatar :color="org.color">
-        {{org.name.toUpperCase().slice(0, 2)}}
+        {{ org.name.toUpperCase().slice(0, 2) }}
       </LnbCardAvatar>
       <div style="flex:1;min-width:0">
         <div class="org-switcher-name">{{org.name}}</div>

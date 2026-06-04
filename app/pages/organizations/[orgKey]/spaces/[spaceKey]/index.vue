@@ -62,39 +62,45 @@ const computedSummaries = computed(() => {
 </script>
 
 <template>
-  <LnbBoardHeader>
-    <template #title>
-      {{ t('stats') }}
-    </template>
-  </LnbBoardHeader>
-  <LnbView>
-    <LnbSection :title="t('boardsOverview')"><div class="board-summary-grid">
-      <router-link
-          v-for="s in computedSummaries"
-          :key="s.id"
-          class="board-summary-card"
-          :style="`--card-color:${s.color}`"
-          :to="getEpicUrl(s.id)">
-        <div class="bsc-name">{{s.name}}</div>
-        <div class="bsc-progress-wrap">
-          <div class="bsc-progress-bar">
+  <template v-if="currentSpace?.id">
+    <LnbBoardHeader>
+      <template #title>
+        {{ t('stats') }}
+      </template>
+    </LnbBoardHeader>
+    <LnbView v-if="computedSummaries.length > 0">
+      <LnbSection :title="t('boardsOverview')"><div class="board-summary-grid">
+        <router-link
+            v-for="s in computedSummaries"
+            :key="s.id"
+            class="board-summary-card"
+            :style="`--card-color:${s.color}`"
+            :to="getEpicUrl(s.id)">
+          <div class="bsc-name">{{s.name}}</div>
+          <div class="bsc-progress-wrap">
+            <div class="bsc-progress-bar">
 
-            <div class="bsc-progress-seg"
-                 :style="`width:${s.percent}%;background:var(--accent)`">
+              <div class="bsc-progress-seg"
+                   :style="`width:${s.percent}%;background:var(--accent)`">
+              </div>
+            </div>
+            <div class="bsc-progress-label">{{ s.total - s.todo }}/{{ s.total }} {{ t('done') }} · {{ s.percent.toFixed(0) }}%</div>
+          </div>
+          <div class="bsc-stats">
+            <div class="bsc-stat" v-for="c in s.columns">
+              <div class="bsc-stat-dot" :style="`background:${c.color}`"></div>
+              <span :style="`color:${c.color}`">{{ c.count }} {{ c.name }}</span>
             </div>
           </div>
-          <div class="bsc-progress-label">{{ s.total - s.todo }}/{{ s.total }} {{ t('done') }} · {{ s.percent.toFixed(0) }}%</div>
-        </div>
-        <div class="bsc-stats">
-          <div class="bsc-stat" v-for="c in s.columns">
-            <div class="bsc-stat-dot" :style="`background:${c.color}`"></div>
-            <span :style="`color:${c.color}`">{{ c.count }} {{ c.name }}</span>
-          </div>
-        </div>
-      </router-link>
-    </div>
-    </LnbSection>
-  </LnbView>
+        </router-link>
+      </div>
+      </LnbSection>
+    </LnbView>
+    <LnbEmptyState title="Result is empty" subtitle="No epics to show here"/>
+  </template>
+  <template v-else>
+    <LnbEmptyState title="Oops. Space is not found" subtitle="It can be deleted or never exists. Or you don't have permissions."/>
+  </template>
 </template>
 
 <style scoped>

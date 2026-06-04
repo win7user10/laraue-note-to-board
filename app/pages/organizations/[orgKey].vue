@@ -9,7 +9,7 @@ import LnbTopbar from "~/components/LnbTopbar.vue";
 import LnbMassMoveModal from "~/components/modals/movement/LnbMassMoveModal.vue";
 import LnbNav from "~/components/LnbNav.vue";
 
-const { state, epicTabsAvailable, currentSpace, getOrganizationKey } = useBoard()
+const { state, currentSpace, getOrganizationKey } = useBoard()
 const { appState } = useAppState()
 const currentCategory = computed(() => state.value.currentEpic);
 const defaultStatus = computed(() => currentCategory.value?.statuses[0]);
@@ -125,7 +125,6 @@ const openMassMove = () => {
   <LnbTopbar />
   <LnbNavLoader />
   <LnbNav
-    v-if="epicTabsAvailable"
     :canCreateEpics="currentSpace?.canCreateEpics"
     :can-create-spaces="appState.organization?.canCreateSpaces"/>
 

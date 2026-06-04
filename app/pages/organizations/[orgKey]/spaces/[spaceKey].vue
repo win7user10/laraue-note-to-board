@@ -1,6 +1,5 @@
 <script setup lang="ts">
-  const { reloadEpics, spaces } = useBoard()
-  const { updateSpaceId } = useAppState()
+  const { reloadEpics, spaces, updateSpaceId } = useBoard()
   const { params } = useRoute()
 
   watch(() => spaces.value, async () => {

@@ -8,8 +8,6 @@ import LnbModalLabel from "~/components/modals/LnbModalLabel.vue";
 
 const props = defineProps<{
   id: number,
-  hideStatus?: boolean,
-  allowEdit: boolean
 }>()
 
 const { t } = useI18n();
@@ -36,7 +34,7 @@ onMounted(async () => {
 
 <template>
   <LnbModal
-    :applyText="allowEdit ? t('save') : undefined"
+    :applyText="data ? t('save') : undefined"
     :title="''"
     @apply="emit('edit', request)"
     @cancel="emit('close')"
@@ -51,14 +49,14 @@ onMounted(async () => {
         {{ formatDate(data?.time) }}
       </LnbDetailRow>
 
-      <LnbDetailRow :label="t('category')" v-if="data?.categoryName">
+      <LnbDetailRow :label="t('category')" v-if="data?.epicName">
         <span>
-          <span :style="{color: data?.categoryColor}">●</span>
-          {{ data?.categoryName }}
+          <span :style="{color: data?.epicColor}">●</span>
+          {{ data?.epicName }}
         </span>
       </LnbDetailRow>
 
-      <LnbDetailRow :label="t('status')" v-if="!hideStatus && data?.statusName">
+      <LnbDetailRow :label="t('status')" v-if="data?.statusName">
         <span>
           <span :style="{color: data?.statusColor}">●</span>
           {{ data?.statusName }}
@@ -70,7 +68,7 @@ onMounted(async () => {
     <LnbModalTextarea
       @enter="emit('edit', request)"
       v-model="request.content"
-      :disabled="!allowEdit"
+      :disabled="!data?.canEdit"
       :placeholder="t('contentExample')"/>
   </LnbModal>
 </template>

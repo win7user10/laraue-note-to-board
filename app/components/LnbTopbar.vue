@@ -1,11 +1,9 @@
 <script setup lang="ts">
-import LnbSpacePopup from "~/components/popups/LnbSpacePopup.vue";
 import {ref} from "vue";
 import LnbOrganizationPopup from "~/components/popups/LnbOrganizationPopup.vue";
-const { currentSpace, spaces } = useBoard()
 const { appState } = useAppState()
-const spacePopupOpen = ref(false);
 const orgSwitcherOpen = ref(false);
+const orgSwitcherBtnRef = ref<HTMLDivElement>();
 
 </script>
 
@@ -13,7 +11,7 @@ const orgSwitcherOpen = ref(false);
 
   <!-- TOP BAR -->
   <div class="topbar">
-    <div class="topbar-breadcrumb" style="position:relative">
+    <div class="topbar-breadcrumb">
 
       <!-- Brand mark -->
       <div class="topbar-breadcrumb-seg brand">
@@ -21,31 +19,18 @@ const orgSwitcherOpen = ref(false);
       </div>
 
       <!-- Org segment — always shown, tap to switch -->
-      <div class="topbar-breadcrumb-seg" @click.stop="orgSwitcherOpen=!orgSwitcherOpen">
+      <div class="topbar-breadcrumb-seg" @click.stop="orgSwitcherOpen=!orgSwitcherOpen" ref="orgSwitcherBtnRef">
         <div class="topbar-breadcrumb-dot" :style="`background:${appState.organization?.color}`"></div>
         <div class="topbar-breadcrumb-name">{{appState.organization?.name}}</div>
         <div class="topbar-breadcrumb-chevron">
           <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3.5l3 3 3-3"/></svg>
         </div>
       </div>
+
       <LnbOrganizationPopup
         v-if="orgSwitcherOpen"
+        :parentRef="orgSwitcherBtnRef"
         @close="orgSwitcherOpen = false"/>
-
-      <!-- Space segment -->
-      <template v-if="spaces.length > 0">
-        <div class="topbar-breadcrumb-sep">/</div>
-        <div class="topbar-breadcrumb-seg space" @click.stop="spacePopupOpen=!spacePopupOpen">
-          <div class="topbar-breadcrumb-dot" :style="`background:${currentSpace?.color}`"></div>
-          <div class="topbar-breadcrumb-name">{{currentSpace?.name}}</div>
-          <div class="topbar-breadcrumb-chevron">
-            <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 3.5l3 3 3-3"/></svg>
-          </div>
-        </div>
-        <LnbSpacePopup
-          v-if="spacePopupOpen"
-          @close="spacePopupOpen = false"/>
-      </template>
 
     </div>
   </div>

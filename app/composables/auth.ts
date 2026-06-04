@@ -2,6 +2,7 @@ import {useOrganizationsApi} from "~/composables/organizationsApi";
 
 export const useAuth = () => {
     const { setUserToken, deleteUserToken, deleteOrganizationToken, setOrganizationToken } = useLocalStorageUtils()
+    const { getOrganizationKey } = useUtils()
 
     const isUserAuthenticated = () => {
         const { appState } = useAppState()
@@ -13,7 +14,7 @@ export const useAuth = () => {
         return appState.value.organization != null;
     }
 
-    const loginOrganization = async (id: number) => {
+    const loginOrganization = async (id: number, redirectToHome = true) => {
         const { login } = useOrganizationsApi();
         const token = await login(id)
         await setOrganizationToken(token)
@@ -22,7 +23,9 @@ export const useAuth = () => {
         const organization = await getOrganization()
         await initOrganizationWithOrganizationData(organization)
 
-        return navigateTo(`/organizations/${organization.slug}-${organization.slugPostfix}`);
+        const key = getOrganizationKey(organization)
+        if (redirectToHome)
+            return navigateTo(`/organizations/${key}`);
     }
 
     const initUserWithBearer = async (bearerToken: string) => {

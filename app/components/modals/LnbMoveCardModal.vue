@@ -28,17 +28,9 @@
   const getSpaceById = (id: number) => spaces.value.find(p => p.id === id);
 
   const modals = reactive({
-    selectSpace: false,
     selectEpic: false,
     selectStatus: false,
   })
-
-  const selectSpace = (id: number) => {
-    spaceId.value = id;
-    modals.selectSpace = false;
-    epic.value = undefined;
-    status.value = undefined;
-  }
 
   const selectEpic = async (value: EpicListDto) => {
     epic.value = value;
@@ -75,16 +67,6 @@
       </div>
     </div>
 
-    <!-- Space select row -->
-    <LnbModalLabel>{{ t('space') }}</LnbModalLabel>
-    <div class="assign-select" @click="modals.selectSpace = true">
-      <div class="assign-select-left">
-        <div class="assign-select-dot" :style="`background:${getSpaceById(spaceId)?.color||'var(--text3)'}`"></div>
-        <div class="assign-select-val">{{getSpaceById(spaceId)?.name || 'No space'}}</div>
-      </div>
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8" style="width:13px;height:13px;color:var(--text3)"><path d="M5 3l5 5-5 5"/></svg>
-    </div>
-
     <!-- Board select row -->
     <LnbModalLabel>{{ t('board') }}</LnbModalLabel>
     <div class="assign-select" :class="{'assign-select-empty': !epic}" @click="modals.selectEpic = true">
@@ -112,11 +94,6 @@
     </template>
 
   </LnbModal>
-
-  <LnbSelectSpaceModal
-    v-if="modals.selectSpace"
-    @select="selectSpace"
-    @close="modals.selectSpace = false" />
 
   <LnbSelectEpicModal
     :spaceId="spaceId"

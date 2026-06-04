@@ -2,23 +2,25 @@
   import {useUtils} from "~/composables/utils";
   import {MediaType} from "~/composables/messagesApi";
   import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
+  import LnbEditCardModal from "~/components/modals/LnbEditCardModal.vue";
+  import LnbDeleteCardModal from "~/components/modals/LnbDeleteCardModal.vue";
+  import LnbMoveCardModal from "~/components/modals/LnbMoveCardModal.vue";
 
   const props = defineProps<{
     message: MessageListDto,
-    assignButton: Boolean,
-    deleteButton: Boolean,
-    highlightText?: String,
+    assignButton?: boolean,
+    deleteButton?: boolean,
+    navigateToEpicButton?: boolean,
+    highlightText?: string,
   }>()
 
   const emits = defineEmits<{
-    (e: 'openAssignToCategory', message: MessageListDto): void,
-    (e: 'openDelete', message: MessageListDto): void,
-    (e: 'openEdit', message: MessageListDto): void,
+    (e: 'update', message: EditCardRequest): void,
   }>()
 
   const { getImageUrl } = useUtils()
   const { t } = useI18n();
-  const { openMedia } = useBoard();
+  const { openMedia, deleteCard, editCard, getOrganizationKey } = useBoard();
 
   const hlTextChunks = computed<TextChunk[]>(() => {
     const content = props.message.content ?? '';
@@ -70,14 +72,59 @@
     isHighlighted: boolean;
   }
 
-  const { formatDate } = useUtils()
+  const modal = reactive({
+    editCard: false,
+    delete: false,
+    assign: false,
+  });
+
+  const openDelete = () => {
+    modal.delete = true;
+  }
+
+  const closeDelete = () => {
+    modal.delete = false;
+  }
+
+  const deleteCardInternal = async () => {
+    await deleteCard(props.message.id)
+    closeDelete();
+  }
+
+  const openEditCard = () => {
+    modal.editCard = true;
+  }
+
+  const closeEditCard = () => {
+    modal.editCard = false;
+  }
+
+  const editCardInternal = async (value: EditCardRequest) => {
+    await editCard(props.message.id, value);
+    emits("update", value);
+    closeEditCard();
+  }
+
+  const openAssignToCategory = () => {
+    modal.assign = true;
+  }
+
+  const closeAssignToCategory = () => {
+    modal.assign = false;
+  }
+
+  const getEpicUrl = computed(() => {
+    const organizationKey = getOrganizationKey();
+    const spaceKey = props.message.key.split('-')[0]
+    return `/organizations/${organizationKey}/spaces/${spaceKey}/${props.message.epicId}`
+  })
 </script>
 
 <template>
   <div class="msg-card"
       :style="`--card-color: ${props.message.senderColor}`"
       :data-card-id="props.message.id"
-      @click="emits('openEdit', props.message)">
+      @click="openEditCard">
     <div class="card-header">
       <div class="card-avatar" :style="`background:${props.message.senderColor}22; color:${props.message.senderColor}`">
         {{ props.message.senderInitial?.toLocaleUpperCase() }}
@@ -110,8 +157,17 @@
       </template>
     </div>
     <div class="card-footer">
-      <!--<span class="card-tag">PM</span>-->
+      <slot name="footer"></slot>
       <div class="card-actions">
+        <nuxt-link v-if="props.navigateToEpicButton"
+          :to="getEpicUrl">
+          <LnbIconBtn
+            :title="t('navigateToEpic')"
+            btnSize="small"
+            iconSize="mini"
+            bordered
+            icon="logout" />
+        </nuxt-link>
         <LnbIconBtn
           v-if="assignButton"
           :title="t('assignToBoard')"
@@ -119,7 +175,7 @@
           iconSize="mini"
           bordered
           icon="move"
-          @click.stop="emits('openAssignToCategory', props.message)" />
+          @click.stop="openAssignToCategory" />
         <LnbIconBtn
           v-if="deleteButton"
           :title="t('delete')"
@@ -128,10 +184,27 @@
           iconSize="mini"
           type="danger"
           icon="delete"
-          @click.stop="emits('openDelete', props.message)" />
+          @click.stop="openDelete" />
       </div>
     </div>
   </div>
+
+  <LnbDeleteCardModal
+    @close="closeDelete"
+    @delete="deleteCardInternal"
+    v-if="modal.delete"/>
+
+  <LnbEditCardModal
+    :id="message.id"
+    @edit="editCardInternal"
+    @close="closeEditCard"
+    v-if="modal.editCard"/>
+
+  <LnbMoveCardModal
+    :assign-msg="message"
+    @close="closeAssignToCategory"
+    v-if="modal.assign" />
+
 </template>
 
 <style scoped>
@@ -205,15 +278,6 @@
     align-items: center;
     gap: 6px;
     flex-wrap: wrap;
-  }
-  .card-tag {
-    background: var(--surface3);
-    border: 1px solid var(--border);
-    border-radius: 4px;
-    padding: 2px 6px;
-    font-size: 10px;
-    color: var(--text2);
-    font-weight: 600;
   }
   .card-actions {
     margin-left: auto;

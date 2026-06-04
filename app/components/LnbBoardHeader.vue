@@ -1,8 +1,4 @@
 <script setup lang="ts">
-import LnbBoardSearch from "~/components/LnbBoardSearch.vue";
-const board = useBoard();
-const searchString = computed(() => board.state.value.searchString)
-const showSearch = computed(() => searchString.value || board.dbMessagesCount.value > 0 || board.isLoading.value)
 </script>
 
 <template>
@@ -16,9 +12,6 @@ const showSearch = computed(() => searchString.value || board.dbMessagesCount.va
       </div>
     </div>
     <div class="board-actions">
-      <LnbBoardSearch v-if="showSearch"
-        @update:modelValue="board.search($event)"
-        :modelValue="searchString"/>
       <slot name="actions"></slot>
     </div>
   </div>

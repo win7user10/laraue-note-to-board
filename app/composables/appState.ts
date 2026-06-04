@@ -72,10 +72,6 @@ export const useAppState = () => {
         appState.value.user!.preferences.epicSortOrder = sortOrder;
     }
 
-    const updateSpaceId = (spaceId: number) => {
-        appState.value.organization!.preferences.selectedSpaceId = spaceId;
-    }
-
     return {
         appState: readonly(appState),
         getRandomColor,
@@ -87,7 +83,6 @@ export const useAppState = () => {
         setIsInMiniApp,
         palette,
         updateEpicsOrdering,
-        updateSpaceId,
         setOrganization,
         setInitError,
     }

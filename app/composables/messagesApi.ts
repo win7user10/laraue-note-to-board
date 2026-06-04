@@ -11,6 +11,17 @@ export interface MessageListDto {
     media: MediaInfo[];
 }
 
+export interface SearchIssueDto extends MessageListDto{
+    status?: NameAndColor;
+    epic: NameAndColor;
+    space: NameAndColor;
+}
+
+export interface NameAndColor{
+    name: string;
+    color: string;
+}
+
 export interface MediaInfo {
     previewFileId?: string;
     originalFileId?: string;
@@ -28,12 +39,13 @@ export interface MessageDetailDto {
     sender?: string;
     senderInitial?: string;
     content: string;
-    categoryName?: string;
-    categoryColor?: string;
+    epicName?: string;
+    epicColor?: string;
     statusName?: string;
     statusColor?: string;
     color: string;
     senderColor: string;
+    canEdit: string;
 }
 
 export interface CreateCardRequest {
@@ -49,8 +61,8 @@ export interface SearchRequest {
     searchString: string;
     page: number;
     perPage: number;
-    epicId: number | null;
-    spaceId: number | null;
+    epicIds: Array<number>;
+    spaceIds: Array<number>;
 }
 
 export interface ColumnMessages {
@@ -127,9 +139,9 @@ export const useMessagesApi = () => {
     }
 
     const searchMessages = (request: SearchRequest) => {
-        return client<FullPaginatedResult<MessageListDto>>('/issues/search', {
-            method: 'GET',
-            query: request
+        return client<ShortPaginatedResult<SearchIssueDto>>('/issues/search', {
+            method: 'POST',
+            body: request
         });
     }
 

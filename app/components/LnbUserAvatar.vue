@@ -1,6 +1,8 @@
 <script setup lang="ts">
   import LnbManageOrganizationModal from "~/components/modals/LnbManageOrganizationModal.vue";
   import LnbPopup from "~/components/popups/LnbPopup.vue";
+  import {type ComponentInstance, ref} from "vue";
+  import LnbUserAvatar from "~/components/LnbUserAvatar.vue";
 
   const { appState } = useAppState();
   const auth = useAuth();
@@ -31,6 +33,7 @@
     userPopupOpen.value = false
   }
   const { t } = useI18n();
+  const avatarBtnRef = ref<ComponentInstance<typeof LnbUserAvatar>>();
 </script>
 
 <template>
@@ -40,12 +43,17 @@
     v-if="avatarData"
     :color="avatarData.color"
     @click.stop="userPopupOpen = !userPopupOpen"
-    class="user-avatar">
+    class="user-avatar"
+    ref="avatarBtnRef">
       {{avatarData.initials}}
   </LnbCardAvatar>
 
   <!-- User popup -->
-  <LnbPopup v-if="avatarData && userPopupOpen" @close="userPopupOpen = false" :min-width="200">
+  <LnbPopup
+    v-if="avatarData && userPopupOpen"
+    @close="userPopupOpen = false"
+    :parentRef="avatarBtnRef!.$el"
+    :min-width="200">
     <div class="user-popup">
       <div class="user-popup-name">{{ avatarData.name }}</div>
       <div class="user-popup-handle">@{{avatarData.username}}</div>

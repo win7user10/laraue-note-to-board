@@ -158,7 +158,7 @@ const sortBtnRef = ref<HTMLDivElement>();
         </nuxt-link>
 
         <!-- Three-dot space menu -->
-        <div class="nav-space-menu-wrap">
+        <div class="nav-space-menu-wrap" v-if="activeSpace?.canUpdate || activeSpace?.canDelete">
 
           <div
             class="nav-space-menu-btn"
@@ -173,11 +173,11 @@ const sortBtnRef = ref<HTMLDivElement>();
           </div>
 
           <LnbPopup v-if="spaceMenuOpen" :min-width="200" @close="closeSpaceMenu" :parentRef="spaceMenuBtnRef">
-            <div class="nav-space-popup-item" @click="openEditSpace">
+            <div class="nav-space-popup-item" @click="openEditSpace" v-if="activeSpace?.canUpdate">
               <LnbIcon icon="edit" size="small" />
               {{ t('editSpace') }}
             </div>
-            <div class="nav-space-popup-item danger" @click="openDeleteSpace">
+            <div class="nav-space-popup-item danger" @click="openDeleteSpace" v-if="activeSpace?.canDelete">
               <LnbIcon icon="delete" size="small" />
               {{ t('deleteSpace') }}
             </div>

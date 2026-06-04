@@ -91,7 +91,7 @@
   "deleteSpace": "Удалить пространство",
   "edit": "Редактировать",
   "deleteSpaceTitle": "Удалить пространство?",
-  "deleteSpaceConfirm": "Задачи будут перенесены в 'Без пространства'.",
+  "deleteSpaceConfirm": "Задачи будут удалены без возможности восстановления.",
   "spaceDeleted": "Пространство удалено",
   "createOrganization": "Создать организацию",
   "newOrganization": "Новая организация",

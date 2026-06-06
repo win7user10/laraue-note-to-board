@@ -152,6 +152,8 @@
   "home": "Home",
   "homeTitle": "All organization issues",
   "navigateToEpic": "Navigate to epic",
+  "update": "Update",
+  "members": "Members",
 
   "moveEntireSpace": "Move entire space",
   "moveEntireSpaceDesc": "Moves the space, all its epics and issues to another organization. Default space can not be moved.",

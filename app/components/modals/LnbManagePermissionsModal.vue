@@ -18,65 +18,29 @@ const props = defineProps<{
 
 const { t } = useI18n()
 
-const GLOBAL_PERMS = [
-  {
-    id: ChildrenAccessLevel.Read,
-    name: t('readAbbreviation'),
-  },
-  {
-    id: ChildrenAccessLevel.Create,
-    name: t('createAbbreviation'),
-  },
-  {
-    id: ChildrenAccessLevel.Update,
-    name: t('updateAbbreviation'),
-  },
-  {
-    id: ChildrenAccessLevel.Delete,
-    name: t('deleteAbbreviation'),
-  }
-];
+const READ = {
+  id: EntityAccessLevel.Read,
+  name: t('readAbbreviation'),
+}
 
-const CHILD_PERMS = [
-  {
-    id: ChildrenAccessLevel.Read,
-    name: `${t('readAbbreviation')} (${t('issueAbbreviation')})`,
-  },
-  {
-    id: ChildrenAccessLevel.Create,
-    name: `${t('createAbbreviation')} (${t('issueAbbreviation')})`,
-  },
-  {
-    id: ChildrenAccessLevel.Update,
-    name: `${t('updateAbbreviation')} (${t('issueAbbreviation')})`,
-  },
-  {
-    id: ChildrenAccessLevel.Delete,
-    name: `${t('deleteAbbreviation')} (${t('issueAbbreviation')})`,
-  }
-];
+const CREATE = {
+  id: EntityAccessLevel.Create,
+  name: t('createAbbreviation'),
+}
 
-const SELF_PERMS = [
-  {
-    id: EntityAccessLevel.Read,
-    name: t('readAbbreviation'),
-  },
-  {
-    id: EntityAccessLevel.Update,
-    name: t('updateAbbreviation'),
-  },
-  {
-    id: EntityAccessLevel.Delete,
-    name: t('deleteAbbreviation'),
-  }
-];
+const UPDATE = {
+  id: EntityAccessLevel.Update,
+  name: t('updateAbbreviation'),
+}
 
-const CHILDREN_TYPE = 'children';
-const SELF_TYPE = 'self';
-const CHILD_AND_SELF_PERMS = [
-  ...SELF_PERMS.map(x => { return { id: x.id, name: x.name, type: SELF_TYPE } }),
-  ...CHILD_PERMS.map(x => { return { id: x.id, name: x.name, type: CHILDREN_TYPE } }),
-];
+const DELETE = {
+  id: EntityAccessLevel.Delete,
+  name: t('deleteAbbreviation'),
+}
+
+const GLOBAL_PERMS = [READ, CREATE, UPDATE, DELETE];
+const SELF_PERMS = [READ, UPDATE, DELETE];
+const EPICS_ISSUES_PERMS = [CREATE, UPDATE, DELETE];
 
 const ADMIN_PERMS = [
   {
@@ -114,38 +78,44 @@ const toggleFlag = <T extends number>(currentValue: T, valueToToggle: T) => {
   return addFlag(currentValue, valueToToggle)
 }
 
-const isGlobalSpacesInherited = (level: ChildrenAccessLevel) => {
+const isGlobalSpacesInherited = (level: EntityAccessLevel) => {
   if (isValueInherited(permissions.value.global.spaces, level))
     return true;
-  if (level === ChildrenAccessLevel.Read)
-    return isGlobalEpicsInherited(level) || hasFlag(permissions.value.global.issues, ChildrenAccessLevel.Read) || hasFlag(permissions.value.global.epics, ChildrenAccessLevel.Read);
+  if (level === EntityAccessLevel.Read)
+    return isValueInherited(permissions.value.global.epics, level) || isValueInherited(permissions.value.global.issues, level);
   return false;
 }
 
-const isGlobalEpicsInherited = (level: ChildrenAccessLevel) => {
+const isGlobalEpicsInherited = (level: EntityAccessLevel) => {
+  if (hasFlag(permissions.value.global.spaces, level))
+    return true;
   if (isValueInherited(permissions.value.global.epics, level))
     return true;
-  if (level === ChildrenAccessLevel.Read)
-    return isGlobalIssuesInherited(level) || hasFlag(permissions.value.global.issues, ChildrenAccessLevel.Read);
   return false;
 }
 
-const isGlobalIssuesInherited = (level: ChildrenAccessLevel) => isValueInherited(permissions.value.global.issues, level)
+const isGlobalIssuesInherited = (level: EntityAccessLevel) => {
+  if (hasFlag(permissions.value.global.spaces, level))
+    return true;
+  if (hasFlag(permissions.value.global.epics, level))
+    return true;
+  return isValueInherited(permissions.value.global.issues, level)
+}
 
-const toggleGlobalSpaces = (level: ChildrenAccessLevel) => {
+const toggleGlobalSpaces = (level: EntityAccessLevel) => {
   permissions.value.global.spaces = toggleFlag(permissions.value.global.spaces, level)
 }
 
-const toggleGlobalEpics = (level: ChildrenAccessLevel) => {
+const toggleGlobalEpics = (level: EntityAccessLevel) => {
   permissions.value.global.epics = toggleFlag(permissions.value.global.epics, level)
 }
 
-const toggleGlobalIssues = (level: ChildrenAccessLevel) => {
+const toggleGlobalIssues = (level: EntityAccessLevel) => {
   permissions.value.global.issues = toggleFlag(permissions.value.global.issues, level)
 }
 
 const isSpaceSelfAccessInherited = (spaceId: number, level: EntityAccessLevel) => {
-  const castedLevel = level as unknown as ChildrenAccessLevel
+  const castedLevel = level as unknown as EntityAccessLevel
   if (hasFlag(permissions.value.global.spaces, castedLevel) || isGlobalSpacesInherited(castedLevel))
     return true;
   if (!hasDirectSpacePermission(spaceId))
@@ -156,16 +126,17 @@ const isSpaceSelfAccessInherited = (spaceId: number, level: EntityAccessLevel) =
   return false;
 }
 
-const isSpaceEpicsInherited = (spaceId: number, level: ChildrenAccessLevel) => {
+const isSpaceEpicsInherited = (spaceId: number, level: EntityAccessLevel) => {
   if (hasFlag(permissions.value.global.epics, level) || isGlobalEpicsInherited(level))
     return true;
   if (!hasDirectSpacePermission(level))
     return false;
   if (isValueInherited(permissions.value.direct[spaceId]!.epics, level) || isSpaceIssuesInherited(spaceId, level))
     return true;
-  return level === ChildrenAccessLevel.Read && hasFlag(permissions.value.direct[spaceId]!.issues, level);
+  return level === EntityAccessLevel.Read && hasFlag(permissions.value.direct[spaceId]!.issues, level);
 }
-const isSpaceIssuesInherited = (spaceId: number, level: ChildrenAccessLevel) => {
+
+const isSpaceIssuesInherited = (spaceId: number, level: EntityAccessLevel) => {
   if (hasFlag(permissions.value.global.issues, level) || isGlobalIssuesInherited(level))
     return true;
   if (!hasDirectSpacePermission(level))
@@ -173,27 +144,8 @@ const isSpaceIssuesInherited = (spaceId: number, level: ChildrenAccessLevel) => 
   return isValueInherited(permissions.value.direct[spaceId]!.issues, level)
 };
 
-const isSpaceEpicChecked = (spaceId: number, epicId: number, level: number, type: string) => {
-  return type == CHILDREN_TYPE
-      ? hasFlag(permissions.value.direct[spaceId]!.directEpics[epicId]!.issues, level)
-      : hasFlag(permissions.value.direct[spaceId]!.directEpics[epicId]!.self, level)
-}
-
-const isSpaceEpicInherited = (spaceId: number, epicId: number, level: number, type: string) => {
-  if (type == CHILDREN_TYPE && (hasFlag(permissions.value.global.issues, level) || isGlobalIssuesInherited(level)))
-    return true;
-  if (type == SELF_TYPE && (hasFlag(permissions.value.global.epics, level) || isGlobalEpicsInherited(level)))
-    return true;
-
-  if (!hasDirectEpicPermission(spaceId, epicId))
-    return false;
-  return type == CHILDREN_TYPE
-    ? isValueInherited(permissions.value.direct[spaceId]!.directEpics[epicId]!.issues, level)
-    : isValueOfEntityInherited(permissions.value.direct[spaceId]!.directEpics[epicId]!.self, level)
-}
-
-const isValueInherited = (valueToCheck: ChildrenAccessLevel, level: ChildrenAccessLevel) => {
-  if (level === ChildrenAccessLevel.Read)
+const isValueInherited = (valueToCheck: EntityAccessLevel, level: EntityAccessLevel) => {
+  if (level === EntityAccessLevel.Read)
     return shouldAddRead(valueToCheck);
   return false;
 }
@@ -209,43 +161,24 @@ const toggleSpaceSelfAccess = (spaceId: number, level: EntityAccessLevel) => {
   space.self = toggleFlag(space.self, level)
 }
 
-const toggleSpaceEpicsAccess = (spaceId: number, level: ChildrenAccessLevel) => {
+const toggleSpaceEpicsAccess = (spaceId: number, level: EntityAccessLevel) => {
   const space = getOrAddSpacePermission(spaceId);
   space.epics = toggleFlag(space.epics, level)
 }
 
-const toggleSpaceIssuesAccess = (spaceId: number, level: ChildrenAccessLevel) => {
+const toggleSpaceIssuesAccess = (spaceId: number, level: EntityAccessLevel) => {
   const space = getOrAddSpacePermission(spaceId);
   space.issues = toggleFlag(space.issues, level)
-}
-
-const toggleSpaceEpicAccess = (spaceId: number, epicId: number, level: number, type: string) => {
-  const epic = getOrAddSpaceEpicPermission(spaceId, epicId);
-  if (type == CHILDREN_TYPE)
-    epic.issues = toggleFlag(epic.issues, level)
-  else
-    epic.self = toggleFlag(epic.self, level)
 }
 
 const getOrAddSpacePermission = (spaceId: number) => {
   if (!hasDirectSpacePermission(spaceId))
     permissions.value.direct[spaceId] = {
-      epics: ChildrenAccessLevel.None,
-      issues: ChildrenAccessLevel.None,
+      epics: EntityAccessLevel.None,
+      issues: EntityAccessLevel.None,
       self: EntityAccessLevel.None,
-      directEpics: {}
     };
   return permissions.value.direct[spaceId]!
-}
-
-const getOrAddSpaceEpicPermission = (spaceId: number, epicId: number) => {
-  const space = getOrAddSpacePermission(spaceId);
-  if (!hasDirectEpicPermission(spaceId, epicId))
-    space.directEpics[epicId] = {
-      issues: ChildrenAccessLevel.None,
-      self: EntityAccessLevel.None,
-    }
-  return space.directEpics[epicId]!
 }
 
 const hasDirectSpacePermission = (spaceId: number) => {
@@ -253,23 +186,12 @@ const hasDirectSpacePermission = (spaceId: number) => {
   return !!value;
 }
 
-const hasDirectEpicPermission = (spaceId: number, epicId: number) => {
-  if (!hasDirectSpacePermission(spaceId))
-    return false;
-  const value = permissions.value.direct[spaceId]!.directEpics[epicId];
-  return !!value;
-}
-
-const shouldAddRead = (level: ChildrenAccessLevel) => {
-  return hasFlag(level, ChildrenAccessLevel.Create) || hasFlag(level, ChildrenAccessLevel.Update) || hasFlag(level, ChildrenAccessLevel.Delete)
+const shouldAddRead = (level: EntityAccessLevel) => {
+  return hasFlag(level, EntityAccessLevel.Create) || hasFlag(level, EntityAccessLevel.Update) || hasFlag(level, EntityAccessLevel.Delete)
 }
 
 const shouldAddReadForEntity = (level: EntityAccessLevel) => {
   return hasFlag(level, EntityAccessLevel.Update) || hasFlag(level, EntityAccessLevel.Delete)
-}
-
-const disabledForDefaultEntity = (level: ChildrenAccessLevel) => {
-  return level == ChildrenAccessLevel.Delete
 }
 
 enum PermissionTab {
@@ -279,7 +201,6 @@ enum PermissionTab {
 }
 
 const tab = ref(PermissionTab.Global)
-
 const expandedSpaces = ref<Set<number>>(new Set())
 
 const toggleDirectSpace = (id: number) => {
@@ -308,7 +229,7 @@ const toggleDirectSpace = (id: number) => {
     <!-- Three tabs -->
     <div style="display:flex;gap:4px;margin-bottom:12px">
       <div class="org-panel-tab" :class="{active: tab === PermissionTab.Global }" @click="tab = PermissionTab.Global">Organization</div>
-      <div class="org-panel-tab" :class="{active: tab === PermissionTab.Direct }" @click="tab = PermissionTab.Direct">Direct</div>
+      <div class="org-panel-tab" :class="{active: tab === PermissionTab.Direct }" @click="tab = PermissionTab.Direct">By Space</div>
       <div class="org-panel-tab" :class="{active: tab === PermissionTab.Admin }" @click="tab = PermissionTab.Admin">Administrative</div>
     </div>
 
@@ -321,20 +242,22 @@ const toggleDirectSpace = (id: number) => {
 
       <div class="perm-section">
         <!-- Column headers: C R U D -->
-        <LnbPermissionSectionTitle title="Children Access" :column-names="GLOBAL_PERMS.map(x => x.name)" />
+        <LnbPermissionSectionTitle title="Spaces Access" :column-names="GLOBAL_PERMS.map(x => x.name)" />
 
         <!-- Spaces row -->
         <LnbPermissionSectionRow
-          title="Spaces"
+          title="Level"
           :columns="GLOBAL_PERMS"
           :checked="id => hasFlag(permissions.global.spaces, id)"
           :inherited="id => isGlobalSpacesInherited(id)"
           @change="id => toggleGlobalSpaces(id)"/>
 
+        <LnbPermissionSectionTitle title="Children Access" :column-names="EPICS_ISSUES_PERMS.map(x => x.name)" />
+
         <!-- Epics row -->
         <LnbPermissionSectionRow
           title="Epics"
-          :columns="GLOBAL_PERMS"
+          :columns="EPICS_ISSUES_PERMS"
           :checked="id => hasFlag(permissions.global.epics, id)"
           :inherited="id => isGlobalEpicsInherited(id)"
           @change="id => toggleGlobalEpics(id)"/>
@@ -342,7 +265,7 @@ const toggleDirectSpace = (id: number) => {
         <!-- Issues row -->
         <LnbPermissionSectionRow
           title="Issues"
-          :columns="GLOBAL_PERMS"
+          :columns="EPICS_ISSUES_PERMS"
           :checked="id => hasFlag(permissions.global.issues, id)"
           :inherited="id => isGlobalIssuesInherited(id)"
           @change="id => toggleGlobalIssues(id)"/>
@@ -383,32 +306,19 @@ const toggleDirectSpace = (id: number) => {
             @change="id => toggleSpaceSelfAccess(permission.id, id)"/>
 
           <!-- Global Children in Space -->
-          <LnbPermissionSectionTitle title="Children Access" :column-names="GLOBAL_PERMS.map(x => x.name)" />
+          <LnbPermissionSectionTitle title="Children Access" :column-names="EPICS_ISSUES_PERMS.map(x => x.name)" />
           <LnbPermissionSectionRow
             title="Epics"
-            :columns="GLOBAL_PERMS"
+            :columns="EPICS_ISSUES_PERMS"
             :checked="id => hasDirectSpacePermission(permission.id) && hasFlag(permissions.direct[permission.id]!.epics, id)"
             :inherited="id => isSpaceEpicsInherited(permission.id, id)"
             @change="id => toggleSpaceEpicsAccess(permission.id, id)"/>
           <LnbPermissionSectionRow
             title="Issues"
-            :columns="GLOBAL_PERMS"
+            :columns="EPICS_ISSUES_PERMS"
             :checked="id => hasDirectSpacePermission(permission.id) && hasFlag(permissions.direct[permission.id]!.issues, id)"
             :inherited="id => isSpaceIssuesInherited(permission.id, id)"
             @change="id => toggleSpaceIssuesAccess(permission.id, id)" />
-
-          <!-- Direct Epics -->
-          <LnbPermissionSectionTitle title="Direct Epics Access" :column-names="CHILD_AND_SELF_PERMS.map(x => x.name)" />
-          <LnbPermissionSectionRow
-            v-for="e in permission.epics"
-            :key="e.id"
-            :title="e.name + (e.isDefault ? ' (default)' : '')"
-            :color="e.color"
-            :columns="CHILD_AND_SELF_PERMS"
-            :disabled="(id, type) => e.isDefault && type === SELF_TYPE && disabledForDefaultEntity(id)"
-            :checked="(id, type) => hasDirectEpicPermission(permission.id, e.id) && isSpaceEpicChecked(permission.id, e.id, id, type!)"
-            :inherited="(id, type) => isSpaceEpicInherited(permission.id, e.id, id, type!)"
-            @change="(id, type) => toggleSpaceEpicAccess(permission.id, e.id, id, type!)"/>
         </template>
 
       </div>

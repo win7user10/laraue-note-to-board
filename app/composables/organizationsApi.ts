@@ -54,20 +54,14 @@ export interface UserPermissions {
 }
 
 export interface GlobalAccessLevel {
-    spaces: ChildrenAccessLevel
-    epics: ChildrenAccessLevel
-    issues: ChildrenAccessLevel
+    spaces: EntityAccessLevel
+    epics: EntityAccessLevel
+    issues: EntityAccessLevel
 }
 
 export interface DirectSpaceAccessLevel {
-    epics: ChildrenAccessLevel
-    issues: ChildrenAccessLevel
-    self: EntityAccessLevel
-    directEpics: { [id: number]: DirectEpicAccessLevel };
-}
-
-export interface DirectEpicAccessLevel {
-    issues: ChildrenAccessLevel
+    epics: EntityAccessLevel
+    issues: EntityAccessLevel
     self: EntityAccessLevel
 }
 

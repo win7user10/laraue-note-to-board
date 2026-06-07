@@ -267,11 +267,11 @@ const toggleDirectSpace = (id: number) =>
 
 <template>
   <LnbModal
-      title="Edit Permissions"
+      :title="t('editPermissions')"
       @close="emit('close')"
       @cancel="emit('close')"
       @apply="emit('update', permissions)"
-      apply-text="Save">
+      :apply-text="t('save')">
 
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;margin-top:14px;">
       <LnbCardAvatar :color="member.color">
@@ -285,44 +285,50 @@ const toggleDirectSpace = (id: number) =>
 
     <!-- Tabs -->
     <div style="display:flex;gap:4px;margin-bottom:12px">
-      <div class="org-panel-tab" :class="{ active: tab === PermissionTab.Global }" @click="tab = PermissionTab.Global">Organization</div>
-      <div class="org-panel-tab" :class="{ active: tab === PermissionTab.Direct }" @click="tab = PermissionTab.Direct">By Space</div>
-      <div class="org-panel-tab" :class="{ active: tab === PermissionTab.Admin  }" @click="tab = PermissionTab.Admin">Administrative</div>
+      <div class="org-panel-tab" :class="{ active: tab === PermissionTab.Global }" @click="tab = PermissionTab.Global">
+        {{ t('organization') }}
+      </div>
+      <div class="org-panel-tab" :class="{ active: tab === PermissionTab.Direct }" @click="tab = PermissionTab.Direct">
+        {{ t('bySpace') }}
+      </div>
+      <div class="org-panel-tab" :class="{ active: tab === PermissionTab.Admin  }" @click="tab = PermissionTab.Admin">
+        {{ t('administrative') }}
+      </div>
     </div>
 
     <!-- ── Global tab ── -->
     <div v-if="tab === PermissionTab.Global">
       <div style="font-size:11px;color:var(--text3);background:var(--surface3);border-radius:8px;padding:8px 10px;margin-bottom:12px;line-height:1.5">
-        ✦ Grants apply to <strong style="color:var(--text2)">all</strong> spaces, epics and issues in the organization.
-        <br>✦ Granting <strong style="color:var(--accent)">Read</strong> gives navigation access to all Spaces, Epics and Issues.
+        {{ t('globalTitle') }}
+        <br> {{ t('globalReadDescription') }}
       </div>
 
       <div class="perm-section">
-        <LnbPermissionSectionTitle title="Read" :column-names="GLOBAL_READ_PERM.map(x => x.name)" />
+        <LnbPermissionSectionTitle :title="t('read')" :column-names="GLOBAL_READ_PERM.map(x => x.name)" />
         <LnbPermissionSectionRow
-            title="All"
+            :title="t('all')"
             :columns="GLOBAL_READ_PERM"
             :checked="id => getGlobalBool(id)"
             :inherited="_ => isGlobalReadInherited()"
             @change="id => toggleGlobal(id)" />
 
-        <LnbPermissionSectionTitle title="Modification" :column-names="GLOBAL_SPACES_PERMS.map(x => x.name)" />
+        <LnbPermissionSectionTitle :title="t('modification')" :column-names="GLOBAL_SPACES_PERMS.map(x => x.name)" />
         <LnbPermissionSectionRow
-            title="Spaces"
+            :title="t('spaces')"
             :columns="GLOBAL_SPACES_PERMS"
             :checked="id => getGlobalBool(id)"
             :inherited="_ => false"
             @change="id => toggleGlobal(id)" />
 
         <LnbPermissionSectionRow
-            title="Epics"
+            :title="t('epics')"
             :columns="GLOBAL_EPICS_PERMS"
             :checked="id => getGlobalBool(id)"
             :inherited="id => isGlobalEpicsInherited(id)"
             @change="id => toggleGlobal(id)" />
 
         <LnbPermissionSectionRow
-            title="Issues"
+            :title="t('issues')"
             :columns="GLOBAL_ISSUES_PERMS"
             :checked="id => getGlobalBool(id)"
             :inherited="id => isGlobalIssuesInherited(id)"
@@ -333,8 +339,8 @@ const toggleDirectSpace = (id: number) =>
     <!-- ── Direct tab ── -->
     <div v-if="tab === PermissionTab.Direct">
       <div style="font-size:10px;color:var(--text3);margin-bottom:10px;line-height:1.5;background:var(--surface3);padding:8px 10px;border-radius:8px">
-        ✦ Same-operation grants cascade: Delete on Space → Delete on Epics & Issues.
-        <br>✦ Global grants take precedence and are shown as inherited.
+        {{ t('directTitle') }}
+        <br> {{ t('directDescription') }}
       </div>
 
       <div class="perm-section" style="margin-bottom:8px" v-for="permission in permittedRows" :key="permission.id">
@@ -347,36 +353,36 @@ const toggleDirectSpace = (id: number) =>
           </div>
           <div class="perm-expand-btn" :class="{ open: expandedSpaces.has(permission.id) }">
             <svg viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 2l4 3-4 3"/></svg>
-            {{ expandedSpaces.has(permission.id) ? 'hide' : 'show' }}
+            {{ expandedSpaces.has(permission.id) ? t('hide') : t('show') }}
           </div>
         </div>
 
         <template v-if="expandedSpaces.has(permission.id)">
-          <LnbPermissionSectionTitle title="Read Space Entities" :column-names="DIRECT_READ_PERM.map(x => x.name)" />
+          <LnbPermissionSectionTitle :title="t('readSpaceEntities')" :column-names="DIRECT_READ_PERM.map(x => x.name)" />
           <LnbPermissionSectionRow
-              title="All"
+              :title="t('all')"
               :columns="DIRECT_READ_PERM"
               :checked="id => getDirectBool(permission.id, id)"
               :inherited="_ => isDirectReadInherited(permission.id)"
               @change="id => toggleDirect(permission.id, id)" />
 
-          <LnbPermissionSectionTitle title="Space Modification" :column-names="DIRECT_SELF_PERMS.map(x => x.name)" />
+          <LnbPermissionSectionTitle :title="t('spaceModification')" :column-names="DIRECT_SELF_PERMS.map(x => x.name)" />
           <LnbPermissionSectionRow
-              title="Access"
+              :title="t('access')"
               :columns="DIRECT_SELF_PERMS"
               :checked="id => getDirectBool(permission.id, id)"
               :inherited="id => isDirectSelfInherited(permission.id, id)"
               @change="id => toggleDirect(permission.id, id)" />
 
-          <LnbPermissionSectionTitle title="Children Modification" :column-names="DIRECT_EPICS_PERMS.map(x => x.name)" />
+          <LnbPermissionSectionTitle :title="t('childrenModification')" :column-names="DIRECT_EPICS_PERMS.map(x => x.name)" />
           <LnbPermissionSectionRow
-              title="Epics"
+              :title="t('epics')"
               :columns="DIRECT_EPICS_PERMS"
               :checked="id => getDirectBool(permission.id, id)"
               :inherited="id => isDirectEpicsInherited(permission.id, id)"
               @change="id => toggleDirect(permission.id, id)" />
           <LnbPermissionSectionRow
-              title="Issues"
+              :title="t('issues')"
               :columns="DIRECT_ISSUES_PERMS"
               :checked="id => getDirectBool(permission.id, id)"
               :inherited="id => isDirectIssuesInherited(permission.id, id)"

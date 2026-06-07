@@ -54,15 +54,28 @@ export interface UserPermissions {
 }
 
 export interface GlobalAccessLevel {
-    spaces: EntityAccessLevel
-    epics: EntityAccessLevel
-    issues: EntityAccessLevel
+    canRead: boolean
+    canCreateSpaces: boolean
+    canUpdateSpaces: boolean
+    canDeleteSpaces: boolean
+    canCreateEpics: boolean
+    canUpdateEpics: boolean
+    canDeleteEpics: boolean
+    canCreateIssues: boolean
+    canUpdateIssues: boolean
+    canDeleteIssues: boolean
 }
 
 export interface DirectSpaceAccessLevel {
-    epics: EntityAccessLevel
-    issues: EntityAccessLevel
-    self: EntityAccessLevel
+    canRead: boolean
+    canUpdate: boolean
+    canDelete: boolean
+    canCreateEpics: boolean
+    canUpdateEpics: boolean
+    canDeleteEpics: boolean
+    canCreateIssues: boolean
+    canUpdateIssues: boolean
+    canDeleteIssues: boolean
 }
 
 export interface PermittableSpace {

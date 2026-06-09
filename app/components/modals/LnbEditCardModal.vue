@@ -8,6 +8,7 @@ import LnbModalLabel from "~/components/modals/LnbModalLabel.vue";
 import LnbIconBtn from "~/components/icons/LnbIconBtn.vue";
 import LnbModalInput from "~/components/modals/LnbModalInput.vue";
 import LnbFilterChips from "~/components/modals/LnbFilterChips.vue";
+import type {IssueEdited} from "~/composables/boardState";
 
 const props = defineProps<{
   id: number,
@@ -17,14 +18,15 @@ const { t } = useI18n();
 
 const emit = defineEmits<{
   (e: 'close'): void,
-  (e: 'edit', request: EditCardRequest): void
+  (e: 'edit', request: IssueEdited): void
 }>()
 
 const { formatDate } = useUtils()
-const { getMessage } = useMessagesApi()
+const { getMessage, editMessage } = useMessagesApi()
 
 const request = ref<EditCardRequest>({
-  content: ''
+  content: '',
+  attributeValues: {}
 })
 
 const data = ref<MessageDetailDto>()
@@ -39,7 +41,33 @@ const attributes = computed(() => {
 onMounted(async () => {
   data.value = await getMessage(props.id);
   request.value.content = data.value.content;
+  request.value.attributeValues = Object.fromEntries(filledAttributes.value?.map(a => [a.id, a.value]) ?? []);
 })
+
+const updateAttributeValue = (id: number, value: string | number | undefined) => {
+  if (!value)
+    delete request.value.attributeValues[id]
+  else
+    request.value.attributeValues[id] = value.toString();
+}
+
+const edit = async () => {
+  await editMessage(props.id, request.value);
+
+  const result = Object.entries(request.value.attributeValues).map(([id, attribute]) => {
+    const attr = attributes.value!.find(x => x.id === Number(id))!;
+    return {
+      color: attr.color,
+      value: attr.type == AttributeType.Text ? attribute : attr.listValues!.find(x => x.id === Number(attribute))!.name,
+    }
+  });
+
+  emit('edit', {
+    id: props.id,
+    content: request.value.content,
+    attributes: result
+  })
+}
 
 const editMode = ref(false)
 </script>
@@ -48,7 +76,7 @@ const editMode = ref(false)
   <LnbModal
     :applyText="data?.canEdit ? t('save') : undefined"
     :title="''"
-    @apply="emit('edit', request)"
+    @apply="edit"
     @cancel="emit('close')"
     @close="emit('close')">
 
@@ -120,17 +148,19 @@ const editMode = ref(false)
       <LnbModalInput
         v-if="attribute.type == AttributeType.Text"
         placeholder="Enter Attribute Value..."
-        v-model="attribute.value"/>
+        :modelValue="request.attributeValues[attribute.id] ?? ''"
+        @update:modelValue="updateAttributeValue(attribute.id, $event)"/>
       <LnbFilterChips
         v-if="attribute.type == AttributeType.List"
         :color="attribute.color"
         :options="attribute.listValues!"
-        v-model="attribute.value"/>
+        :model-value="Number(request.attributeValues[attribute.id])"
+        @update:modelValue="updateAttributeValue(attribute.id, $event)"/>
     </template>
 
     <LnbModalLabel>{{ t('text') }}</LnbModalLabel>
     <LnbModalTextarea
-      @enter="emit('edit', request)"
+      @enter="edit"
       v-model="request.content"
       :disabled="!data?.canEdit"
       :placeholder="t('contentExample')"/>

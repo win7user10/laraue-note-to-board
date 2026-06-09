@@ -3,9 +3,15 @@ import {ref} from "vue";
 import type {EditStatusRequest} from "~/composables/statusesApi";
 import {type EpicListDto, useSpacesApi} from "~/composables/spacesApi";
 import {useEpicsApi} from "~/composables/epicsApi";
-import {type OrganizationDto, useOrganizationsApi} from "~/composables/organizationsApi";
+import {useOrganizationsApi} from "~/composables/organizationsApi";
 
 const { showToast, appState } = useAppState()
+
+export interface IssueEdited {
+    id: number,
+    content: string,
+    attributes: IssueListAttributeDto[]
+}
 
 export const useBoard = () => {
     const { t } = useI18n()
@@ -222,12 +228,12 @@ export const useBoard = () => {
         return id;
     }
 
-    const editCard = async (id: number, value: EditCardRequest) => {
-        const messagesApi = useMessagesApi()
-        await messagesApi.editMessage(id, value);
+    const editCard = async (id: number, value: IssueEdited) => {
         const card = allCards.value.find(x => x.id === id)
-        if (card)
+        if (card) {
             card.content = value.content;
+            card.attributes = value.attributes
+        }
 
         const category = state.value.epics.find(c => c.id === card?.epicId)
         if (category)

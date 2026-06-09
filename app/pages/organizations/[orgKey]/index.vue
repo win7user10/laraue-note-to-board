@@ -4,6 +4,7 @@ import type {SearchIssueDto} from "~/composables/messagesApi";
 const { t } = useI18n()
 import LnbScrollArea from "~/components/LnbScrollArea.vue";
 import LnbSection from "~/components/LnbSection.vue";
+import type {IssueEdited} from "~/composables/boardState";
 
 const { state } = useBoard()
 const { searchMessages } = useMessagesApi();
@@ -62,8 +63,9 @@ watch(request, async () => {
   await fetchSearchResults();
 }, { deep: true })
 
-const updateIssue = (source: SearchIssueDto, value: EditCardRequest) => {
+const updateIssue = (source: SearchIssueDto, value: IssueEdited) => {
   source.content = value.content;
+  source.attributes = value.attributes;
 }
 
 </script>

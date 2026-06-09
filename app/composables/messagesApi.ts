@@ -9,6 +9,12 @@ export interface MessageListDto {
     key: string;
     senderColor: string;
     media: MediaInfo[];
+    attributes: IssueListAttributeDto[]
+}
+
+export interface IssueListAttributeDto {
+    value: string;
+    color: string;
 }
 
 export interface SearchIssueDto extends MessageListDto{
@@ -72,6 +78,7 @@ export interface CreateCardRequest {
 
 export interface EditCardRequest {
     content: string;
+    attributeValues: { [key: number]: string };
 }
 
 export interface SearchRequest {

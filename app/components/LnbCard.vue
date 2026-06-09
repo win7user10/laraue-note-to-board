@@ -159,7 +159,8 @@
     <div class="card-footer">
       <slot name="footer"></slot>
       <div class="card-actions">
-        <nuxt-link v-if="props.navigateToEpicButton"
+        <nuxt-link
+          v-if="props.navigateToEpicButton"
           :to="getEpicUrl">
           <LnbIconBtn
             :title="t('navigateToEpic')"

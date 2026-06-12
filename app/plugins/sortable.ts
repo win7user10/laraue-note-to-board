@@ -17,7 +17,7 @@ export default defineNuxtPlugin((nuxtApp) => {
                 touchStartThreshold: 4,
                 ghostClass: 'sortable-ghost',
                 chosenClass: 'sortable-chosen',
-                filter: '.modal-overlay, input, textarea, button, select, a[href]',
+                filter: '.modal-overlay',
                 preventOnFilter: false,
                 onAdd(evt) {
                     const cardId = evt.item.dataset.cardId;

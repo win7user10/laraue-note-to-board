@@ -87,6 +87,7 @@ export interface SearchRequest {
     perPage: number;
     epicIds: Array<number>;
     spaceIds: Array<number>;
+    filters: { [key: number]: any }
 }
 
 export interface ColumnMessages {

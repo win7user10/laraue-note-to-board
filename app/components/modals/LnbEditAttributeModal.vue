@@ -84,10 +84,11 @@ const updateAttributeInternal = async () => {
       {{ t('name') }}
     </LnbModalLabel>
     <LnbModalInput
-        :errors="errors['Name']"
-        focus
-        v-model="request.name"
-        :placeholder="t('attributeNameExample')"/>
+      :errors="errors['Name']"
+      focus
+      v-model="request.name"
+      @enter="updateAttributeInternal"
+      :placeholder="t('attributeNameExample')"/>
 
     <template v-if="type === AttributeType.List">
       <LnbModalLabel>
@@ -101,6 +102,7 @@ const updateAttributeInternal = async () => {
         <LnbInput
           :modelValue="optionValue.name"
           :placeholder="t('optionValue')"
+          @enter="updateAttributeInternal"
           @update:modelValue="updateOptionValue(i, $event)"/>
 
         <div class="attr-del">

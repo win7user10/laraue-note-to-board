@@ -148,6 +148,7 @@ const editMode = ref(false)
       <LnbModalInput
         v-if="attribute.type == AttributeType.Text"
         placeholder="Enter Attribute Value..."
+        @enter="edit"
         :modelValue="request.attributeValues[attribute.id] ?? ''"
         @update:modelValue="updateAttributeValue(attribute.id, $event)"/>
       <LnbFilterChips
